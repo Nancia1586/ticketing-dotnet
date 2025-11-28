@@ -1,6 +1,19 @@
+using Microsoft.EntityFrameworkCore;
+using Ticketing.BackOffice.Razor.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddRazorPages();
+
+// Récupération de la chaîne de connexion
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+                       ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+// Ajout du DbContext pour l'injection de dépendances
+builder.Services.AddDbContext<TicketingDbContext>(options =>
+    options.UseSqlServer(connectionString)); 
+
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
