@@ -1,0 +1,16 @@
+# Fichiers de compilation et dossiers
+[Bb]in/
+[Oo]bj/
+
+# Paquets et dépendances
+*.suo
+*.user
+.vs/
+.idea/
+.vscode/
+
+# Fichiers de runtime et de log
+*.exe
+*.dll
+*.pdb
+*.log
