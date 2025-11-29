@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Ticketing.BackOffice.Razor.Data;
+using Ticketing.BackOffice.Razor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 // Ajout du DbContext pour l'injection de dépendances
 builder.Services.AddDbContext<TicketingDbContext>(options =>
     options.UseSqlServer(connectionString)); 
+
+builder.Services.AddScoped<IEventService, EventService>();
 
 builder.Services.AddRazorPages();
 

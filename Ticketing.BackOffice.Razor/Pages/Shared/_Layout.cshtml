@@ -4,15 +4,36 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Ticketing.BackOffice.Razor</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --color-primary-base: #2167b6;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .btn-primary {
+            background-color: var(--color-primary-base);
+            color: white;
+            transition: background-color 150ms ease-in-out;
+        }
+    </style>
+
+    @* <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Ticketing.BackOffice.Razor.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Ticketing.BackOffice.Razor.styles.css" asp-append-version="true" /> *@
 </head>
-<body>
+<body class="w-screen min-h-screen flex flex-col">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">Ticketing.BackOffice.Razor</a>
+                <a class="navbar-brand" asp-area="" asp-page="/Index">Ticketing Admin</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -30,21 +51,21 @@
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+    
+   <main role="main" class="flex-1 py-6">
+        <div class="max-w-7xl mx-auto px-4 h-full flex flex-col justify-center">
             @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - Ticketing.BackOffice.Razor - <a asp-area="" asp-page="/Privacy">Privacy</a>
         </div>
+    </main>
+
+    <footer class="mt-auto flex items-center justify-center border-t text-muted bg-white py-3">
+        &copy; 2025 - Ticketing Admin - <a asp-page="/Privacy" class="ml-1 text-blue-600">Privacy</a>
     </footer>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    @* <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script> *@
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
