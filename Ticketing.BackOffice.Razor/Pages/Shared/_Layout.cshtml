@@ -10,7 +10,7 @@
     
     <style>
         :root {
-            --color-primary-base: #2167b6;
+            --color-primary-base: #2a83e9;
         }
 
         body {
@@ -24,10 +24,6 @@
             transition: background-color 150ms ease-in-out;
         }
     </style>
-
-    @* <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Ticketing.BackOffice.Razor.styles.css" asp-append-version="true" /> *@
 </head>
 <body class="w-screen min-h-screen flex flex-col">
     <header>
@@ -62,9 +58,6 @@
         &copy; 2025 - Ticketing Admin - <a asp-page="/Privacy" class="ml-1 text-blue-600">Privacy</a>
     </footer>
 
-    @* <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script> *@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)

@@ -10,94 +10,35 @@
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Liste des événements</h1>
 
-        <button asp-page="Create" type="button" class="btn-primary text-white box-border border border-transparent focus:ring-4 shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none">Ajouter un nouvel événement</button>
+        <a asp-page="Create" type="button" class="btn-primary text-white box-border border border-transparent focus:ring-4 shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none">Ajouter un nouvel événement</a>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        @for (int i=0; i <= 4; i++ ) {
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        @foreach (var item in Model.Events) {
             <a href="#" class="flex flex-col bg-neutral-primary-soft border border-default rounded-md shadow-xs md:flex-row md:max-w-xl md:flex-row md:max-w-xl">
-                <img class="object-cover w-full rounded-base h-64 md:h-auto md:w-48 mb-4 md:mb-0" src="/images/placeholders/event-default.jpg" alt="">
-                <div class="flex flex-col leading-normal p-4">
-                    <h5 class="mb-4 text-xl font-bold tracking-tight text-heading">Dance Party Night</h5>
-                    <div class="flex flex-col items-start gap-4 text-gray-600">
-                        <p class="flex gap-2">
-                            <svg class="w-6 h-6 text-gray-600 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" stroke="currentColor" viewBox="0 0 24 24">
-                                <path fill-rule="evenodd" d="M11.906 1.994a8.002 8.002 0 0 1 8.09 8.421 7.996 7.996 0 0 1-1.297 3.957.996.996 0 0 1-.133.204l-.108.129c-.178.243-.37.477-.573.699l-5.112 6.224a1 1 0 0 1-1.545 0L5.982 15.26l-.002-.002a18.146 18.146 0 0 1-.309-.38l-.133-.163a.999.999 0 0 1-.13-.202 7.995 7.995 0 0 1 6.498-12.518ZM15 9.997a3 3 0 1 1-5.999 0 3 3 0 0 1 5.999 0Z" clip-rule="evenodd"/>
-                            </svg>
-                            Palais des Sports Mahamasina
+                <img class="object-cover w-full rounded-base h-64 md:h-64 md:w-52 mb-4 md:mb-0" src="@item.PosterUrl" alt="">
+                <div class="flex flex-col gap-3 leading-normal p-4">
+                    <div class="flex items-center gap-4">
+                        <h5 class="text-xl font-bold tracking-tight text-heading">@Html.DisplayFor(modelItem => item.Name)</h5>
+                        <span class="flex items-center h-6 px-4 text-xs font-semibold rounded-md whitespace-nowrap
+                            @(item.IsActive ? "bg-green-200 text-green-700" : "bg-red-200 text-red-700")">
+                            @(item.IsActive ? "Actif" : "Brouillon") 
+                        </span>
+                    </div>
+                    <p class="text-gray-600">@Html.DisplayFor(modelItem => item.Description)</p>
+                    <div class="flex flex-col items-start gap-2 text-gray-600">
+                        <p class="flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin-icon lucide-map-pin"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+
+                            @Html.DisplayFor(modelItem => item.Location)
                         </p>
-                        <p class="flex gap-2">
-                            <svg class="w-5 h-5 text-gray-600 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" stroke="currentColor" viewBox="0 0 24 24">
-                                <path fill-rule="evenodd" d="M5 5a1 1 0 0 0 1-1 1 1 0 1 1 2 0 1 1 0 0 0 1 1h1a1 1 0 0 0 1-1 1 1 0 1 1 2 0 1 1 0 0 0 1 1h1a1 1 0 0 0 1-1 1 1 0 1 1 2 0 1 1 0 0 0 1 1 2 2 0 0 1 2 2v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a2 2 0 0 1 2-2ZM3 19v-7a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm6.01-6a1 1 0 1 0-2 0 1 1 0 0 0 2 0Zm2 0a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm6 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0Zm-10 4a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm6 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0Zm2 0a1 1 0 1 1 2 0 1 1 0 0 1-2 0Z" clip-rule="evenodd"/>
-                            </svg>
-                            12 Décembre 2025 à 22h00
+                        <p class="flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-clock-icon lucide-calendar-clock"><path d="M16 14v2.2l1.6 1"/><path d="M16 2v4"/><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M3 10h5"/><path d="M8 2v4"/><circle cx="16" cy="16" r="6"/></svg>
+                            @item.Date.ToString("dd/MM/yyyy à HH:mm")
                         </p>
                     </div>
                 </div>
             </a>
         }
     </div>
-    
-
-    @* <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-            <tr>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Nom
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Lieu
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                </th>
-                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Statut
-                </th>
-                <th scope="col" class="relative px-6 py-3">
-                    <span class="sr-only">Actions</span>
-                </th>
-            </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-            @foreach (var item in Model.Events)
-            {
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        @Html.DisplayFor(modelItem => item.Name)
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        @Html.DisplayFor(modelItem => item.Location)
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        @item.Date.ToString("dd/MM/yyyy HH:mm")
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                              @(item.IsActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800")">
-                            @(item.IsActive ? "Actif" : "Inactif")
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                        <a asp-page="./Edit" asp-route-id="@item.Id" class="text-indigo-600 hover:text-indigo-900">Modifier</a>
-                        <a asp-page="./Details" asp-route-id="@item.Id" class="text-gray-600 hover:text-gray-900">Détails</a>
-                        
-                        <form method="post" class="inline">
-                            <input type="hidden" asp-for="@item.Id" name="id" />
-                            <input type="hidden" name="isActive" value="@(!item.IsActive)" />
-                            <button type="submit" asp-page-handler="ToggleStatus" class="text-sm font-medium 
-                                    @(item.IsActive ? "text-red-600 hover:text-red-900" : "text-green-600 hover:text-green-900")">
-                                @(item.IsActive ? "Désactiver" : "Activer")
-                            </button>
-                        </form>
-
-                        <form method="post" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');">
-                            <input type="hidden" asp-for="@item.Id" name="id" />
-                            <button type="submit" asp-page-handler="Delete" class="text-red-600 hover:text-red-900">Supprimer</button>
-                        </form>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table> *@
 </div>

@@ -19,7 +19,6 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
 
         public IActionResult OnGet()
         {
-            // Initialisation avec quelques valeurs par défaut
             Event = new Event { Date = DateTime.Now.AddDays(7), IsActive = true };
             return Page();
         }
@@ -30,7 +29,14 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
             {
                 return Page();
             }
-
+            
+            if (!string.IsNullOrEmpty(Event.PosterBase64))
+            {
+                Event.PosterUrl = Event.PosterBase64; 
+                
+                Event.PosterBase64 = null; 
+            }
+            
             await _eventService.CreateEventAsync(Event);
 
             return RedirectToPage("./Index");
