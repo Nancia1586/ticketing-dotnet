@@ -14,7 +14,6 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
             _eventService = eventService;
         }
 
-        // Propriété qui contiendra la liste des événements
         public IList<Event> Events { get; set; } = default!;
 
         public async Task OnGetAsync()
@@ -22,14 +21,12 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
             Events = (await _eventService.GetAllEventsAsync()).ToList();
         }
 
-        // Action pour la suppression
         public async Task<IActionResult> OnPostDeleteAsync(int id)
         {
             await _eventService.DeleteEventAsync(id);
-            return RedirectToPage(); // Recharge la liste
+            return RedirectToPage();
         }
         
-        // Action pour activer/désactiver
         public async Task<IActionResult> OnPostToggleStatusAsync(int id, bool isActive)
         {
             await _eventService.ToggleEventStatusAsync(id, isActive);
