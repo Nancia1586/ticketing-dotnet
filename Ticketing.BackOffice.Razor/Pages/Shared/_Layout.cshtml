@@ -3,62 +3,240 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Ticketing.BackOffice.Razor</title>
-     <script src="https://cdn.tailwindcss.com"></script>
-    
+    <title>@ViewData["Title"] - Ticketing Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --color-primary-base: #2a83e9;
+            --color-primary-base: #3b82f6;
+            --color-primary-dark: #2563eb;
+            --color-primary-light: #60a5fa;
+            --color-sidebar: #e0f2fe;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f5f5f5;
+            background-color: #f0f9ff;
         }
 
         .btn-primary {
             background-color: var(--color-primary-base);
             color: white;
-            transition: background-color 150ms ease-in-out;
+            transition: all 150ms ease-in-out;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--color-primary-dark);
+        }
+
+        .sidebar-gradient {
+            background: linear-gradient(180deg, #dbeafe 0%, #bfdbfe 100%);
+        }
+
+        .active-sidebar-item {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: #1e40af;
+            border-left: 3px solid var(--color-primary-base);
+        }
+
+        .active-sidebar-item svg {
+            color: #2563eb;
         }
     </style>
 </head>
-<body class="w-screen min-h-screen flex flex-col">
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">Ticketing Admin</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
+<body class="bg-sky-50">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full lg:translate-x-0" aria-label="Sidebar">
+        <div class="h-full px-4 py-6 overflow-y-auto sidebar-gradient shadow-lg">
+            <a asp-page="/Index" class="flex items-center mb-8">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <span class="self-center text-xl font-bold whitespace-nowrap text-blue-900">Ticketing Admin</span>
+                </div>
+            </a>
+            <div class="mb-6">
+                <p class="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-3 px-2">HOME</p>
+                <ul class="space-y-1">
+                    <li>
+                        <a asp-page="/Index" class="sidebar-link flex items-center p-3 text-gray-700 rounded-lg hover:bg-blue-100/50 transition-all duration-200 group" data-page="/Index">
+                            <svg class="w-5 h-5 text-gray-600 transition duration-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 21">
+                                <path d="M16.975 11H10V4.025a1 1 0 0 0-1.066-.998 8.5 8.5 0 1 0 9.039 9.039.999.999 0 0 0-1-1.066h.002Z"/>
+                                <path d="M12.5 0c-.157 0-.311.01-.565.027A1 1 0 0 0 11 1.02V10h8.975a1 1 0 0 0 1-.935c.013-.188.028-.374.028-.565A8.51 8.51 0 0 0 12.5 0Z"/>
+                            </svg>
+                            <span class="ml-3 font-medium">Dashboard</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-3 px-2">APPS</p>
+                <ul class="space-y-1">
+                    <li>
+                        <a asp-page="/Events/Index" class="sidebar-link flex items-center p-3 text-gray-700 rounded-lg hover:bg-blue-100/50 transition-all duration-200 group" data-page="/Events">
+                            <svg class="w-5 h-5 text-gray-600 transition duration-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4Zm0 4H0v8a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8Z"/>
+                            </svg>
+                            <span class="ml-3 font-medium">Événements</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-page="/Privacy" class="sidebar-link flex items-center p-3 text-gray-700 rounded-lg hover:bg-blue-100/50 transition-all duration-200 group" data-page="/Privacy">
+                            <svg class="w-5 h-5 text-gray-600 transition duration-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                            </svg>
+                            <span class="ml-3 font-medium">Privacy</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </aside>
+
+    <div class="lg:ml-64">
+        <!-- Top Header -->
+        <header class="bg-white border-b border-gray-200 shadow-sm">
+            <div class="px-4 py-4 lg:px-6 lg:py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center flex-1">
+                        <button data-drawer-target="sidebar" data-drawer-toggle="sidebar" aria-controls="sidebar" type="button" class="inline-flex items-center p-2 text-sm text-gray-600 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-3">
+                            <span class="sr-only">Open sidebar</span>
+                            <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path clip-rule="evenodd" fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
+                            </svg>
+                        </button>
+                        <!-- Search Bar -->
+                        <div class="flex-1 max-w-md">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                                    </svg>
+                                </div>
+                                <input type="text" id="search-navbar" class="block w-full p-2.5 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500" placeholder="Try to searching...">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Right side icons and user -->
+                    <div class="flex items-center space-x-4 ml-4">
+                        <!-- Dark mode toggle -->
+                        <button type="button" class="p-2 text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                            </svg>
+                        </button>
+                        <!-- Shopping cart -->
+                        <button type="button" class="relative p-2 text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                            <span class="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-blue-600 rounded-full">0</span>
+                        </button>
+                        <!-- Notifications -->
+                        <button type="button" class="relative p-2 text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                            <span class="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-green-500 rounded-full">6</span>
+                        </button>
+                        <!-- User Profile -->
+                        <div class="flex items-center space-x-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                    <span>PN</span>
+                                </div>
+                                <div class="hidden md:block text-left">
+                                    <p class="text-sm font-medium text-gray-900">Pradeep</p>
+                                    <p class="text-xs text-gray-500">Admin</p>
+                                </div>
+                            </div>
+                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tabs Navigation -->
+            <div class="border-t border-gray-200 bg-white">
+                <div class="px-4 lg:px-6">
+                    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
+                        <li class="me-2">
+                            <a asp-page="/Index" class="tab-link inline-flex items-center justify-center p-4 border-b-2 border-transparent rounded-t-lg text-gray-600 hover:text-blue-600 hover:border-blue-300 transition-all duration-200" data-page="/Index">
+                                Dashboard
+                            </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
+                        <li class="me-2">
+                            <a asp-page="/Events/Index" class="tab-link inline-flex items-center justify-center p-4 border-b-2 border-transparent rounded-t-lg text-gray-600 hover:text-blue-600 hover:border-blue-300 transition-all duration-200" data-page="/Events">
+                                Événements
+                            </a>
+                        </li>
+                        <li class="me-2">
+                            <a asp-page="/Privacy" class="tab-link inline-flex items-center justify-center p-4 border-b-2 border-transparent rounded-t-lg text-gray-600 hover:text-blue-600 hover:border-blue-300 transition-all duration-200" data-page="/Privacy">
+                                Privacy
+                            </a>
                         </li>
                     </ul>
                 </div>
             </div>
-        </nav>
-    </header>
-    
-   <main role="main" class="flex-1 py-6">
-        <div class="max-w-7xl mx-auto px-4 h-full flex flex-col justify-center">
-            @RenderBody()
-        </div>
-    </main>
+        </header>
 
-    <footer class="mt-auto flex items-center justify-center border-t text-muted bg-white py-3">
-        &copy; 2025 - Ticketing Admin - <a asp-page="/Privacy" class="ml-1 text-blue-600">Privacy</a>
-    </footer>
+        <!-- Main Content -->
+        <main class="p-4 lg:p-6">
+            <div class="mx-auto">
+                @RenderBody()
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-gray-200 mt-auto">
+            <div class="px-4 py-3 lg:px-6">
+                <div class="flex items-center justify-center text-sm text-gray-500">
+                    &copy; 2025 - Ticketing Admin - <a asp-page="/Privacy" class="ml-1 text-blue-600 hover:text-blue-700 hover:underline transition-colors">Privacy</a>
+                </div>
+            </div>
+        </footer>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
+
+    <script>
+        // Set active states for sidebar and tabs based on current page
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname.toLowerCase();
+            
+            // Handle sidebar links
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                const pagePath = link.getAttribute('data-page').toLowerCase();
+                if (currentPath === pagePath || 
+                    (pagePath === '/events' && currentPath.startsWith('/events'))) {
+                    link.classList.add('active-sidebar-item');
+                    link.classList.remove('text-gray-700', 'hover:bg-blue-100/50');
+                    const svg = link.querySelector('svg');
+                    if (svg) {
+                        svg.classList.remove('text-gray-600');
+                        svg.classList.add('text-blue-600');
+                    }
+                }
+            });
+            
+            // Handle tab links
+            document.querySelectorAll('.tab-link').forEach(link => {
+                const pagePath = link.getAttribute('data-page').toLowerCase();
+                if (currentPath === pagePath || 
+                    (pagePath === '/events' && currentPath.startsWith('/events'))) {
+                    link.classList.remove('border-transparent', 'text-gray-600');
+                    link.classList.add('border-blue-600', 'text-blue-600', 'font-semibold', 'active');
+                }
+            });
+        });
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
