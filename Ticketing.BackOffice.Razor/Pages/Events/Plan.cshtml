@@ -1,0 +1,703 @@
+@page "{id:int?}"
+@model Ticketing.BackOffice.Razor.Pages.Events.PlanModel
+
+@{
+    ViewData["Title"] = $"Plan de Salle Structuré pour {Model.Event.Name}";
+}
+
+<!-- Inclusion de Tailwind CSS et styles spécifiques -->
+<style>
+    .input-field {
+        @@apply w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition duration-150;
+    }
+    .select-field {
+        @@apply w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 bg-white transition duration-150;
+    }
+    .btn-action {
+        @@apply bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150;
+    }
+    .btn-add {
+        @@apply bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150;
+    }
+    /* Style spécifique pour la grille */
+    #plan-grid {
+        display: grid;
+        width: 100%;
+        max-width: 800px;
+        aspect-ratio: 4 / 3; 
+        margin: 0 auto;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+    .seat-cell {
+        @@apply flex items-center justify-center border border-gray-200 text-xs font-semibold text-white cursor-pointer;
+        transition: background-color 0.15s ease, transform 0.1s ease;
+        line-height: 1;
+        padding: 1px;
+        user-select: none; /* Empêcher la sélection de texte lors du glisser */
+    }
+    .seat-cell:hover {
+        transform: scale(1.05);
+        opacity: 0.9;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+    /* RETIRÉ: .seat-cell.non-selectable (la grille est toujours interactive) */
+    
+    .color-picker-input {
+        @@apply h-10 w-10 p-0 border-none bg-transparent rounded-md cursor-pointer;
+    }
+    .color-display {
+        @@apply h-5 w-5 rounded-full inline-block align-middle mr-2;
+    }
+    .ticket-type-row.active-selection {
+        /* Mettre en évidence le type actif */
+        @@apply ring-4 ring-offset-2 ring-blue-500 border-blue-500;
+    }
+</style>
+
+<div class="max-w-7xl mx-auto bg-white rounded-lg shadow-xl p-10">
+    <h1 class="text-2xl font-extrabold text-gray-900 mb-2">Configuration du plan par type de ticket</h1>
+    <div class="flex flex-col gap-2 md:flex-row md:gap-0 md:items-center md:justify-between py-4 text-blue-600 mb-4">
+        <span class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tag-icon lucide-tag"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg>
+            @Model.Event.Name
+        </span>
+        <span class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin-icon lucide-map-pin"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+            @Model.Event.Location
+        </span>
+        <span class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-days-icon lucide-calendar-days"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
+            @Model.Event.Date.ToString("dd/MM/yyyy à HH:mm")
+        </span>
+    </div>
+
+    <form method="post" id="plan-form" class="space-y-6">
+        <input type="hidden" name="eventId" value="@Model.Event.Id" />
+
+        <div class="p-6 bg-gray-50 rounded-lg border">
+            <div class="flex flex-col gap-4 mb-4 border-b p-2">
+                <h3 class="text-xl font-semibold text-gray-700">Dimensions de la salle / du lieu</h3>
+                <p class="text-sm text-gray-500">
+                    Configurez un nombre de rangées et de colonnes pour permettre de modéliser le plan de la salle / du lieu dans une grille
+                    (Les rangées seront nommées A, B, C...).
+                </p>
+            </div>
+            <div class="flex flex-col gap-4 md:flex-row md:gap-0 md:items-end md:justify-between">
+                <div class="flex-1">
+                    <label asp-for="TotalRows" class="block text-sm font-medium text-gray-700">Nombre total de rangées (X)</label>
+                    <input asp-for="TotalRows" type="number" min="1" max="26" class="input-field mt-2 h-8 border w-32 rounded-md p-2" id="total-rows-input" />
+                </div>
+                <div class="flex-1">
+                    <label asp-for="TotalColumns" class="block text-sm font-medium text-gray-700">Nombre total de colonnes (Y)</label>
+                    <input asp-for="TotalColumns" type="number" min="1" class="input-field mt-2 h-8 border w-32 rounded-md p-2" id="total-columns-input" />
+                </div>
+                <button type="button" id="update-grid-btn" class="btn-primary text-sm rounded-md py-2 px-4">
+                    Mettre à jour la grille
+                </button>
+            </div>
+        </div>
+
+        <div class="p-6 bg-white rounded-lg border shadow-md">
+            <div class="flex flex-col gap-4 mb-4 border-b p-2">
+                <h3 class="text-xl font-semibold text-gray-700">Types de ticket & Assignation des sièges</h3>
+                <p class="text-sm text-gray-500">
+                    Cliquez sur un type de ticket pour l'activer, puis **cliquez ou cliquez-glissez** sur les sièges de la grille pour les assigner/désassigner.
+                </p>
+            </div>
+            
+            <!-- Conteneur des Types de Ticket -->
+            <div id="ticket-types-container" class="space-y-4">
+                @if (Model.TicketTypePlans.Any())
+                {
+                    for (int i = 0; i < Model.TicketTypePlans.Count; i++)
+                    {
+                        var plan = Model.TicketTypePlans[i];
+                        <div class="ticket-type-row bg-gray-50 p-4 rounded-lg shadow-sm grid grid-cols-12 gap-4 items-center border-2 border-transparent cursor-pointer" 
+                             data-index="@i" 
+                             data-ticket-type-id="@plan.TicketTypeId"
+                             data-color="@plan.Color">
+                            
+                            <!-- Champs pour l'envoi au serveur -->
+                            <input type="hidden" name="TicketTypePlans[@i].TicketTypeId" value="@plan.TicketTypeId" />
+                            <input type="hidden" name="TicketTypePlans[@i].Color" value="@plan.Color" class="type-color-value" />
+                            <input type="hidden" name="TicketTypePlans[@i].SelectedSeatsJson" value="@plan.SelectedSeatsJson" class="selected-seats-json" />
+
+                            <div class="col-span-3">
+                                <label class="block text-xs font-medium text-gray-500">Nom / Couleur</label>
+                                <div class="flex items-center space-x-2 mt-2">
+                                    <input name="TicketTypePlans[@i].Name" value="@plan.Name" placeholder="Ex: VIP" class="input-field h-8 border rounded-md p-2 text-sm type-name-input" required />
+                                    <input type="color" class="color-picker-input" value="@plan.Color" data-index="@i"/>
+                                </div>
+                            </div>
+                            
+                            <div class="col-span-2">
+                                <label class="block text-xs font-medium text-gray-500">Prix (€)</label>
+                                <input name="TicketTypePlans[@i].Price" value="@plan.Price" type="number" step="0.01" min="0" class="input-field mt-1 type-price-input" required />
+                            </div>
+                            
+                            <!-- NOUVEAU : Placement libre ou réservé -->
+                            <div class="col-span-3">
+                                <label class="block text-xs font-medium text-gray-500">Placement</label>
+                                <select name="TicketTypePlans[@i].IsReservedSeating" class="select-field mt-1 is-reserved-seating" data-original-value="@plan.IsReservedSeating.ToString().ToLower()">
+                                    <!-- FIX: Utiliser null pour omettre l'attribut, et comparer directement la valeur booléenne -->
+                                    <option value="true" selected>Réservé (Sièges individuels)</option> 
+                                    <option value="false">Libre (Zone d'assignation)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-span-3 text-sm text-gray-600 flex items-center space-x-2">
+                                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.001 12.001 0 002.944 12c.045 1.09.21 2.14.49 3.155L6 21l3-3 3 3 3-3 3 3 2.56-5.845a12.001 12.001 0 00-.776-8.983z"></path></svg>
+                                <span class="seat-count-display">0 sièges assignés</span>
+                            </div>
+
+                            <div class="col-span-1 flex justify-end">
+                                <button type="button" class="remove-type-btn text-red-500 hover:text-red-700 font-bold py-1 px-2 rounded transition duration-150">
+                                    &times;
+                                </button>
+                            </div>
+                        </div>
+                    }
+                }
+                <p id="no-types-message" class="text-gray-500 italic text-sm mb-2 @(Model.TicketTypePlans.Any() ? "hidden" : "")">
+                    Cliquez sur "Ajouter un type de ticket" pour commencer l'assignation.
+                </p>
+            </div>
+
+            <button type="button" id="add-type-btn" class="btn-primary text-sm rounded-md py-2 px-4">
+                Ajouter un type de ticket
+            </button>
+        </div>
+        
+        <!-- 3. Visualisation de la Grille -->
+        <div class="p-6 bg-gray-100 rounded-lg border">
+            <h3 class="text-xl font-semibold mb-4 text-gray-700">Visualisation du Plan Interactif</h3>
+            
+            
+            <div id="active-selection-info" class="mb-4 p-3 bg-blue-100 text-blue-800 rounded-lg hidden">
+                <p class="font-semibold">Mode Sélection Actif : <span id="active-type-name"></span></p>
+                <p class="text-sm">Cliquez-glissez sur les sièges pour assigner ou désassigner une zone. Rangée: <span id="row-letter-info">A</span>, Colonne: <span id="col-number-info">1</span>.</p>
+            </div>
+            
+            <div id="plan-grid-wrapper" class="relative text-center">
+                <div id="plan-grid" style="grid-template-columns: repeat(@Model.TotalColumns, 1fr); grid-template-rows: repeat(@Model.TotalRows, 1fr);">
+                    <!-- Les sièges seront générés ici par JS -->
+                </div>
+                <p class="mt-4 text-sm text-gray-600">
+                    Chaque cellule représente une place. La couleur est basée sur le type de ticket assigné.
+                </p>
+                <div class="mt-4 flex flex-wrap justify-center space-x-4" id="legend-container">
+                    <!-- Légende sera générée ici -->
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end items-center mt-8 pt-6 border-t border-gray-200">
+            <div class="space-x-4">
+                <a asp-page="./Edit" asp-route-id="@Model.Event.Id" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
+                    Retour à l'Événement
+                </a>
+                <button type="submit" class="inline-flex justify-center items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg shadow-sm btn-action">
+                    Sauvegarder Plan & Types
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- TEMPLATE pour l'ajout dynamique d'une nouvelle ligne de type de ticket -->
+<script id="type-template" type="text/html">
+    <div class="ticket-type-row bg-gray-50 p-4 rounded-lg shadow-sm grid grid-cols-12 gap-4 items-center border-2 border-transparent cursor-pointer" 
+         data-index="__INDEX__" 
+         data-ticket-type-id="0"
+         data-color="#3b82f6">
+        
+        <input type="hidden" name="TicketTypePlans[__INDEX__].TicketTypeId" value="0" /> 
+        <input type="hidden" name="TicketTypePlans[__INDEX__].Color" value="#3b82f6" class="type-color-value" />
+        <input type="hidden" name="TicketTypePlans[__INDEX__].SelectedSeatsJson" value="[]" class="selected-seats-json" />
+
+        <div class="col-span-3">
+            <label class="block text-xs font-medium text-gray-500">Nom / Couleur</label>
+            <div class="flex items-center space-x-2 mt-2">
+                <input name="TicketTypePlans[__INDEX__].Name" value="Nouveau Type" placeholder="Ex: Standard" class="input-field h-8 border rounded-md p-2 text-sm type-name-input" required />
+                <input type="color" class="color-picker-input" value="#3b82f6" data-index="__INDEX__"/>
+            </div>
+        </div>
+        
+        <div class="col-span-2">
+            <label class="block text-xs font-medium text-gray-500">Prix (€)</label>
+            <input name="TicketTypePlans[__INDEX__].Price" value="50.00" type="number" step="0.01" min="0" class="input-field mt-1 type-price-input" required />
+        </div>
+        
+        <div class="col-span-3">
+            <label class="block text-xs font-medium text-gray-500">Placement</label>
+            <select name="TicketTypePlans[__INDEX__].IsReservedSeating" class="select-field mt-1 is-reserved-seating" data-original-value="true">
+                <!-- Par défaut, la première option est "Réservé" -->
+                <option value="true" selected>Réservé (Sièges individuels)</option> 
+                <option value="false">Libre (Zone d'assignation)</option>
+            </select>
+        </div>
+
+        <div class="col-span-3 text-sm text-gray-600 flex items-center space-x-2">
+            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.001 12.001 0 002.944 12c.045 1.09.21 2.14.49 3.155L6 21l3-3 3 3 3-3 3 3 2.56-5.845a12.001 12.001 0 00-.776-8.983z"></path></svg>
+            <span class="seat-count-display">0 sièges assignés</span>
+        </div>
+
+        <div class="col-span-1 flex justify-end">
+            <button type="button" class="remove-type-btn text-red-500 hover:text-red-700 font-bold py-1 px-2 rounded transition duration-150">
+                &times;
+            </button>
+        </div>
+    </div>
+</script>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const totalRowsInput = document.getElementById('total-rows-input');
+            const totalColumnsInput = document.getElementById('total-columns-input');
+            const updateGridBtn = document.getElementById('update-grid-btn');
+            const planGrid = document.getElementById('plan-grid');
+            const ticketTypesContainer = document.getElementById('ticket-types-container');
+            const addTypeBtn = document.getElementById('add-type-btn');
+            const typeTemplate = document.getElementById('type-template').innerHTML;
+            const noTypesMessage = document.getElementById('no-types-message');
+            const legendContainer = document.getElementById('legend-container');
+            const activeSelectionInfo = document.getElementById('active-selection-info');
+            const activeTypeNameDisplay = document.getElementById('active-type-name');
+            const rowLetterInfo = document.getElementById('row-letter-info');
+            const colNumberInfo = document.getElementById('col-number-info');
+
+            let typeIndex = @(Model.TicketTypePlans.Count);
+            let activeTicketTypeIndex = -1; // Index de la ligne actuellement sélectionnée
+            let isDragging = false;
+            let initialSelectionState = null; // true=assigner, false=désassigner
+
+            // --- Fonctions utilitaires ---
+            
+            // Convertit un index de rangée (basé sur 1) en lettre majuscule (1=A, 2=B, ...)
+            function indexToLetter(index) {
+                // Utilise les lettres de A à Z. Si > 26, utilise 1, 2, ...
+                if (index < 1 || index > 26) return index.toString(); 
+                return String.fromCharCode(64 + index);
+            }
+
+            // Fonction pour obtenir la couleur de contraste (noir ou blanc)
+            function getContrastColor(hexColor) {
+                const r = parseInt(hexColor.substring(1, 3), 16);
+                const g = parseInt(hexColor.substring(3, 5), 16);
+                const b = parseInt(hexColor.substring(5, 7), 16);
+                const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                return luminance > 0.5 ? '#000000' : '#ffffff';
+            }
+
+            // --- Logique de la Grille et des Types ---
+
+            // 1. Obtient l'état actuel de tous les types de tickets
+            function getCurrentTicketTypePlans() {
+                const typeElements = ticketTypesContainer.querySelectorAll('.ticket-type-row');
+                const plans = [];
+                typeElements.forEach(el => {
+                    let seatsArray;
+                    const isReserved = el.querySelector('.is-reserved-seating').value === 'true';
+                    const jsonValue = el.querySelector('.selected-seats-json').value || '[]';
+                    
+                    try {
+                        // Récupérer tous les sièges, qu'il s'agisse d'une sélection réservée ou d'une zone libre
+                        seatsArray = JSON.parse(jsonValue);
+                    } catch (e) {
+                        seatsArray = [];
+                        console.error("Erreur de parsing JSON pour les sièges:", e);
+                    }
+
+                    const plan = {
+                        name: el.querySelector('.type-name-input').value,
+                        price: parseFloat(el.querySelector('.type-price-input').value),
+                        color: el.querySelector('.type-color-value').value,
+                        isReservedSeating: isReserved,
+                        selectedSeats: new Set(seatsArray), 
+                        element: el
+                    };
+                    if (plan.name) {
+                        plans.push(plan);
+                    }
+                });
+                return plans;
+            }
+
+            // 2. Détermine le Type de Ticket d'un siège donné (basé sur 'A-1')
+            function getTicketTypeForSeat(seatId, plans) {
+                // Le siège est assigné à un type si ce type contient l'ID du siège
+                for (let i = 0; i < plans.length; i++) {
+                    if (plans[i].selectedSeats.has(seatId)) {
+                        return plans[i];
+                    }
+                }
+                return null; 
+            }
+
+            // 3. Génère et dessine la grille
+            function renderGrid() {
+                const totalRows = parseInt(totalRowsInput.value) || 0;
+                const totalColumns = parseInt(totalColumnsInput.value) || 0;
+                const plans = getCurrentTicketTypePlans();
+                
+                planGrid.innerHTML = '';
+                legendContainer.innerHTML = '';
+
+                if (totalRows <= 0 || totalColumns <= 0) {
+                    planGrid.style.display = 'none';
+                    return;
+                }
+                
+                planGrid.style.display = 'grid';
+                planGrid.style.gridTemplateColumns = `repeat(${totalColumns}, 1fr)`;
+                planGrid.style.gridTemplateRows = `repeat(${totalRows}, 1fr)`;
+                
+                // Mettre à jour les compteurs de sièges/zones
+                plans.forEach(plan => {
+                    const countSpan = plan.element.querySelector('.seat-count-display');
+                    if (countSpan) {
+                        if (plan.isReservedSeating) {
+                            countSpan.textContent = `${plan.selectedSeats.size} sièges assignés`;
+                        } else {
+                            countSpan.textContent = `${plan.selectedSeats.size} sièges assignés (Zone Libre)`;
+                        }
+                    }
+                });
+
+                // Dessin des sièges
+                for (let r = 1; r <= totalRows; r++) {
+                    for (let c = 1; c <= totalColumns; c++) {
+                        const rowLetter = indexToLetter(r);
+                        const seatId = `${rowLetter}-${c}`;
+                        const cell = document.createElement('div');
+                        cell.classList.add('seat-cell');
+                        cell.dataset.seatId = seatId;
+                        cell.dataset.row = r;
+                        cell.dataset.col = c;
+                        cell.textContent = `${rowLetter}${c}`; // A1, A2, B1, ...
+                        
+                        const assignedType = getTicketTypeForSeat(seatId, plans);
+
+                        if (assignedType) {
+                            cell.style.backgroundColor = assignedType.color;
+                            cell.setAttribute('title', `Rangée ${rowLetter}, Colonne ${c} - ${assignedType.name} (${assignedType.isReservedSeating ? 'Réservé' : 'Libre'})`);
+                            cell.style.color = getContrastColor(assignedType.color);
+                        } else {
+                            // Sièges non assignés (Hors Vente/Zone)
+                            cell.style.backgroundColor = '#d1d5db'; 
+                            cell.style.color = '#4b5563';
+                            cell.setAttribute('title', `Rangée ${rowLetter}, Colonne ${c} - Non assigné`);
+                        }
+                        
+                        // La grille est TOUJOURS cliquable si un type est actif
+                        if (activeTicketTypeIndex === -1) {
+                            cell.style.cursor = 'default';
+                        } else {
+                            cell.style.cursor = 'pointer';
+                        }
+
+                        planGrid.appendChild(cell);
+                    }
+                }
+
+                // Génération de la Légende
+                const uniquePlans = {};
+                plans.forEach(plan => {
+                    uniquePlans[plan.name] = { 
+                        color: plan.color, 
+                        price: plan.price, 
+                        isReserved: plan.isReservedSeating 
+                    };
+                });
+
+                Object.keys(uniquePlans).forEach(name => {
+                    const planData = uniquePlans[name];
+                    const legendItem = document.createElement('div');
+                    legendItem.className = 'flex items-center text-sm text-gray-700';
+                    legendItem.innerHTML = `
+                        <span class="color-display" style="background-color: ${planData.color};"></span>
+                        ${name} (${planData.price} €) (${planData.isReserved ? 'Réservé' : 'Libre'})
+                    `;
+                    legendContainer.appendChild(legendItem);
+                });
+
+                // Ajouter la légende pour les places non assignées
+                 const defaultLegend = document.createElement('div');
+                 defaultLegend.className = 'flex items-center text-sm text-gray-700';
+                 defaultLegend.innerHTML = `
+                    <span class="color-display" style="background-color: #d1d5db;"></span>
+                    Non Assigné (Hors Vente/Zone)
+                `;
+                legendContainer.appendChild(defaultLegend);
+            }
+
+            // 4. Mettre à jour les index des inputs et rafraîchir la grille
+            function updateIndices() {
+                const rows = ticketTypesContainer.querySelectorAll('.ticket-type-row');
+                typeIndex = rows.length;
+                
+                if (noTypesMessage) {
+                    noTypesMessage.classList.toggle('hidden', rows.length > 0);
+                }
+                
+                rows.forEach((row, index) => {
+                    row.setAttribute('data-index', index);
+
+                    // Mettre à jour l'index dans les noms de champs
+                    row.querySelectorAll('input, select').forEach(input => {
+                        const originalName = input.getAttribute('name');
+                        if (originalName) {
+                            input.setAttribute('name', originalName.replace(/\[\d+\]/, '[' + index + ']'));
+                        }
+                        // Mettre à jour l'index pour le color picker (si nécessaire)
+                         if (input.classList.contains('color-picker-input')) {
+                             input.dataset.index = index;
+                         }
+                    });
+                });
+                
+                renderGrid();
+            }
+
+            // 5. Gère l'assignation/désassignation d'un siège
+            function toggleSeatAssignment(seatId, plans, activePlan) {
+                // Déterminer l'état initial du siège par rapport au type actif
+                const isAssignedToActive = activePlan.selectedSeats.has(seatId);
+                let shouldAssign;
+
+                if (isDragging) {
+                    // En mode glisser, utiliser l'état initial de la sélection
+                    shouldAssign = initialSelectionState;
+                } else {
+                    // En mode clic simple, inverser l'état
+                    shouldAssign = !isAssignedToActive;
+                    initialSelectionState = shouldAssign; // Définir l'état pour les glissements suivants
+                }
+                
+                const assignedPlan = getTicketTypeForSeat(seatId, plans);
+
+                if (shouldAssign) {
+                    // Tentative d'assignation
+                    if (assignedPlan) {
+                        // Siège déjà pris par un autre type -> l'enlever de l'autre type
+                        assignedPlan.selectedSeats.delete(seatId);
+                        // Mettre à jour le JSON de l'ancien type
+                        const oldSeatsArray = Array.from(assignedPlan.selectedSeats);
+                        assignedPlan.element.querySelector('.selected-seats-json').value = JSON.stringify(oldSeatsArray);
+                    }
+                    // Assignation au type actif
+                    activePlan.selectedSeats.add(seatId);
+                } else {
+                    // Tentative de désassignation
+                    if (assignedPlan === activePlan) {
+                        activePlan.selectedSeats.delete(seatId);
+                    }
+                }
+
+                // Mettre à jour la valeur JSON dans l'input caché du type actif
+                const seatsArray = Array.from(activePlan.selectedSeats);
+                activePlan.element.querySelector('.selected-seats-json').value = JSON.stringify(seatsArray);
+                
+                // Mettre à jour le style de la cellule et le compteur (partiel render)
+                const cell = planGrid.querySelector(`[data-seat-id="${seatId}"]`);
+                if (cell) {
+                    if (activePlan.selectedSeats.has(seatId)) {
+                        cell.style.backgroundColor = activePlan.color;
+                        cell.style.color = getContrastColor(activePlan.color);
+                    } else {
+                        // Le siège est maintenant libre (non assigné)
+                        cell.style.backgroundColor = '#d1d5db'; 
+                        cell.style.color = '#4b5563';
+                    }
+                    // Mettre à jour le compteur
+                    const countSpan = activePlan.element.querySelector('.seat-count-display');
+                    if (countSpan) {
+                         const modeText = activePlan.isReservedSeating ? 'sièges assignés' : 'sièges assignés (Zone Libre)';
+                         countSpan.textContent = `${activePlan.selectedSeats.size} ${modeText}`;
+                    }
+                }
+            }
+
+
+            // --- Logique d'activation de Ligne ---
+
+            function setActiveSelection(index) {
+                // Désactiver l'ancien type
+                const currentlyActive = ticketTypesContainer.querySelector('.ticket-type-row.active-selection');
+                if (currentlyActive) {
+                    currentlyActive.classList.remove('active-selection');
+                }
+
+                if (index === activeTicketTypeIndex) {
+                    // Désactivation
+                    activeTicketTypeIndex = -1;
+                    activeSelectionInfo.classList.add('hidden');
+                } else {
+                    // Activation du nouveau type
+                    activeTicketTypeIndex = index;
+                    const newActiveRow = ticketTypesContainer.querySelector(`.ticket-type-row[data-index="${index}"]`);
+                    if (newActiveRow) {
+                        newActiveRow.classList.add('active-selection');
+                        
+                        // Mettre à jour l'info sur la sélection
+                        const isReserved = newActiveRow.querySelector('.is-reserved-seating').value === 'true';
+                        const modeLabel = isReserved ? 'Réservé' : 'Libre';
+                        activeSelectionInfo.querySelector('.font-semibold').textContent = `Mode Sélection Actif : ${newActiveRow.querySelector('.type-name-input').value} (${modeLabel})`;
+                        activeSelectionInfo.classList.remove('hidden');
+                    }
+                }
+                renderGrid(); // Mettre à jour les compteurs, etc.
+            }
+
+            // --- Événements ---
+
+            // 1. Gestion de l'ajout/suppression/activation des types
+            addTypeBtn.addEventListener('click', function () {
+                const newRowHtml = typeTemplate.replace(/__INDEX__/g, typeIndex);
+                ticketTypesContainer.insertAdjacentHTML('beforeend', newRowHtml);
+                typeIndex++;
+                updateIndices(); 
+                setActiveSelection(typeIndex - 1);
+            });
+
+            ticketTypesContainer.addEventListener('click', function (e) {
+                const target = e.target;
+                const targetRow = target.closest('.ticket-type-row');
+                if (!targetRow) return;
+
+                // 1. Gère le bouton de suppression
+                if (target.classList.contains('remove-type-btn')) {
+                    e.stopPropagation(); 
+                    targetRow.remove();
+                    updateIndices();
+                    // Si on supprime la ligne active, on désactive la sélection
+                    if (parseInt(targetRow.dataset.index) === activeTicketTypeIndex) {
+                        setActiveSelection(-1); 
+                    }
+                    return;
+                } 
+                
+                // 2. Gère les clics sur les éléments de formulaire interactifs (inputs, selects)
+                // Si l'utilisateur clique sur un champ qu'il veut éditer, on ne change pas l'état actif.
+                if (target.matches('input, select')) {
+                    return; 
+                }
+
+                // 3. Bascule/Définit la sélection active pour le reste de la ligne
+                const index = parseInt(targetRow.dataset.index);
+                setActiveSelection(index);
+            });
+
+            // 2. Mise à jour de la couleur/Nom/Placement (Utilisation de l'événement 'input' pour les changements)
+            ticketTypesContainer.addEventListener('input', function(e) {
+                const target = e.target;
+                const row = target.closest('.ticket-type-row');
+                const index = parseInt(row.dataset.index);
+                
+                if (target.classList.contains('color-picker-input')) {
+                    const color = target.value;
+                    row.setAttribute('data-color', color);
+                    row.querySelector('.type-color-value').value = color;
+                    renderGrid();
+                } else if (target.classList.contains('type-name-input')) {
+                    if (index === activeTicketTypeIndex) {
+                        const isReserved = row.querySelector('.is-reserved-seating').value === 'true';
+                        const modeLabel = isReserved ? 'Réservé' : 'Libre';
+                        activeSelectionInfo.querySelector('.font-semibold').textContent = `Mode Sélection Actif : ${target.value} (${modeLabel})`;
+                    }
+                    renderGrid(); 
+                } else if (target.classList.contains('is-reserved-seating')) {
+                    // Mettre à jour le mode de sélection si le type actif est modifié
+                    if (index === activeTicketTypeIndex) {
+                        const isReserved = target.value === 'true';
+                        const modeLabel = isReserved ? 'Réservé' : 'Libre';
+                        activeSelectionInfo.querySelector('.font-semibold').textContent = `Mode Sélection Actif : ${row.querySelector('.type-name-input').value} (${modeLabel})`;
+                    }
+                    renderGrid(); // Redessine pour mettre à jour la légende et les compteurs
+                }
+            });
+            
+            // 3. Événement de mise à jour de la grille (Dimensions)
+            updateGridBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                renderGrid();
+            });
+
+
+            // 4. Événements de souris pour la sélection multiple (DRAG)
+
+            // MOUSE DOWN : Début de la sélection
+            planGrid.addEventListener('mousedown', function(e) {
+                // La grille est toujours cliquable
+                if (activeTicketTypeIndex === -1) {
+                     // Indiquer à l'utilisateur qu'il doit sélectionner un type
+                     console.warn("Veuillez sélectionner un Type de Ticket à assigner d'abord.");
+                     return;
+                }
+                
+                isDragging = true;
+                e.preventDefault(); 
+                
+                const cell = e.target.closest('.seat-cell');
+                if (cell) {
+                    const seatId = cell.dataset.seatId;
+                    const plans = getCurrentTicketTypePlans();
+                    const activePlan = plans[activeTicketTypeIndex];
+                    
+                    // Déterminer si le glissement doit assigner (true) ou désassigner (false)
+                    // C'est l'état opposé à l'état actuel du siège cliqué PAR RAPPORT AU TYPE ACTIF.
+                    initialSelectionState = !activePlan.selectedSeats.has(seatId);
+                    
+                    // Appliquer l'action au premier clic/siège
+                    toggleSeatAssignment(seatId, plans, activePlan);
+                }
+            });
+            
+            // MOUSE MOVE : Glissement de la sélection
+            planGrid.addEventListener('mousemove', function(e) {
+                if (!isDragging || activeTicketTypeIndex === -1) return;
+                
+                const cell = e.target.closest('.seat-cell');
+                if (cell) {
+                    const seatId = cell.dataset.seatId;
+                    const plans = getCurrentTicketTypePlans();
+                    const activePlan = plans[activeTicketTypeIndex];
+                    
+                    // Appliquer l'action basée sur l'état initial (initialSelectionState)
+                    toggleSeatAssignment(seatId, plans, activePlan);
+                    
+                    // Mise à jour de l'information sur le siège survolé
+                    rowLetterInfo.textContent = indexToLetter(parseInt(cell.dataset.row));
+                    colNumberInfo.textContent = cell.dataset.col;
+                }
+            });
+
+            // MOUSE UP / MOUSE LEAVE : Fin de la sélection
+            document.addEventListener('mouseup', function() {
+                isDragging = false;
+                initialSelectionState = null;
+            });
+            planGrid.addEventListener('mouseleave', function() {
+                // Pour éviter que le drag ne continue si la souris quitte la grille rapidement
+                // isDragging = false; // Désactivé car mouseup est plus sûr
+            });
+
+            // 5. MOUSE MOVE sur la grille (sans drag) pour l'affichage des coordonnées
+            planGrid.addEventListener('mousemove', function(e) {
+                 if (activeTicketTypeIndex === -1) return;
+                 const cell = e.target.closest('.seat-cell');
+                 if (cell) {
+                    rowLetterInfo.textContent = indexToLetter(parseInt(cell.dataset.row));
+                    colNumberInfo.textContent = cell.dataset.col;
+                 }
+            });
+
+
+            // Initialisation au chargement
+            updateIndices(); 
+        });
+    </script>
+}

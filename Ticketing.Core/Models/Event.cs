@@ -12,6 +12,10 @@ namespace Ticketing.Core.Models
         public string? PosterUrl { get; set; }
         public bool IsActive { get; set; } = true;
 
+        // Nombre total de lignes/colonnes dans le plan de la salle
+        public int TotalRows { get; set; }
+        public int TotalColumns { get; set; }
+
         [NotMapped]
         public string? PosterBase64 { get; set; }
 
