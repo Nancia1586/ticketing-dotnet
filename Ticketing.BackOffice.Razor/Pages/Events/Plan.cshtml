@@ -177,7 +177,7 @@
             <h3 class="text-xl font-semibold text-gray-700">Visualisation du plan interactif</h3>
             
             <div id="active-selection-info" class="my-4 p-3 bg-blue-100 text-blue-800 rounded-lg hidden space-y-2">
-                <p class="font-semibold">Mode Sélection Actif : <span id="active-type-name"></span></p>
+                <p class="font-semibold">Mode sélection actif : <span id="active-type-name"></span></p>
                 <p class="text-sm">Cliquez-glissez sur les sièges pour assigner ou désassigner une zone. 
             </div>
             
@@ -560,7 +560,7 @@
                         // Mettre à jour l'info sur la sélection
                         const isReserved = newActiveRow.querySelector('.is-reserved-seating').value === 'true';
                         const modeLabel = isReserved ? 'Réservé' : 'Libre';
-                        activeSelectionInfo.querySelector('.font-semibold').textContent = `Mode Sélection Actif : ${newActiveRow.querySelector('.type-name-input').value} (${modeLabel})`;
+                        activeSelectionInfo.querySelector('.font-semibold').textContent = `Mode sélection actif : ${newActiveRow.querySelector('.type-name-input').value} (${modeLabel})`;
                         activeSelectionInfo.classList.remove('hidden');
                     }
                 }
@@ -621,7 +621,7 @@
                     if (index === activeTicketTypeIndex) {
                         const isReserved = row.querySelector('.is-reserved-seating').value === 'true';
                         const modeLabel = isReserved ? 'Réservé' : 'Libre';
-                        activeSelectionInfo.querySelector('.font-semibold').textContent = `Mode Sélection Actif : ${target.value} (${modeLabel})`;
+                        activeSelectionInfo.querySelector('.font-semibold').textContent = `Mode sélection actif : ${target.value} (${modeLabel})`;
                     }
                     renderGrid(); 
                 } else if (target.classList.contains('is-reserved-seating')) {
@@ -629,7 +629,7 @@
                     if (index === activeTicketTypeIndex) {
                         const isReserved = target.value === 'true';
                         const modeLabel = isReserved ? 'Réservé' : 'Libre';
-                        activeSelectionInfo.querySelector('.font-semibold').textContent = `Mode Sélection Actif : ${row.querySelector('.type-name-input').value} (${modeLabel})`;
+                        activeSelectionInfo.querySelector('.font-semibold').textContent = `Mode sélection actif : ${row.querySelector('.type-name-input').value} (${modeLabel})`;
                     }
                     renderGrid(); // Redessine pour mettre à jour la légende et les compteurs
                 }
