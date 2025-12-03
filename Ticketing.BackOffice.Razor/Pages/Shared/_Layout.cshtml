@@ -98,7 +98,7 @@
         </div>
     </aside>
 
-    <div class="lg:ml-64">
+    <div class="lg:ml-64 min-h-screen flex flex-col">
         <!-- Top Header -->
         <header class="bg-white border-b border-gray-200 shadow-sm">
             <div class="px-4 py-4 lg:px-6 lg:py-4">
@@ -188,8 +188,8 @@
         </header>
 
         <!-- Main Content -->
-        <main class="p-4 lg:p-6">
-            <div class="mx-auto">
+        <main class="flex-1 p-4 lg:p-6">
+            <div class="mx-auto h-full">
                 @RenderBody()
             </div>
         </main>
