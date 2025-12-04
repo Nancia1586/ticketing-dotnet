@@ -1,4 +1,5 @@
 using Ticketing.Core.Models;
+using Ticketing.BackOffice.Razor.Pages.Events;
 
 namespace Ticketing.BackOffice.Razor.Services
 {
@@ -11,5 +12,8 @@ namespace Ticketing.BackOffice.Razor.Services
         Task DeleteEventAsync(int id);
 
         Task ToggleEventStatusAsync(int id, bool isActive);
+
+        Task<Event?> GetEventWithPlanByIdAsync(int id);
+        Task UpdateEventPlanAsync(int eventId, int totalRows, int totalColumns, List<PlanModel.TicketTypePlanInputModel> ticketTypePlans);
     }
 }

@@ -50,7 +50,7 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
                 return RedirectToPage("./Index"); 
             }
             
-            var loadedEvent = await _eventService.GetEventByIdAsync(id.Value); 
+            var loadedEvent = await _eventService.GetEventWithPlanByIdAsync(id.Value); 
 
             if (loadedEvent == null)
             {
@@ -59,9 +59,15 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
 
             Event = loadedEvent;
             
-            // Charger les plans de tickets associés à cet événement (simulé)
-            // En production, vous feriez : TicketTypePlans = await _planService.GetPlansForEvent(id.Value);
-            TicketTypePlans = SimulateTicketPlanLoading(id.Value);
+            TicketTypePlans = Event.TicketTypes.Select(tt => new TicketTypePlanInputModel
+            {
+                TicketTypeId = tt.Id,
+                Name = tt.Name,
+                Price = tt.Price,
+                Color = tt.Color,
+                IsReservedSeating = tt.IsReservedSeating,
+                SelectedSeatsJson = JsonSerializer.Serialize(tt.Seats.Select(s => s.Code).ToArray())
+            }).ToList();
 
             // Mettre à jour les dimensions du modèle de page pour les champs input
             TotalRows = Event.TotalRows;
@@ -72,57 +78,19 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
 
         public async Task<IActionResult> OnPostAsync(int eventId)
         {
-            // Recharger l'objet Event pour accéder à ses propriétés si nécessaire
-           var loadedEvent = await _eventService.GetEventByIdAsync(eventId); 
-            if (loadedEvent != null)
-            {
-                Event = loadedEvent;
-            }
-
             if (!ModelState.IsValid)
             {
-                // Si la validation échoue, l'objet Event est toujours chargé pour l'affichage de la page
+                var loadedEvent = await _eventService.GetEventWithPlanByIdAsync(eventId); 
+                if (loadedEvent != null)
+                {
+                    Event = loadedEvent;
+                }
                 return Page();
             }
 
-            // 1. Sauvegarder la structure de la salle (TotalRows, TotalColumns)
-            // L'événement à mettre à jour est Event.Id
-            Event.TotalRows = TotalRows;
-            Event.TotalColumns = TotalColumns;
-            System.Console.WriteLine($"Mise à jour des dimensions pour Event ID: {Event.Id} à {TotalRows}x{TotalColumns}");
+            await _eventService.UpdateEventPlanAsync(eventId, TotalRows, TotalColumns, TicketTypePlans);
 
-            // 2. Traiter la liste des Types de Tickets (et leurs plans de sièges)
-            foreach (var typePlan in TicketTypePlans)
-            {
-                System.Console.WriteLine($"Sauvegarde du Type de Ticket: {typePlan.Name} (Réservé: {typePlan.IsReservedSeating}), Prix: {typePlan.Price}, Sièges: {typePlan.SelectedSeatsJson.Length} octets de JSON");
-            }
-
-            // await _context.SaveChangesAsync();
             return RedirectToPage("./Edit", new { id = eventId });
-        }
-        
-        // --- Méthodes de Simulation (Pour remplacer les appels DB) ---
-        private List<TicketTypePlanInputModel> SimulateTicketPlanLoading(int eventId)
-        {
-            // Simule le chargement des plans de tickets existants pour l'événement.
-            if (eventId == 1)
-            {
-                return new List<TicketTypePlanInputModel>
-                {
-                    new TicketTypePlanInputModel { 
-                        TicketTypeId = 101, Name = "VIP Balcon", Price = 99.99m, Color = "#10b981", 
-                        IsReservedSeating = true, 
-                        SelectedSeatsJson = JsonSerializer.Serialize(new[] { "A-1", "A-2", "B-1", "B-2" }) 
-                    },
-                    new TicketTypePlanInputModel { 
-                        TicketTypeId = 102, Name = "Standard", Price = 49.99m, Color = "#f59e0b", 
-                        IsReservedSeating = false, 
-                        SelectedSeatsJson = JsonSerializer.Serialize(new[] { "C-3", "C-4", "D-5", "D-6", "E-7", "E-8" }) 
-                    }
-                };
-            }
-            // Si l'événement 2 n'a pas de plan, retourner une liste vide.
-            return new List<TicketTypePlanInputModel>();
         }
     }
 }

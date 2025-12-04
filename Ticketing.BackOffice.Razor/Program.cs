@@ -22,6 +22,15 @@ builder.Services.AddRazorPages();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+var defaultCulture = new System.Globalization.CultureInfo("en-US");
+var localizationOptions = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(defaultCulture),
+    SupportedCultures = new List<System.Globalization.CultureInfo> { defaultCulture },
+    SupportedUICultures = new List<System.Globalization.CultureInfo> { defaultCulture }
+};
+app.UseRequestLocalization(localizationOptions);
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
