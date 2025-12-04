@@ -15,22 +15,17 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
             _eventService = eventService;
         }
         
-        // Modèle de l'événement en cours d'édition (initialisé vide, sera chargé dynamiquement).
         public Event Event { get; set; } = new Event();
 
-        // 1. Structure de la Salle
         [BindProperty]
         public int TotalRows { get; set; }
         
         [BindProperty]
         public int TotalColumns { get; set; }
 
-        // 2. Définition des Types de Ticket et de leur Plan de Salle associé
         [BindProperty]
         public List<TicketTypePlanInputModel> TicketTypePlans { get; set; } = new List<TicketTypePlanInputModel>();
 
-        // Modèle pour mapper un Type de Ticket aux sièges sélectionnés.
-        // Gardé en tant que classe interne pour respecter votre structure.
         public class TicketTypePlanInputModel
         {
             public int TicketTypeId { get; set; } 
@@ -42,7 +37,6 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
             public string SelectedSeatsJson { get; set; } = "[]"; 
         }
 
-        // Changé en OnGetAsync pour la bonne pratique du chargement asynchrone
         public async Task<IActionResult> OnGetAsync(int? id)
         {
             if (!id.HasValue || id.Value == 0)
@@ -69,7 +63,6 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
                 SelectedSeatsJson = JsonSerializer.Serialize(tt.Seats.Select(s => s.Code).ToArray())
             }).ToList();
 
-            // Mettre à jour les dimensions du modèle de page pour les champs input
             TotalRows = Event.TotalRows;
             TotalColumns = Event.TotalColumns;
             
@@ -90,7 +83,7 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
 
             await _eventService.UpdateEventPlanAsync(eventId, TotalRows, TotalColumns, TicketTypePlans);
 
-            return RedirectToPage("./Edit", new { id = eventId });
+            return RedirectToPage("./Plan", new { id = eventId });
         }
     }
 }
