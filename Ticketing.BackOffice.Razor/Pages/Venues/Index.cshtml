@@ -1,0 +1,43 @@
+@page
+@model Ticketing.BackOffice.Razor.Pages.Venues.IndexModel
+
+@{
+    ViewData["Title"] = "Gestion des Lieux";
+}
+
+<div class="overflow-x-auto bg-white rounded-lg shadow-xl max-w-7xl p-10">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Liste des Lieux</h1>
+        <a asp-page="Create" class="btn-primary rounded-md text-white box-border border border-transparent focus:ring-4 shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none">
+            Ajouter un nouveau lieu
+        </a>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dimensions</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                @foreach (var item in Model.Venues) {
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">@Html.DisplayFor(modelItem => item.Name)</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-500">@item.TotalRows x @item.TotalColumns</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a asp-page="./Edit" asp-route-id="@item.Id" class="text-indigo-600 hover:text-indigo-900 mr-4">Modifier</a>
+                            <!-- Ajouter suppression si nécessaire -->
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

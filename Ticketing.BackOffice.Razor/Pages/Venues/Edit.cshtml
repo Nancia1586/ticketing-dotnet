@@ -1,0 +1,370 @@
+@page
+@model Ticketing.BackOffice.Razor.Pages.Venues.EditModel
+
+@{
+    ViewData["Title"] = "Modifier le Lieu";
+}
+
+<style>
+    .venue-grid {
+        display: grid;
+        gap: 2px;
+        background-color: #e5e7eb;
+        border: 2px solid #d1d5db;
+        padding: 2px;
+        width: fit-content;
+        user-select: none; /* Important for drag selection */
+    }
+    .grid-cell {
+        width: 30px;
+        height: 30px;
+        background-color: white;
+        border: 1px solid #e5e7eb;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        position: relative;
+    }
+    .grid-cell.selected {
+        border: 2px solid #3b82f6; /* Blue border for selection */
+        z-index: 10;
+    }
+    .grid-cell.void {
+        background-color: #ef4444; /* Red for void/stage */
+        color: white;
+    }
+    .grid-cell-label {
+        font-size: 8px;
+        text-align: center;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        max-width: 100%;
+        padding: 0 1px;
+    }
+    .grid-cell:hover {
+        opacity: 0.8;
+    }
+</style>
+
+<div class="overflow-x-auto bg-white rounded-lg shadow-xl max-w-7xl p-10">
+    <h1 class="text-2xl font-extrabold mb-8 text-gray-900">Modifier le Lieu: @Model.Venue.Name</h1>
+
+    <form method="post" id="venue-form">
+        <input type="hidden" asp-for="Venue.Id" />
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="col-span-2">
+                <label asp-for="Venue.Name" class="block text-sm font-medium text-gray-700 mb-2">Nom du Lieu</label>
+                <input asp-for="Venue.Name" class="w-full h-10 px-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
+                <span asp-validation-for="Venue.Name" class="text-xs text-red-600 mt-1 block"></span>
+            </div>
+
+            <div>
+                <label asp-for="Venue.TotalRows" class="block text-sm font-medium text-gray-700 mb-2">Nombre de Rangées</label>
+                <input asp-for="Venue.TotalRows" id="total-rows" type="number" min="1" class="w-full h-10 px-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
+                <span asp-validation-for="Venue.TotalRows" class="text-xs text-red-600 mt-1 block"></span>
+            </div>
+
+            <div>
+                <label asp-for="Venue.TotalColumns" class="block text-sm font-medium text-gray-700 mb-2">Nombre de Colonnes</label>
+                <input asp-for="Venue.TotalColumns" id="total-cols" type="number" min="1" class="w-full h-10 px-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
+                <span asp-validation-for="Venue.TotalColumns" class="text-xs text-red-600 mt-1 block"></span>
+            </div>
+        </div>
+
+        <div class="mb-8">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Configuration de la Grille</h3>
+            <p class="text-sm text-gray-500 mb-4">
+                1. Cliquez-glissez pour sélectionner plusieurs cellules.<br/>
+                2. Cliquez sur "Configurer la Zone" pour définir le type (Scène, Couloir) et le label.
+            </p>
+            
+            <div class="flex gap-4 mb-4">
+                <button type="button" id="generate-grid-btn" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Générer/Mettre à jour la grille</button>
+                <button type="button" id="configure-zone-btn" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Configurer la Zone</button>
+                <button type="button" id="clear-selection-btn" class="px-3 py-1 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50">Effacer la sélection</button>
+            </div>
+
+            <div id="grid-container" class="overflow-auto max-h-[500px] border rounded p-4 relative">
+                <!-- Grid will be generated here -->
+            </div>
+            
+            <input type="hidden" asp-for="Venue.LayoutJson" id="layout-json" />
+        </div>
+
+        <div class="flex justify-end space-x-4 pt-8 mt-8 border-t">
+            <a asp-page="./Index" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
+                Annuler
+            </a>
+            <button type="submit" class="btn-primary inline-flex justify-center items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg shadow-sm">
+                Sauvegarder les modifications
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Zone Configuration Modal -->
+<div id="zone-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-gray-900 bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Configurer la Zone</h3>
+        
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Type de Zone</label>
+            <select id="zone-type" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <option value="void">Non Assignable (Scène, Couloir...)</option>
+                <option value="assignable">Assignable (Sièges)</option>
+            </select>
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Label (Optionnel)</label>
+            <input type="text" id="zone-label" placeholder="Ex: Scène" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            <p class="text-xs text-gray-500 mt-1">Ce texte sera affiché sur le plan.</p>
+        </div>
+
+        <div class="flex justify-end space-x-3">
+            <button type="button" id="modal-cancel" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+                Annuler
+            </button>
+            <button type="button" id="modal-save" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                Appliquer
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const rowsInput = document.getElementById('total-rows');
+            const colsInput = document.getElementById('total-cols');
+            const generateBtn = document.getElementById('generate-grid-btn');
+            const configureBtn = document.getElementById('configure-zone-btn');
+            const clearSelectionBtn = document.getElementById('clear-selection-btn');
+            const gridContainer = document.getElementById('grid-container');
+            const layoutJsonInput = document.getElementById('layout-json');
+            
+            // Modal elements
+            const modal = document.getElementById('zone-modal');
+            const modalCancel = document.getElementById('modal-cancel');
+            const modalSave = document.getElementById('modal-save');
+            const zoneTypeInput = document.getElementById('zone-type');
+            const zoneLabelInput = document.getElementById('zone-label');
+
+            let layoutData = []; // Array of {r, c, type, label}
+            let isDragging = false;
+            let startCell = null;
+            let selectedCells = new Set(); // Set of "r-c" strings
+
+            function renderGrid() {
+                const rows = parseInt(rowsInput.value) || 0;
+                const cols = parseInt(colsInput.value) || 0;
+
+                if (rows <= 0 || cols <= 0) return;
+
+                gridContainer.innerHTML = '';
+                const grid = document.createElement('div');
+                grid.className = 'venue-grid';
+                grid.style.gridTemplateColumns = `repeat(${cols}, 30px)`;
+                grid.style.gridTemplateRows = `repeat(${rows}, 30px)`;
+
+                // Preserve existing layout data where possible
+                const newLayoutData = [];
+
+                for (let r = 1; r <= rows; r++) {
+                    for (let c = 1; c <= cols; c++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'grid-cell';
+                        cell.dataset.row = r;
+                        cell.dataset.col = c;
+                        cell.title = `R${r} C${c}`;
+                        
+                        // Apply existing config
+                        const existing = layoutData.find(d => d.r === r && d.c === c);
+                        if (existing) {
+                            newLayoutData.push(existing);
+                            if (existing.type === 'void') {
+                                cell.classList.add('void');
+                                if (existing.label) {
+                                    cell.innerHTML = `<span class="grid-cell-label">${existing.label}</span>`;
+                                    cell.title += ` (${existing.label})`;
+                                }
+                            }
+                        }
+
+                        // Event Listeners for Drag Selection
+                        cell.addEventListener('mousedown', (e) => {
+                            e.preventDefault(); // Prevent text selection
+                            isDragging = true;
+                            startCell = { r, c };
+                            // If ctrl is not pressed, clear previous selection unless we are adding
+                            if (!e.ctrlKey) {
+                                clearSelection();
+                            }
+                            selectCell(r, c);
+                        });
+
+                        cell.addEventListener('mouseenter', (e) => {
+                            if (isDragging && startCell) {
+                                selectRange(startCell, { r, c });
+                            }
+                        });
+
+                        grid.appendChild(cell);
+                    }
+                }
+                
+                layoutData = newLayoutData;
+                gridContainer.appendChild(grid);
+                updateLayoutJson();
+            }
+
+            // Selection Logic
+            function selectCell(r, c) {
+                const key = `${r}-${c}`;
+                selectedCells.add(key);
+                const cell = getCell(r, c);
+                if (cell) cell.classList.add('selected');
+                updateButtons();
+            }
+
+            function clearSelection() {
+                selectedCells.forEach(key => {
+                    const [r, c] = key.split('-').map(Number);
+                    const cell = getCell(r, c);
+                    if (cell) cell.classList.remove('selected');
+                });
+                selectedCells.clear();
+                updateButtons();
+            }
+
+            function selectRange(start, end) {
+                // Simple rectangular selection
+                const minR = Math.min(start.r, end.r);
+                const maxR = Math.max(start.r, end.r);
+                const minC = Math.min(start.c, end.c);
+                const maxC = Math.max(start.c, end.c);
+
+                // We don't clear selection here to allow additive drag if we wanted, 
+                // but for standard drag behavior usually we clear first if not holding ctrl.
+                // For simplicity in this implementation: Drag always defines a new selection range from start.
+                
+                clearSelection(); 
+
+                for (let r = minR; r <= maxR; r++) {
+                    for (let c = minC; c <= maxC; c++) {
+                        selectCell(r, c);
+                    }
+                }
+            }
+
+            function getCell(r, c) {
+                return gridContainer.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"]`);
+            }
+
+            function updateButtons() {
+                configureBtn.disabled = selectedCells.size === 0;
+            }
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                startCell = null;
+            });
+
+            // Modal Logic
+            configureBtn.addEventListener('click', () => {
+                if (selectedCells.size === 0) return;
+                
+                // Pre-fill modal if all selected cells have same config?
+                // For now, just reset or leave default.
+                zoneTypeInput.value = 'void';
+                zoneLabelInput.value = '';
+                
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            });
+
+            modalCancel.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            });
+
+            modalSave.addEventListener('click', () => {
+                const type = zoneTypeInput.value;
+                const label = zoneLabelInput.value.trim();
+
+                selectedCells.forEach(key => {
+                    const [r, c] = key.split('-').map(Number);
+                    
+                    // Remove existing entry for this cell
+                    const existingIndex = layoutData.findIndex(d => d.r === r && d.c === c);
+                    if (existingIndex > -1) {
+                        layoutData.splice(existingIndex, 1);
+                    }
+
+                    // Add new entry if it's not "assignable" (default)
+                    if (type === 'void') {
+                        layoutData.push({ r, c, type: 'void', label: label });
+                    }
+                });
+
+                updateLayoutJson();
+                refreshGridVisuals();
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                clearSelection();
+            });
+
+            clearSelectionBtn.addEventListener('click', clearSelection);
+
+            function updateLayoutJson() {
+                layoutJsonInput.value = JSON.stringify(layoutData);
+            }
+
+            function refreshGridVisuals() {
+                // Re-render visuals without destroying elements (to keep selection if we wanted, but we cleared it)
+                // Or just loop through layoutData.
+                
+                // 1. Reset all cells to default
+                const allCells = gridContainer.querySelectorAll('.grid-cell');
+                allCells.forEach(cell => {
+                    cell.className = 'grid-cell'; // Remove void, selected
+                    cell.innerHTML = '';
+                    cell.title = `R${cell.dataset.row} C${cell.dataset.col}`;
+                });
+
+                // 2. Apply layoutData
+                layoutData.forEach(d => {
+                    const cell = getCell(d.r, d.c);
+                    if (cell) {
+                        if (d.type === 'void') {
+                            cell.classList.add('void');
+                            if (d.label) {
+                                cell.innerHTML = `<span class="grid-cell-label">${d.label}</span>`;
+                                cell.title += ` (${d.label})`;
+                            }
+                        }
+                    }
+                });
+            }
+
+            generateBtn.addEventListener('click', renderGrid);
+
+            // Initial render
+            if (rowsInput.value && colsInput.value) {
+                try {
+                    if (layoutJsonInput.value) {
+                        layoutData = JSON.parse(layoutJsonInput.value);
+                    }
+                } catch(e) {}
+                renderGrid();
+            }
+        });
+    </script>
+}

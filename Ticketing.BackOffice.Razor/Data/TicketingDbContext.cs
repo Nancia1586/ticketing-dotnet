@@ -14,6 +14,7 @@ namespace Ticketing.BackOffice.Razor.Data
         public DbSet<TicketType> TicketTypes { get; set; }
         public DbSet<Seat> Seats { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
+        public DbSet<Venue> Venues { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

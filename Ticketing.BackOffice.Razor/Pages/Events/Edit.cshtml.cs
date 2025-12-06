@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Ticketing.Core.Models;
 using Ticketing.BackOffice.Razor.Services;
 
@@ -17,6 +18,8 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
         [BindProperty]
         public Event Event { get; set; } = default!; 
 
+        public SelectList VenueSelectList { get; set; }
+
         public async Task<IActionResult> OnGetAsync(int? id)
         {
             if (id == null)
@@ -33,6 +36,9 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
 
             Event = eventData;
             
+            var venues = await _eventService.GetAllVenuesAsync();
+            VenueSelectList = new SelectList(venues, "Id", "Name");
+            
             return Page();
         }
 
@@ -40,6 +46,8 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
         {
             if (!ModelState.IsValid)
             {
+                var venues = await _eventService.GetAllVenuesAsync();
+                VenueSelectList = new SelectList(venues, "Id", "Name");
                 return Page();
             }
 

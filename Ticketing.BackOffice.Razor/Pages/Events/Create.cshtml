@@ -25,9 +25,11 @@
                 </div>
 
                 <div>
-                    <label asp-for="Event.Location" class="block text-sm font-medium text-gray-700 mb-2">Lieu</label>
-                    <input asp-for="Event.Location" class="w-full h-10 px-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
-                    <span asp-validation-for="Event.Location" class="text-xs text-red-600 mt-1 block"></span>
+                    <label asp-for="Event.VenueId" class="block text-sm font-medium text-gray-700 mb-2">Lieu</label>
+                    <select asp-for="Event.VenueId" asp-items="Model.VenueSelectList" class="w-full h-10 px-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        <option value="">-- Sélectionner un lieu --</option>
+                    </select>
+                    <span asp-validation-for="Event.VenueId" class="text-xs text-red-600 mt-1 block"></span>
                 </div>
 
                 <div>

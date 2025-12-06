@@ -7,14 +7,13 @@ namespace Ticketing.Core.Models
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public string Location { get; set; } = string.Empty;
+        
+        public int VenueId { get; set; }
+        public Venue? Venue { get; set; }
+
         public DateTime Date { get; set; }
         public string? PosterUrl { get; set; }
         public bool IsActive { get; set; } = true;
-
-        // Nombre total de lignes/colonnes dans le plan de la salle
-        public int TotalRows { get; set; }
-        public int TotalColumns { get; set; }
 
         [NotMapped]
         public string? PosterBase64 { get; set; }

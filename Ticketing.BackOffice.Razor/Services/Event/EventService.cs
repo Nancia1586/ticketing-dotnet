@@ -20,12 +20,15 @@ namespace Ticketing.BackOffice.Razor.Services
             // Inclure les TicketTypes pour affichage dans l'admin si nécessaire
             return await _context.Events
                                  .Include(e => e.TicketTypes)
+                                 .Include(e => e.Venue)
                                  .ToListAsync();
         }
 
         public async Task<Event?> GetEventByIdAsync(int id)
         {
-            return await _context.Events.FindAsync(id);
+            return await _context.Events
+                .Include(e => e.Venue)
+                .FirstOrDefaultAsync(e => e.Id == id);
         }
 
         public async Task<Event> CreateEventAsync(Event newEvent)
@@ -54,19 +57,18 @@ namespace Ticketing.BackOffice.Razor.Services
         public async Task<Event?> GetEventWithPlanByIdAsync(int id)
         {
             return await _context.Events
+                .Include(e => e.Venue)
                 .Include(e => e.TicketTypes)
                 .ThenInclude(tt => tt.Seats)
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 
-        public async Task UpdateEventPlanAsync(int eventId, int totalRows, int totalColumns, List<PlanModel.TicketTypePlanInputModel> ticketTypePlans)
+        public async Task UpdateEventPlanAsync(int eventId, List<PlanModel.TicketTypePlanInputModel> ticketTypePlans)
         {
             var eventToUpdate = await GetEventWithPlanByIdAsync(eventId);
             if (eventToUpdate == null) return;
 
-            // 1. Update Dimensions
-            eventToUpdate.TotalRows = totalRows;
-            eventToUpdate.TotalColumns = totalColumns;
+            // Dimensions are now managed by Venue, so we don't update them here.
 
             // 2. Sync Ticket Types
             var inputTypeIds = ticketTypePlans.Where(p => p.TicketTypeId != 0).Select(p => p.TicketTypeId).ToList();
@@ -178,6 +180,11 @@ namespace Ticketing.BackOffice.Razor.Services
                 eventToUpdate.IsActive = isActive;
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task<IEnumerable<Venue>> GetAllVenuesAsync()
+        {
+            return await _context.Venues.ToListAsync();
         }
     }
 }

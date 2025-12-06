@@ -17,10 +17,8 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
         
         public Event Event { get; set; } = new Event();
 
-        [BindProperty]
+        // Dimensions are now read-only from Venue
         public int TotalRows { get; set; }
-        
-        [BindProperty]
         public int TotalColumns { get; set; }
 
         [BindProperty]
@@ -63,8 +61,18 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
                 SelectedSeatsJson = JsonSerializer.Serialize(tt.Seats.Select(s => s.Code).ToArray())
             }).ToList();
 
-            TotalRows = Event.TotalRows;
-            TotalColumns = Event.TotalColumns;
+            // Use Venue dimensions if available, otherwise default to 0 or handle error
+            if (Event.Venue != null)
+            {
+                TotalRows = Event.Venue.TotalRows;
+                TotalColumns = Event.Venue.TotalColumns;
+            }
+            else
+            {
+                // Fallback or error if no venue assigned (should be enforced)
+                TotalRows = 0;
+                TotalColumns = 0;
+            }
             
             return Page();
         }
@@ -77,11 +85,16 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
                 if (loadedEvent != null)
                 {
                     Event = loadedEvent;
+                    if (Event.Venue != null)
+                    {
+                        TotalRows = Event.Venue.TotalRows;
+                        TotalColumns = Event.Venue.TotalColumns;
+                    }
                 }
                 return Page();
             }
 
-            await _eventService.UpdateEventPlanAsync(eventId, TotalRows, TotalColumns, TicketTypePlans);
+            await _eventService.UpdateEventPlanAsync(eventId, TicketTypePlans);
 
             return RedirectToPage("./Plan", new { id = eventId });
         }
