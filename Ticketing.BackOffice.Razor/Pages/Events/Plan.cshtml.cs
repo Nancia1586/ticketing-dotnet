@@ -17,7 +17,6 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
         
         public Event Event { get; set; } = new Event();
 
-        // Dimensions are now read-only from Venue
         public int TotalRows { get; set; }
         public int TotalColumns { get; set; }
 
@@ -61,7 +60,6 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
                 SelectedSeatsJson = JsonSerializer.Serialize(tt.Seats.Select(s => s.Code).ToArray())
             }).ToList();
 
-            // Use Venue dimensions if available, otherwise default to 0 or handle error
             if (Event.Venue != null)
             {
                 TotalRows = Event.Venue.TotalRows;
@@ -69,7 +67,6 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
             }
             else
             {
-                // Fallback or error if no venue assigned (should be enforced)
                 TotalRows = 0;
                 TotalColumns = 0;
             }

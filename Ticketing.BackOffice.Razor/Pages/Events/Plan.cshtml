@@ -5,7 +5,6 @@
     ViewData["Title"] = $"Plan de Salle Structuré pour {Model.Event.Name}";
 }
 
-<!-- Styles spécifiques pour la page Plan -->
 <link rel="stylesheet" href="~/css/events/plan.css" asp-append-version="true" />
 
 <div class="max-w-7xl mx-auto bg-white rounded-lg shadow-xl p-10">
@@ -30,22 +29,13 @@
         <input type="hidden" name="eventId" value="@Model.Event.Id" />
 
         <div class="p-6 bg-gray-50 rounded-lg border">
-            <div class="flex flex-col gap-4 mb-4 border-b p-2">
+            <div class="flex flex-col gap-4">
                 <h3 class="text-xl font-semibold text-gray-700">Lieu & Dimensions</h3>
                 <p class="text-sm text-gray-500">
                     Le plan est défini par le lieu associé à l'événement.
                 </p>
             </div>
             <div class="flex flex-col gap-4 md:flex-row md:gap-8 md:items-center">
-                <div>
-                    <span class="block text-sm font-medium text-gray-700">Lieu</span>
-                    <span class="text-lg font-semibold text-gray-900">@Model.Event.Venue?.Name</span>
-                </div>
-                <div>
-                    <span class="block text-sm font-medium text-gray-700">Dimensions</span>
-                    <span class="text-lg font-semibold text-gray-900">@Model.TotalRows x @Model.TotalColumns</span>
-                </div>
-                
                 <input type="hidden" id="total-rows-input" value="@Model.TotalRows" />
                 <input type="hidden" id="total-columns-input" value="@Model.TotalColumns" />
                 <input type="hidden" id="venue-layout-json" value="@Model.Event.Venue?.LayoutJson" />

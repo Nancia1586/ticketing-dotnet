@@ -5,85 +5,48 @@
     ViewData["Title"] = "Créer un Lieu";
 }
 
-<style>
-    .venue-grid {
-        display: grid;
-        gap: 2px;
-        background-color: #e5e7eb;
-        border: 2px solid #d1d5db;
-        padding: 2px;
-        width: fit-content;
-        user-select: none; /* Important for drag selection */
-    }
-    .grid-cell {
-        width: 30px;
-        height: 30px;
-        background-color: white;
-        border: 1px solid #e5e7eb;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 10px;
-        position: relative;
-    }
-    .grid-cell.selected {
-        border: 2px solid #3b82f6; /* Blue border for selection */
-        z-index: 10;
-    }
-    .grid-cell.void {
-        background-color: #ef4444; /* Red for void/stage */
-        color: white;
-    }
-    .grid-cell-label {
-        font-size: 8px;
-        text-align: center;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        max-width: 100%;
-        padding: 0 1px;
-    }
-    .grid-cell:hover {
-        opacity: 0.8;
-    }
-</style>
+<link rel="stylesheet" href="~/css/venues/form.css" asp-append-version="true" />
 
 <div class="overflow-x-auto bg-white rounded-lg shadow-xl max-w-7xl p-10">
     <h1 class="text-2xl font-extrabold mb-8 text-gray-900">Nouveau Lieu</h1>
 
     <form method="post" id="venue-form">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div class="col-span-2">
+            <div>
                 <label asp-for="Venue.Name" class="block text-sm font-medium text-gray-700 mb-2">Nom du Lieu</label>
                 <input asp-for="Venue.Name" class="w-full h-10 px-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
                 <span asp-validation-for="Venue.Name" class="text-xs text-red-600 mt-1 block"></span>
             </div>
 
-            <div>
-                <label asp-for="Venue.TotalRows" class="block text-sm font-medium text-gray-700 mb-2">Nombre de Rangées</label>
-                <input asp-for="Venue.TotalRows" id="total-rows" type="number" min="1" class="w-full h-10 px-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
-                <span asp-validation-for="Venue.TotalRows" class="text-xs text-red-600 mt-1 block"></span>
-            </div>
+            <div></div>
 
-            <div>
-                <label asp-for="Venue.TotalColumns" class="block text-sm font-medium text-gray-700 mb-2">Nombre de Colonnes</label>
-                <input asp-for="Venue.TotalColumns" id="total-cols" type="number" min="1" class="w-full h-10 px-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
-                <span asp-validation-for="Venue.TotalColumns" class="text-xs text-red-600 mt-1 block"></span>
+            <div class="col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                <div>
+                    <label asp-for="Venue.TotalRows" class="block text-sm font-medium text-gray-700 mb-2">Nombre de Rangées</label>
+                    <input asp-for="Venue.TotalRows" id="total-rows" type="number" min="1" class="w-full h-10 px-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
+                    <span asp-validation-for="Venue.TotalRows" class="text-xs text-red-600 mt-1 block"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Venue.TotalColumns" class="block text-sm font-medium text-gray-700 mb-2">Nombre de Colonnes</label>
+                    <input asp-for="Venue.TotalColumns" id="total-cols" type="number" min="1" class="w-full h-10 px-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
+                    <span asp-validation-for="Venue.TotalColumns" class="text-xs text-red-600 mt-1 block"></span>
+                </div>
+
+                <button type="button" id="generate-grid-btn" class="h-10 mb-1 bg-blue-500 text-white rounded hover:bg-blue-600 rounded text-sm">Générer / Mettre à jour la grille</button>
             </div>
         </div>
 
-        <div class="mb-8">
-            <h3 class="text-lg font-semibold text-gray-700 mb-4">Configuration de la Grille</h3>
-            <p class="text-sm text-gray-500 mb-4">
-                1. Cliquez-glissez pour sélectionner plusieurs cellules.<br/>
-                2. Cliquez sur "Configurer la Zone" pour définir le type (Scène, Couloir) et le label.
-            </p>
+        <div class="mb-8 space-y-4">
+            <h3 class="text-lg font-semibold text-gray-700 border-t pt-6 mt-6">Configuration de la Grille</h3>
+            <div class="flex flex-col gap-2 mt-4 text-sm text-gray-500">
+                <p>1. Cliquez-glissez pour sélectionner plusieurs cellules.</p>
+                <p>2. Cliquez sur <strong>Configurer la zone</strong> pour définir le type (Scène, Couloir, ...) et le label.</p>
+            </div>
             
-            <div class="flex gap-4 mb-4">
-                <button type="button" id="generate-grid-btn" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Générer/Mettre à jour la grille</button>
-                <button type="button" id="configure-zone-btn" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Configurer la Zone</button>
-                <button type="button" id="clear-selection-btn" class="px-3 py-1 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50">Effacer la sélection</button>
+            <div class="flex gap-4">
+                <button type="button" id="configure-zone-btn" class="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Configurer la zone</button>
+                <button type="button" id="clear-selection-btn" class="px-4 py-2 bg-red-500 text-white text-sm rounded hover:bg-red-600">Effacer la sélection</button>
             </div>
 
             <div id="grid-container" class="overflow-auto max-h-[500px] border rounded p-4 relative">
@@ -107,19 +70,19 @@
 <!-- Zone Configuration Modal -->
 <div id="zone-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-gray-900 bg-opacity-50">
     <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Configurer la Zone</h3>
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Configurer la zone</h3>
         
         <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1">Type de Zone</label>
-            <select id="zone-type" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                <option value="void">Non Assignable (Scène, Couloir...)</option>
+            <select id="zone-type" class="h-10 w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3">
+                <option value="void">Non Assignable (Scène, Couloir,...)</option>
                 <option value="assignable">Assignable (Sièges)</option>
             </select>
         </div>
 
         <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 mb-1">Label (Optionnel)</label>
-            <input type="text" id="zone-label" placeholder="Ex: Scène" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            <input type="text" id="zone-label" placeholder="Ex: Scène" class="h-10 w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
             <p class="text-xs text-gray-500 mt-1">Ce texte sera affiché sur le plan.</p>
         </div>
 
@@ -249,13 +212,6 @@
                 const minC = Math.min(start.c, end.c);
                 const maxC = Math.max(start.c, end.c);
 
-                // We don't clear selection here to allow additive drag if we wanted, 
-                // but for standard drag behavior usually we clear first if not holding ctrl.
-                // For simplicity in this implementation: Drag always defines a new selection range from start.
-                // To support complex multi-drag, we'd need more state. 
-                // Let's stick to: Drag clears previous selection (unless we want to support multi-rect).
-                // Re-implementing "Drag replaces selection" for simplicity.
-                
                 clearSelection(); 
 
                 for (let r = minR; r <= maxR; r++) {
@@ -282,8 +238,6 @@
             configureBtn.addEventListener('click', () => {
                 if (selectedCells.size === 0) return;
                 
-                // Pre-fill modal if all selected cells have same config?
-                // For now, just reset or leave default.
                 zoneTypeInput.value = 'void';
                 zoneLabelInput.value = '';
                 
@@ -303,16 +257,11 @@
                 selectedCells.forEach(key => {
                     const [r, c] = key.split('-').map(Number);
                     
-                    // Remove existing entry for this cell
                     const existingIndex = layoutData.findIndex(d => d.r === r && d.c === c);
                     if (existingIndex > -1) {
                         layoutData.splice(existingIndex, 1);
                     }
 
-                    // Add new entry if it's not "assignable" (default)
-                    // Or if we want to explicitly store assignable? Usually assignable is default (empty).
-                    // But if we want to overwrite a void cell back to assignable, we just remove it from layoutData.
-                    
                     if (type === 'void') {
                         layoutData.push({ r, c, type: 'void', label: label });
                     }
@@ -332,10 +281,7 @@
             }
 
             function refreshGridVisuals() {
-                // Re-render visuals without destroying elements (to keep selection if we wanted, but we cleared it)
-                // Or just loop through layoutData.
-                
-                // 1. Reset all cells to default
+                // Reset all cells to default
                 const allCells = gridContainer.querySelectorAll('.grid-cell');
                 allCells.forEach(cell => {
                     cell.className = 'grid-cell'; // Remove void, selected
@@ -343,7 +289,7 @@
                     cell.title = `R${cell.dataset.row} C${cell.dataset.col}`;
                 });
 
-                // 2. Apply layoutData
+                // Apply layoutData
                 layoutData.forEach(d => {
                     const cell = getCell(d.r, d.c);
                     if (cell) {

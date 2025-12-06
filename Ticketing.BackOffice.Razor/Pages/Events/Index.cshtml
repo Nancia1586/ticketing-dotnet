@@ -16,7 +16,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         @foreach (var item in Model.Events) {
             <div class="flex flex-col bg-neutral-primary-soft border border-default rounded-md shadow-xs md:flex-row md:max-w-xl md:flex-row md:max-w-xl">
-                <div class="h-64 md:h-64 md:w-52 mb-4 md:mb-0 bg-gray-200 flex items-center justify-center overflow-hidden rounded-l-md">
+                <div class="h-64 md:h-64 md:w-64 mb-4 md:mb-0 bg-gray-200 flex items-center justify-center overflow-hidden rounded-l-md">
                     @if (!string.IsNullOrEmpty(item.PosterUrl))
                     {
                         <img class="object-cover w-full h-full" src="@item.PosterUrl" alt="Poster de @item.Name">
