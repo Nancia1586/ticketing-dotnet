@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Ticketing.Core.Models;
 
-namespace Ticketing.BackOffice.Razor.Data
+namespace Ticketing.Core.Data
 {
     public class TicketingDbContext : DbContext
     {
@@ -15,6 +15,7 @@ namespace Ticketing.BackOffice.Razor.Data
         public DbSet<Seat> Seats { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<Venue> Venues { get; set; }
+        public DbSet<Organizer> Organizers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

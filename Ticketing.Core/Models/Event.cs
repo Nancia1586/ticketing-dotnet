@@ -11,6 +11,9 @@ namespace Ticketing.Core.Models
         public int VenueId { get; set; }
         public Venue? Venue { get; set; }
 
+        public int? OrganizerId { get; set; }
+        public Organizer? Organizer { get; set; }
+
         public DateTime Date { get; set; }
         public string? PosterUrl { get; set; }
         public bool IsActive { get; set; } = true;
