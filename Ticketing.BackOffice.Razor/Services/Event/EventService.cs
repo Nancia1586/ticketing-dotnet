@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Ticketing.BackOffice.Razor.Data;
+using Ticketing.Core.Data;
 using Ticketing.Core.Models;
 using Ticketing.BackOffice.Razor.Pages.Events;
 using System.Text.Json;

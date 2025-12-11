@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Ticketing.BackOffice.Razor.Data;
+using Ticketing.Core.Data;
 using Ticketing.BackOffice.Razor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,7 +13,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 // Ajout du DbContext pour l'injection de dépendances
 builder.Services.AddDbContext<TicketingDbContext>(options =>
-    options.UseSqlServer(connectionString)); 
+    options.UseSqlServer(connectionString, b => b.MigrationsAssembly("Ticketing.BackOffice.Razor"))); 
 
 builder.Services.AddScoped<IEventService, EventService>();
 
@@ -46,5 +46,14 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapRazorPages();
+
+// Seed Database
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<TicketingDbContext>();
+    // context.Database.Migrate(); // Optional: Auto-migrate
+    DbInitializer.Initialize(context);
+}
 
 app.Run();

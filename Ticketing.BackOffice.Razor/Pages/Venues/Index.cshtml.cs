@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Ticketing.BackOffice.Razor.Data;
+using Ticketing.Core.Data;
 using Ticketing.Core.Models;
 
 namespace Ticketing.BackOffice.Razor.Pages.Venues
