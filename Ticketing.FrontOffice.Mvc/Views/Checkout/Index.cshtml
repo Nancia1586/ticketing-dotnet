@@ -1,0 +1,65 @@
+@model Ticketing.FrontOffice.Mvc.Models.CheckoutViewModel
+
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h3 class="mb-0 text-center fw-bold"><i class="bi bi-credit-card me-2"></i>Checkout</h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <span class="text-muted">Total to Pay</span>
+                        <h2 class="display-4 fw-bold text-success">@Model.TotalAmount.ToString("C")</h2>
+                    </div>
+
+                    <form asp-action="Process" method="post">
+                        <input type="hidden" asp-for="TotalAmount" />
+
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label fw-bold"></label>
+                            <input asp-for="FullName" class="form-control form-control-lg" placeholder="John Doe" />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Email" class="form-label fw-bold"></label>
+                            <input asp-for="Email" class="form-control form-control-lg" placeholder="john@example.com" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        
+                        <hr class="my-4" />
+                        <h5 class="mb-3 fw-bold">Payment Details</h5>
+
+                        <div class="mb-3">
+                            <label asp-for="CardNumber" class="form-label"></label>
+                            <input asp-for="CardNumber" class="form-control" placeholder="0000 0000 0000 0000" />
+                            <span asp-validation-for="CardNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ExpiryDate" class="form-label"></label>
+                                <input asp-for="ExpiryDate" class="form-control" placeholder="MM/YY" />
+                                <span asp-validation-for="ExpiryDate" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CVV" class="form-label"></label>
+                                <input asp-for="CVV" class="form-control" placeholder="123" />
+                                <span asp-validation-for="CVV" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold mt-4 shadow-sm">
+                            Pay Now <i class="bi bi-check-circle ms-2"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

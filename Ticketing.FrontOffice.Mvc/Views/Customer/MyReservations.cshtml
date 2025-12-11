@@ -1,0 +1,51 @@
+@model List<Ticketing.Core.Models.Reservation>
+
+@{
+    ViewData["Title"] = "My Reservations";
+}
+
+<div class="container my-5">
+    <h1 class="mb-4">My Reservations</h1>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="post" class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <label for="email" class="form-label">Enter your email address to find your bookings:</label>
+                    <input type="email" name="email" id="email" class="form-control" placeholder="name@example.com" value="@ViewBag.Email" required />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Find</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (Model != null)
+    {
+        @if (Model.Any())
+        {
+            <div class="list-group">
+                @foreach (var res in Model)
+                {
+                    <div class="list-group-item list-group-item-action flex-column align-items-start p-4 mb-3 shadow-sm border rounded">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h4 class="mb-1 text-primary">@res.Event?.Name</h4>
+                            <small class="text-muted">@res.ReservationDate.ToShortDateString()</small>
+                        </div>
+                        <p class="mb-1">
+                            <strong>Date:</strong> @res.Event?.Date.ToString("f")<br>
+                            <strong>Seats:</strong> @res.SeatCount (@(res.Seats.Any() ? string.Join(", ", res.Seats.Select(s => s.Code)) : "General"))<br>
+                            <strong>Total:</strong> @res.TotalAmount.ToString("C")
+                        </p>
+                        <small class="text-muted">Order ID: @res.Id</small>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+             <div class="alert alert-warning">No reservations found for this email.</div>
+        }
+    }
+</div>
