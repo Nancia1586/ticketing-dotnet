@@ -21,18 +21,9 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
         public int TotalColumns { get; set; }
 
         [BindProperty]
-        public List<TicketTypePlanInputModel> TicketTypePlans { get; set; } = new List<TicketTypePlanInputModel>();
+        public List<TicketTypePlanDto> TicketTypePlans { get; set; } = new List<TicketTypePlanDto>();
 
-        public class TicketTypePlanInputModel
-        {
-            public int TicketTypeId { get; set; } 
-            public string Name { get; set; } = string.Empty; 
-            public decimal Price { get; set; }
-            public string Color { get; set; } = "#cccccc"; 
-            public bool IsReservedSeating { get; set; } = true; 
-            
-            public string SelectedSeatsJson { get; set; } = "[]"; 
-        }
+
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
@@ -50,7 +41,7 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
 
             Event = loadedEvent;
             
-            TicketTypePlans = Event.TicketTypes.Select(tt => new TicketTypePlanInputModel
+            TicketTypePlans = Event.TicketTypes.Select(tt => new TicketTypePlanDto
             {
                 TicketTypeId = tt.Id,
                 Name = tt.Name,

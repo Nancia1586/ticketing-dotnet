@@ -15,7 +15,22 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<TicketingDbContext>(options =>
     options.UseSqlServer(connectionString, b => b.MigrationsAssembly("Ticketing.BackOffice.Razor"))); 
 
-builder.Services.AddScoped<IEventService, EventService>();
+
+// Register Repository for Data Access (Used by API Controller)
+builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddHttpContextAccessor();
+
+// Register API Controllers with JSON Options for handling cycles
+builder.Services.AddControllers()
+    .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
+
+// Register HTTP Client for IEventService (Used by Razor Pages to call API)
+builder.Services.AddHttpClient<IEventService, EventApiService>(client =>
+{
+    var baseUrl = builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7281";
+    client.BaseAddress = new Uri(baseUrl);
+});
+
 
 builder.Services.AddRazorPages();
 
@@ -34,7 +49,6 @@ app.UseRequestLocalization(localizationOptions);
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -46,13 +60,14 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapRazorPages();
+app.MapControllers();
 
 // Seed Database
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<TicketingDbContext>();
-    // context.Database.Migrate(); // Optional: Auto-migrate
+    // context.Database.Migrate(); // Auto-migrate
     DbInitializer.Initialize(context);
 }
 

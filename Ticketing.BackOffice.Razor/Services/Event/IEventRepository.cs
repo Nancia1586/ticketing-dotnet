@@ -2,7 +2,7 @@ using Ticketing.Core.Models;
 
 namespace Ticketing.BackOffice.Razor.Services
 {
-    public interface IEventService
+    public interface IEventRepository
     {
         Task<IEnumerable<Event>> GetAllEventsAsync();
         Task<Event?> GetEventByIdAsync(int id);

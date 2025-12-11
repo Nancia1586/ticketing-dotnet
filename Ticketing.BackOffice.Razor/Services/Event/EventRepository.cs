@@ -1,16 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using Ticketing.Core.Data;
 using Ticketing.Core.Models;
-using Ticketing.BackOffice.Razor.Pages.Events;
 using System.Text.Json;
 
 namespace Ticketing.BackOffice.Razor.Services
 {
-    public class EventService : IEventService
+    public class EventRepository : IEventRepository
     {
         private readonly TicketingDbContext _context;
 
-        public EventService(TicketingDbContext context)
+        public EventRepository(TicketingDbContext context)
         {
             _context = context;
         }
@@ -63,17 +62,13 @@ namespace Ticketing.BackOffice.Razor.Services
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 
-        public async Task UpdateEventPlanAsync(int eventId, List<PlanModel.TicketTypePlanInputModel> ticketTypePlans)
+        public async Task UpdateEventPlanAsync(int eventId, List<TicketTypePlanDto> ticketTypePlans)
         {
             var eventToUpdate = await GetEventWithPlanByIdAsync(eventId);
             if (eventToUpdate == null) return;
 
-            // Dimensions are now managed by Venue, so we don't update them here.
-
-            // 2. Sync Ticket Types
             var inputTypeIds = ticketTypePlans.Where(p => p.TicketTypeId != 0).Select(p => p.TicketTypeId).ToList();
             
-            // Remove deleted types
             var typesToRemove = eventToUpdate.TicketTypes.Where(tt => !inputTypeIds.Contains(tt.Id)).ToList();
             foreach (var type in typesToRemove)
             {
@@ -86,7 +81,6 @@ namespace Ticketing.BackOffice.Razor.Services
 
                 if (planInput.TicketTypeId == 0)
                 {
-                    // Create new
                     ticketType = new TicketType
                     {
                         EventId = eventId,
@@ -99,7 +93,6 @@ namespace Ticketing.BackOffice.Razor.Services
                 }
                 else
                 {
-                    // Update existing
                     ticketType = eventToUpdate.TicketTypes.FirstOrDefault(tt => tt.Id == planInput.TicketTypeId);
                     if (ticketType != null)
                     {
@@ -114,7 +107,6 @@ namespace Ticketing.BackOffice.Razor.Services
                     }
                 }
 
-                // 3. Sync Seats
                 var selectedSeats = new HashSet<string>();
                 try 
                 {
@@ -131,7 +123,6 @@ namespace Ticketing.BackOffice.Razor.Services
 
                 var currentSeats = ticketType.Seats.ToList();
 
-                // Seats to remove
                 var seatsToRemove = currentSeats.Where(s => !selectedSeats.Contains(s.Code)).ToList();
                 foreach (var seat in seatsToRemove)
                 {
