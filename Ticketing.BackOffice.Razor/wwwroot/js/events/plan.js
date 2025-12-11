@@ -212,7 +212,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         <span class="color-display mr-2 w-6 h-3" style="background-color: ${
                           planData.color
                         };"></span>
-                        ${name} (${planData.price} €) (${
+                        ${name} (${planData.price} Ar) (${
         planData.isReserved ? "Réservé" : "Libre"
       })
                     `;
