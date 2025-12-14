@@ -3,60 +3,114 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Ticketing.FrontOffice.Mvc</title>
+    <title>@ViewData["Title"] - EventTicketing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Ticketing.FrontOffice.Mvc.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Ticketing.FrontOffice.Mvc</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+    <!-- Fixed Header -->
+    <header class="fixed-header">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid px-4">
+                <!-- Logo -->
+                <a class="navbar-brand logo-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-ticket-perforated-fill me-2"></i>
+                    <span class="logo-text">EventTicketing</span>
+                </a>
+
+                <!-- Search Bar (Center) -->
+                <form class="search-form" asp-controller="Events" asp-action="Index" method="get">
+                    <div class="search-wrapper">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" name="searchTerm" class="search-input" placeholder="Search an event…" value="@Context.Request.Query["searchTerm"]">
+                    </div>
+                </form>
+
+                <!-- Navigation Links -->
+                <div class="navbar-nav nav-links">
+                    <a class="nav-link" asp-controller="Events" asp-action="Index">Events</a>
+                    <a class="nav-link" asp-controller="Organizer" asp-action="Register">Become Organizer</a>
+                    <a class="nav-link" href="#contact">Contact</a>
+                    <a class="nav-link cart-link" asp-controller="Cart" asp-action="Index">
+                        <i class="bi bi-cart3"></i>
+                        <span class="cart-badge">0</span>
+                    </a>
+                    <a class="nav-link btn-login" href="#login">Login</a>
+                </div>
+
+                <!-- Mobile Menu Toggle -->
+                <button class="navbar-toggler mobile-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
+            </div>
 
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Events" asp-action="Index">Events</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Cart" asp-action="Index"><i class="bi bi-cart"></i> Cart</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Customer" asp-action="MyReservations">My Reservations</a>
-                        </li>
-                         <li class="nav-item">
-                            <a class="nav-link text-dark fw-bold" asp-area="" asp-controller="Organizer" asp-action="Register">Organizers</a>
-                        </li>
-                    </ul>
+            <!-- Mobile Menu -->
+            <div class="collapse navbar-collapse mobile-menu" id="mobileMenu">
+                <div class="container-fluid px-4 py-3">
+                    <a class="nav-link-mobile" asp-controller="Events" asp-action="Index">Events</a>
+                    <a class="nav-link-mobile" asp-controller="Cart" asp-action="Index">Cart</a>
+                    <a class="nav-link-mobile" asp-controller="Customer" asp-action="MyReservations">My Reservations</a>
+                    <a class="nav-link-mobile" asp-controller="Organizer" asp-action="Register">Become Organizer</a>
+                    <a class="nav-link-mobile" href="#contact">Contact</a>
+                    <a class="nav-link-mobile" href="#login">Login</a>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
+    <!-- Main Content (with padding for fixed header) -->
+    <main role="main" class="main-content">
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
         <div class="container">
-            &copy; 2025 - Ticketing.FrontOffice.Mvc - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <div class="row py-5">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5 class="footer-title">EventTicketing</h5>
+                    <p class="footer-text">Your premier destination for discovering and booking amazing events.</p>
+                </div>
+                <div class="col-md-2 mb-4 mb-md-0">
+                    <h6 class="footer-heading">Quick Links</h6>
+                    <ul class="footer-links">
+                        <li><a asp-controller="Events" asp-action="Index">Events</a></li>
+                        <li><a asp-controller="Organizer" asp-action="Register">Become Organizer</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-4 mb-md-0">
+                    <h6 class="footer-heading">Support</h6>
+                    <ul class="footer-links">
+                        <li><a asp-controller="Customer" asp-action="MyReservations">My Reservations</a></li>
+                        <li><a asp-controller="Home" asp-action="Privacy">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="footer-heading">Stay Connected</h6>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="bi bi-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom text-center py-3 border-top border-secondary">
+                <p class="mb-0">&copy; 2025 EventTicketing. All rights reserved.</p>
+            </div>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/carousel.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

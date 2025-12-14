@@ -6,60 +6,128 @@
 
 <div class="container my-5">
     <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow-lg border-0">
-                <div class="card-header bg-primary text-white py-3">
-                    <h3 class="mb-0 text-center fw-bold"><i class="bi bi-credit-card me-2"></i>Checkout</h3>
+        <div class="col-lg-8">
+            <!-- Page Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold mb-2">Complete Your Purchase</h1>
+                <p class="text-secondary">Secure payment - Your tickets will be sent to your email</p>
+            </div>
+
+            <!-- Total Amount Display -->
+            <div class="card-custom p-4 mb-4 text-center">
+                <div class="mb-2">
+                    <span class="text-secondary">Total Amount</span>
                 </div>
-                <div class="card-body p-4">
-                    <div class="text-center mb-4">
-                        <span class="text-muted">Total to Pay</span>
-                        <h2 class="display-4 fw-bold text-success">@Model.TotalAmount.ToString("C")</h2>
+                <h2 class="display-4 fw-bold text-accent-primary mb-0">@Model.TotalAmount.ToString("N0") Ar</h2>
+            </div>
+
+            <!-- Checkout Form -->
+            <div class="card-custom p-4">
+                <form asp-action="Process" method="post">
+                    <input type="hidden" asp-for="TotalAmount" />
+
+                    <h5 class="fw-bold mb-4 border-bottom pb-3" style="border-color: var(--border-color) !important;">
+                        <i class="bi bi-person me-2 text-accent-primary"></i>Contact Information
+                    </h5>
+
+                    <div class="mb-4">
+                        <label asp-for="FullName" class="form-label fw-bold text-secondary">
+                            Full Name <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="FullName" class="form-control form-control-lg bg-card border-secondary text-white" placeholder="John Doe" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
                     </div>
 
-                    <form asp-action="Process" method="post">
-                        <input type="hidden" asp-for="TotalAmount" />
+                    <div class="mb-5">
+                        <label asp-for="Email" class="form-label fw-bold text-secondary">
+                            Email Address <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="Email" type="email" class="form-control form-control-lg bg-card border-secondary text-white" placeholder="john@example.com" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                        <small class="text-muted">Your tickets will be sent to this email</small>
+                    </div>
+                    
+                    <hr class="my-5" style="border-color: var(--border-color);">
+                    
+                    <h5 class="fw-bold mb-4 border-bottom pb-3" style="border-color: var(--border-color) !important;">
+                        <i class="bi bi-credit-card me-2 text-accent-primary"></i>Payment Details
+                    </h5>
 
-                        <div class="mb-3">
-                            <label asp-for="FullName" class="form-label fw-bold"></label>
-                            <input asp-for="FullName" class="form-control form-control-lg" placeholder="John Doe" />
-                            <span asp-validation-for="FullName" class="text-danger"></span>
+                    <div class="mb-4">
+                        <label asp-for="CardNumber" class="form-label fw-bold text-secondary">
+                            Card Number <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="CardNumber" class="form-control form-control-lg bg-card border-secondary text-white" placeholder="0000 0000 0000 0000" maxlength="19" />
+                        <span asp-validation-for="CardNumber" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="ExpiryDate" class="form-label fw-bold text-secondary">
+                                Expiry Date <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="ExpiryDate" class="form-control form-control-lg bg-card border-secondary text-white" placeholder="MM/YY" maxlength="5" />
+                            <span asp-validation-for="ExpiryDate" class="text-danger"></span>
                         </div>
-
-                        <div class="mb-4">
-                            <label asp-for="Email" class="form-label fw-bold"></label>
-                            <input asp-for="Email" class="form-control form-control-lg" placeholder="john@example.com" />
-                            <span asp-validation-for="Email" class="text-danger"></span>
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="CVV" class="form-label fw-bold text-secondary">
+                                CVV <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="CVV" class="form-control form-control-lg bg-card border-secondary text-white" placeholder="123" maxlength="4" />
+                            <span asp-validation-for="CVV" class="text-danger"></span>
                         </div>
-                        
-                        <hr class="my-4" />
-                        <h5 class="mb-3 fw-bold">Payment Details</h5>
+                    </div>
 
-                        <div class="mb-3">
-                            <label asp-for="CardNumber" class="form-label"></label>
-                            <input asp-for="CardNumber" class="form-control" placeholder="0000 0000 0000 0000" />
-                            <span asp-validation-for="CardNumber" class="text-danger"></span>
-                        </div>
+                    <div class="alert alert-info bg-card border-secondary mb-4">
+                        <i class="bi bi-shield-check me-2 text-accent-primary"></i>
+                        <small>This is a demo payment. No actual charges will be made.</small>
+                    </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="ExpiryDate" class="form-label"></label>
-                                <input asp-for="ExpiryDate" class="form-control" placeholder="MM/YY" />
-                                <span asp-validation-for="ExpiryDate" class="text-danger"></span>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="CVV" class="form-label"></label>
-                                <input asp-for="CVV" class="form-control" placeholder="123" />
-                                <span asp-validation-for="CVV" class="text-danger"></span>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold mt-4 shadow-sm">
-                            Pay Now <i class="bi bi-check-circle ms-2"></i>
+                    <div class="d-grid">
+                        <button type="submit" class="btn-primary-custom w-100 py-3 fs-5">
+                            <i class="bi bi-lock-fill me-2"></i>Pay Now - @Model.TotalAmount.ToString("N0") Ar
                         </button>
-                    </form>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Security Badge -->
+            <div class="text-center mt-4">
+                <div class="d-flex justify-content-center gap-4 flex-wrap">
+                    <div class="d-flex align-items-center text-secondary">
+                        <i class="bi bi-shield-check me-2 text-accent-primary"></i>
+                        <small>Secure Payment</small>
+                    </div>
+                    <div class="d-flex align-items-center text-secondary">
+                        <i class="bi bi-envelope-check me-2 text-accent-primary"></i>
+                        <small>Instant Confirmation</small>
+                    </div>
+                    <div class="d-flex align-items-center text-secondary">
+                        <i class="bi bi-headset me-2 text-accent-primary"></i>
+                        <small>24/7 Support</small>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Format card number
+        document.querySelector('input[name="CardNumber"]')?.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formattedValue;
+        });
+
+        // Format expiry date
+        document.querySelector('input[name="ExpiryDate"]')?.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            e.target.value = value;
+        });
+    </script>
+}

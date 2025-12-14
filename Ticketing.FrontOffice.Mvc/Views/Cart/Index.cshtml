@@ -5,91 +5,122 @@
 }
 
 <div class="container my-5">
-    <h1 class="mb-4 display-5 fw-bold text-primary">Your Cart</h1>
+    <div class="d-flex align-items-center mb-4">
+        <h1 class="display-5 fw-bold me-3">Your Cart</h1>
+        @if (Model.Items.Any())
+        {
+            <span class="badge bg-accent-primary rounded-pill px-3 py-2" style="background-color: var(--accent-primary) !important;">
+                @Model.Items.Count item(s)
+            </span>
+        }
+    </div>
 
     @if (!Model.Items.Any())
     {
-        <div class="alert alert-info py-4">
-            <h4 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Your cart is empty</h4>
-            <p class="mb-0">Go back to the <a asp-controller="Events" asp-action="Index" class="fw-bold text-decoration-none">events list</a> to find tickets.</p>
+        <div class="text-center py-5">
+            <i class="bi bi-cart-x display-1 text-secondary mb-4"></i>
+            <h3 class="text-secondary mb-3">Your cart is empty</h3>
+            <p class="text-muted mb-4">Start exploring amazing events and add tickets to your cart.</p>
+            <a asp-controller="Events" asp-action="Index" class="btn-primary-custom">
+                <i class="bi bi-search me-2"></i>Browse Events
+            </a>
         </div>
     }
     else
     {
-        <div class="row">
+        <div class="row g-4">
+            <!-- Cart Items -->
             <div class="col-lg-8">
-                <div class="card shadow border-0 mb-4">
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="bg-light table-light">
-                                    <tr>
-                                        <th class="ps-4 py-3">Event</th>
-                                        <th>Ticket</th>
-                                        <th>Quantity</th>
-                                        <th>Seats</th>
-                                        <th>Price</th>
-                                        <th>Total</th>
-                                        <th class="pe-4 text-end">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var item in Model.Items)
+                @foreach (var item in Model.Items)
+                {
+                    <div class="card-custom mb-4">
+                        <div class="p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h4 class="fw-bold mb-2 text-accent-primary">@item.EventName</h4>
+                                    <div class="d-flex flex-wrap gap-3 mb-3">
+                                        <span class="badge rounded-pill px-3 py-2" style="background-color: var(--accent-primary);">
+                                            @item.TicketTypeName
+                                        </span>
+                                        <span class="text-secondary">
+                                            <i class="bi bi-hash me-1"></i>Quantity: <strong>@item.Quantity</strong>
+                                        </span>
+                                    </div>
+                                    
+                                    @if (item.Seats.Any())
                                     {
-                                        <tr>
-                                            <td class="ps-4 fw-bold text-primary">@item.EventName</td>
-                                            <td><span class="badge bg-secondary">@item.TicketTypeName</span></td>
-                                            <td class="fw-bold">@item.Quantity</td>
-                                            <td>
-                                                @if (item.Seats.Any())
+                                        <div class="mb-2">
+                                            <small class="text-secondary d-block mb-1">
+                                                <i class="bi bi-geo-alt me-1"></i>Selected Seats:
+                                            </small>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                @foreach (var seat in item.Seats)
                                                 {
-                                                    <small class="text-muted d-block" style="max-width: 150px; line-height: 1.2;">
-                                                        @string.Join(", ", item.Seats.Select(s => $"R{s.Row} C{s.Col}"))
-                                                    </small>
+                                                    <span class="badge bg-card border border-secondary px-2 py-1">
+                                                        R@seat.Row-C@seat.Col
+                                                    </span>
                                                 }
-                                                else
-                                                {
-                                                    <span class="text-muted small">General Admission</span>
-                                                }
-                                            </td>
-                                            <td>@item.Price.ToString("C")</td>
-                                            <td class="fw-bold text-success">@item.Total.ToString("C")</td>
-                                            <td class="pe-4 text-end">
-                                                <a asp-action="Remove" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm" title="Remove">
-                                                    <i class="bi bi-trash"></i> Remove
-                                                </a>
-                                            </td>
-                                        </tr>
+                                            </div>
+                                        </div>
                                     }
-                                </tbody>
-                            </table>
+                                    else
+                                    {
+                                        <div class="mb-2">
+                                            <span class="badge bg-card border border-secondary px-3 py-1">
+                                                <i class="bi bi-person-standing me-1"></i>General Admission
+                                            </span>
+                                        </div>
+                                    }
+                                </div>
+                                
+                                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                    <div class="mb-3">
+                                        <div class="text-secondary small">Price per ticket</div>
+                                        <div class="fw-bold fs-5">@item.Price.ToString("N0") Ar</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="text-secondary small">Total</div>
+                                        <div class="fw-bold fs-4 text-accent-primary">@item.Total.ToString("N0") Ar</div>
+                                    </div>
+                                    <a asp-action="Remove" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-trash me-1"></i>Remove
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                }
             </div>
             
+            <!-- Order Summary -->
             <div class="col-lg-4">
-                <div class="card shadow border-0 bg-light">
-                    <div class="card-body p-4">
-                        <h4 class="card-title fw-bold mb-4">Summary</h4>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Subtotal</span>
-                            <span class="fw-bold">@Model.TotalAmount.ToString("C")</span>
-                        </div>
-                        <hr>
-                        <div class="d-flex justify-content-between mb-4">
-                            <h3 class="fw-bold text-primary">Total</h3>
-                            <h3 class="fw-bold text-primary">@Model.TotalAmount.ToString("C")</h3>
-                        </div>
-                        
-                        <a asp-controller="Checkout" asp-action="Index" class="btn btn-primary w-100 btn-lg fw-bold shadow-sm">
-                            Proceed to Checkout <i class="bi bi-arrow-right ms-2"></i>
-                        </a>
-                        
-                        <a asp-controller="Events" asp-action="Index" class="btn btn-link w-100 mt-2 text-decoration-none">
-                            Continue Shopping
-                        </a>
+                <div class="card-custom p-4 sticky-top" style="top: 100px;">
+                    <h4 class="fw-bold mb-4">Order Summary</h4>
+                    
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-secondary">Subtotal</span>
+                        <span class="fw-bold">@Model.TotalAmount.ToString("N0") Ar</span>
                     </div>
+                    
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-secondary">Service Fee</span>
+                        <span class="fw-bold">0 Ar</span>
+                    </div>
+                    
+                    <hr class="my-4" style="border-color: var(--border-color);">
+                    
+                    <div class="d-flex justify-content-between mb-4">
+                        <h5 class="fw-bold">Total</h5>
+                        <h4 class="fw-bold text-accent-primary">@Model.TotalAmount.ToString("N0") Ar</h4>
+                    </div>
+                    
+                    <a asp-controller="Checkout" asp-action="Index" class="btn-primary-custom w-100 mb-3">
+                        <i class="bi bi-credit-card me-2"></i>Proceed to Checkout
+                    </a>
+                    
+                    <a asp-controller="Events" asp-action="Index" class="btn-secondary-custom w-100">
+                        <i class="bi bi-arrow-left me-2"></i>Continue Shopping
+                    </a>
                 </div>
             </div>
         </div>

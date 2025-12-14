@@ -1,21 +1,26 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Ticketing.FrontOffice.Mvc.Models;
+using Ticketing.FrontOffice.Mvc.Services;
 
 namespace Ticketing.FrontOffice.Mvc.Controllers;
 
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
+    private readonly DataAccessService _dataAccess;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(ILogger<HomeController> logger, DataAccessService dataAccess)
     {
         _logger = logger;
+        _dataAccess = dataAccess;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        return View();
+        var events = await _dataAccess.GetActiveEventsAsync(null, null);
+        var featuredEvents = events.Take(5).ToList(); // Get top 5 for carousel
+        return View(featuredEvents);
     }
 
     public IActionResult Privacy()

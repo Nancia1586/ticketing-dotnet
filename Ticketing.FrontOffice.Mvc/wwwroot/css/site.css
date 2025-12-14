@@ -1,22 +1,58 @@
+/* Base styles - compatible with design system */
 html {
-  font-size: 14px;
+    font-size: 14px;
+    scroll-behavior: smooth;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+    html {
+        font-size: 16px;
+    }
 }
 
 body {
-  margin-bottom: 60px;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+/* Override Bootstrap focus styles to match design system */
+.btn:focus, 
+.btn:active:focus, 
+.btn-link.nav-link:focus, 
+.form-control:focus, 
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem rgba(16, 185, 129, 0.25);
+    border-color: var(--accent-primary);
+}
+
+/* Ensure form controls use design system colors */
+.form-control {
+    background-color: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.form-control:focus {
+    background-color: var(--bg-secondary);
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
+}
+
+/* Badge overrides */
+.badge {
+    font-weight: 600;
+}
+
+/* Additional utility classes */
+.bg-accent-primary {
+    background-color: var(--accent-primary) !important;
+}
+
+.text-accent-primary {
+    color: var(--accent-primary) !important;
+}
+
+.border-accent-primary {
+    border-color: var(--accent-primary) !important;
 }
