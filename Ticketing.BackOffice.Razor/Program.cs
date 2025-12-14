@@ -31,6 +31,8 @@ builder.Services.AddHttpClient<IEventService, EventApiService>(client =>
     client.BaseAddress = new Uri(baseUrl);
 });
 
+builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 builder.Services.AddRazorPages();
 
@@ -49,6 +51,7 @@ app.UseRequestLocalization(localizationOptions);
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -67,7 +70,7 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<TicketingDbContext>();
-    // context.Database.Migrate(); // Auto-migrate
+    // context.Database.Migrate(); // Optional: Auto-migrate
     DbInitializer.Initialize(context);
 }
 
