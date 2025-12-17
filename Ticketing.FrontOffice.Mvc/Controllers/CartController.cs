@@ -24,18 +24,27 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
         [HttpPost]
         public async Task<IActionResult> AddToCart(int eventId, int ticketTypeId, int quantity, List<SeatSelection> seats)
         {
-            var evt = await _dataAccess.GetEventByIdAsync(eventId);
-            var ticketType = await _dataAccess.GetTicketTypeByIdAsync(ticketTypeId);
-
-            if (evt == null || ticketType == null)
+            try
             {
-                return NotFound();
+                var evt = await _dataAccess.GetEventByIdAsync(eventId);
+                var ticketType = await _dataAccess.GetTicketTypeByIdAsync(ticketTypeId);
+
+                if (evt == null || ticketType == null)
+                {
+                    return NotFound();
+                }
+
+            // Normalize seats list (remove null entries)
+            var validSeats = seats?.Where(s => s != null && s.Row > 0 && s.Col > 0).ToList() ?? new List<SeatSelection>();
+
+            // If seats are selected, override quantity with the actual number of seats
+            if (validSeats.Any())
+            {
+                quantity = validSeats.Count;
             }
-
-            // If seats are selected, override quantity
-            if (seats != null && seats.Any())
+            else if (quantity <= 0)
             {
-                quantity = seats.Count;
+                quantity = 1; // Default to 1 if no seats and no quantity specified
             }
 
             var item = new CartItem
@@ -46,12 +55,19 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                 TicketTypeName = ticketType.Name,
                 Price = ticketType.Price,
                 Quantity = quantity,
-                Seats = seats ?? new List<SeatSelection>()
+                Seats = validSeats
             };
 
-            _cartService.AddItem(item);
+                _cartService.AddItem(item);
 
-            return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                // Log error and redirect to events page
+                TempData["Error"] = "Unable to add item to cart. Please try again.";
+                return RedirectToAction("Index", "Events");
+            }
         }
 
         public IActionResult Remove(Guid id)

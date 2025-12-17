@@ -23,10 +23,19 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
         {
             if (ModelState.IsValid)
             {
-                // In real app: Check if email exists, Hash password
-                await _dataAccess.CreateOrganizerAsync(organizer);
+                try
+                {
+                    // In real app: Check if email exists, Hash password
+                    await _dataAccess.CreateOrganizerAsync(organizer);
 
-                return RedirectToAction("Success");
+                    return RedirectToAction("Success");
+                }
+                catch (Exception ex)
+                {
+                    // Log error and show message
+                    ModelState.AddModelError("", "Unable to create organizer account. Please try again later.");
+                    return View(organizer);
+                }
             }
             return View(organizer);
         }

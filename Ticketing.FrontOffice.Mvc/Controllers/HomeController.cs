@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Ticketing.FrontOffice.Mvc.Models;
 using Ticketing.FrontOffice.Mvc.Services;
+using Ticketing.Core.Models;
 
 namespace Ticketing.FrontOffice.Mvc.Controllers;
 
@@ -18,9 +19,18 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var events = await _dataAccess.GetActiveEventsAsync(null, null);
-        var featuredEvents = events.Take(5).ToList(); // Get top 5 for carousel
-        return View(featuredEvents);
+        try
+        {
+            var events = await _dataAccess.GetActiveEventsAsync();
+            var featuredEvents = events.Take(5).ToList(); // Get top 5 for carousel
+            return View(featuredEvents);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading events");
+            // Return empty list if database connection fails
+            return View(new List<Event>());
+        }
     }
 
     public IActionResult Privacy()

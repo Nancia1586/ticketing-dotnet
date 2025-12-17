@@ -6,47 +6,77 @@
 <!-- Hero Carousel Section -->
 @if (Model != null && Model.Any())
 {
-    <div class="hero-carousel" id="heroCarousel">
-        @for (int i = 0; i < Model.Count; i++)
-        {
-            var evt = Model[i];
-            var bgImage = !string.IsNullOrEmpty(evt.PosterUrl) 
-                ? evt.PosterUrl 
-                : (!string.IsNullOrEmpty(evt.PosterBase64) 
-                    ? $"data:image/png;base64,{evt.PosterBase64}" 
-                    : "https://placehold.co/1200x600/1a1a1a/FFF?text=" + Uri.EscapeDataString(evt.Name));
-            var minPrice = evt.TicketTypes.Any() ? evt.TicketTypes.Min(t => t.Price) : 0;
+    <div class="container-fluid px-0 mb-5">
+        <div class="hero-carousel" id="heroCarousel">
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                var evt = Model[i];
+                var bgImage = !string.IsNullOrEmpty(evt.PosterUrl) 
+                    ? evt.PosterUrl 
+                    : (!string.IsNullOrEmpty(evt.PosterBase64) 
+                        ? $"data:image/png;base64,{evt.PosterBase64}" 
+                        : "https://placehold.co/1200x600/1a1a1a/FFF?text=" + Uri.EscapeDataString(evt.Name));
+                var minPrice = evt.TicketTypes.Any() ? evt.TicketTypes.Min(t => t.Price) : 0;
+                
+                <div class="hero-carousel-item @(i == 0 ? "active" : "")">
+                    <img src="@bgImage" alt="@evt.Name" />
+                    <div class="hero-carousel-overlay">
+                        <div class="container">
+                            <h1 class="hero-carousel-title">@evt.Name</h1>
+                            <p class="hero-carousel-tagline">@(evt.Description.Length > 150 ? evt.Description.Substring(0, 150) + "..." : evt.Description)</p>
+                            <div class="d-flex align-items-center gap-3 flex-wrap">
+                                <span class="hero-carousel-price">From @minPrice.ToString("N0") Ar</span>
+                                <a asp-controller="Events" asp-action="Details" asp-route-id="@evt.Id" class="btn-primary-custom">
+                                    Book Now <i class="bi bi-arrow-right ms-2"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
             
-            <div class="hero-carousel-item @(i == 0 ? "active" : "")">
-                <img src="@bgImage" alt="@evt.Name" />
+            <!-- Navigation Arrows -->
+            @if (Model.Count > 1)
+            {
+                <button class="hero-carousel-nav prev" onclick="carouselPrev()">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <button class="hero-carousel-nav next" onclick="carouselNext()">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <!-- Default Hero Section when no events -->
+    <div class="container-fluid px-0 mb-5">
+        <div class="hero-carousel" style="height: 500px;">
+            <div class="hero-carousel-item active">
+                <div style="background: linear-gradient(135deg, #0B1220 0%, #1F2937 100%); width: 100%; height: 100%;"></div>
                 <div class="hero-carousel-overlay">
-                    <h1 class="hero-carousel-title">@evt.Name</h1>
-                    <p class="hero-carousel-tagline">@(evt.Description.Length > 150 ? evt.Description.Substring(0, 150) + "..." : evt.Description)</p>
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="hero-carousel-price">From @minPrice.ToString("N0") Ar</span>
-                        <a asp-controller="Events" asp-action="Details" asp-route-id="@evt.Id" class="btn-primary-custom">
-                            Book Now <i class="bi bi-arrow-right ms-2"></i>
+                    <div class="container text-center">
+                        <h1 class="hero-carousel-title">Welcome to EventTicketing</h1>
+                        <p class="hero-carousel-tagline">Discover and book amazing events happening around you</p>
+                        <a asp-controller="Events" asp-action="Index" class="btn-primary-custom mt-3">
+                            Explore Events <i class="bi bi-arrow-right ms-2"></i>
                         </a>
                     </div>
                 </div>
             </div>
-        }
-        
-        <!-- Navigation Arrows -->
-        <button class="hero-carousel-nav prev" onclick="carouselPrev()">
-            <i class="bi bi-chevron-left"></i>
-        </button>
-        <button class="hero-carousel-nav next" onclick="carouselNext()">
-            <i class="bi bi-chevron-right"></i>
-        </button>
+        </div>
     </div>
 }
 
 <!-- Featured Events Grid -->
 <div class="container my-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">Featured Events</h2>
-        <a asp-controller="Events" asp-action="Index" class="text-accent-primary text-decoration-none">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h2 class="display-5 fw-bold mb-2">Featured Events</h2>
+            <p class="text-secondary">Discover the most exciting events happening near you</p>
+        </div>
+        <a asp-controller="Events" asp-action="Index" class="text-accent-primary text-decoration-none d-flex align-items-center">
             View All <i class="bi bi-arrow-right ms-2"></i>
         </a>
     </div>
@@ -63,7 +93,7 @@
                         : "https://placehold.co/400x600/1a1a1a/FFF?text=" + Uri.EscapeDataString(evt.Name));
                 var minPrice = evt.TicketTypes.Any() ? evt.TicketTypes.Min(t => t.Price) : 0;
                 
-                <div class="col-md-4 col-lg-3">
+                <div class="col-md-6 col-lg-4 col-xl-3">
                     <a asp-controller="Events" asp-action="Details" asp-route-id="@evt.Id" class="text-decoration-none">
                         <div class="event-card fade-in">
                             <img src="@bgImage" alt="@evt.Name" />
@@ -86,11 +116,34 @@
         }
         else
         {
-            <div class="col-12 text-center py-5">
-                <h3 class="text-secondary">No events available at the moment.</h3>
-                <p class="text-muted">Check back soon for exciting events!</p>
+            <!-- Empty State with Call to Action -->
+            <div class="col-12">
+                <div class="card-custom p-5 text-center">
+                    <i class="bi bi-calendar-x display-1 text-accent-primary mb-4"></i>
+                    <h3 class="fw-bold mb-3">No Events Available Yet</h3>
+                    <p class="text-secondary mb-4 fs-5">We're working on bringing you amazing events. Check back soon!</p>
+                    <div class="d-flex gap-3 justify-content-center flex-wrap">
+                        <a asp-controller="Organizer" asp-action="Register" class="btn-primary-custom">
+                            <i class="bi bi-person-plus me-2"></i>Become an Organizer
+                        </a>
+                        <a asp-controller="Events" asp-action="Index" class="btn-secondary-custom">
+                            <i class="bi bi-search me-2"></i>Browse All Events
+                        </a>
+                    </div>
+                </div>
             </div>
         }
+    </div>
+</div>
+
+<!-- Call to Action Section -->
+<div class="container my-5">
+    <div class="card-custom p-5 text-center" style="background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);">
+        <h3 class="display-6 fw-bold mb-3">Ready to Create Your Event?</h3>
+        <p class="text-secondary mb-4 fs-5">Join thousands of organizers and start selling tickets today</p>
+        <a asp-controller="Organizer" asp-action="Register" class="btn-primary-custom btn-lg">
+            <i class="bi bi-rocket-takeoff me-2"></i>Get Started Now
+        </a>
     </div>
 </div>
 
@@ -147,3 +200,19 @@
         }
     </script>
 }
+
+<style>
+    .event-card {
+        height: 500px;
+    }
+    
+    @@media (max-width: 768px) {
+        .event-card {
+            height: 400px;
+        }
+        
+        .hero-carousel {
+            height: 400px !important;
+        }
+    }
+</style>

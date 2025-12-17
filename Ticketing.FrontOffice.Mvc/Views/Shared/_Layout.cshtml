@@ -16,7 +16,7 @@
 <body>
     <!-- Fixed Header -->
     <header class="fixed-header">
-        <nav class="navbar navbar-expand-lg">
+        <nav class="navbar navbar-expand-lg navbar-dark">
             <div class="container-fluid px-4">
                 <!-- Logo -->
                 <a class="navbar-brand logo-brand" asp-area="" asp-controller="Home" asp-action="Index">
@@ -24,41 +24,42 @@
                     <span class="logo-text">EventTicketing</span>
                 </a>
 
-                <!-- Search Bar (Center) -->
-                <form class="search-form" asp-controller="Events" asp-action="Index" method="get">
-                    <div class="search-wrapper">
-                        <i class="bi bi-search search-icon"></i>
-                        <input type="text" name="searchTerm" class="search-input" placeholder="Search an event…" value="@Context.Request.Query["searchTerm"]">
-                    </div>
-                </form>
-
-                <!-- Navigation Links -->
-                <div class="navbar-nav nav-links">
-                    <a class="nav-link" asp-controller="Events" asp-action="Index">Events</a>
-                    <a class="nav-link" asp-controller="Organizer" asp-action="Register">Become Organizer</a>
-                    <a class="nav-link" href="#contact">Contact</a>
-                    <a class="nav-link cart-link" asp-controller="Cart" asp-action="Index">
-                        <i class="bi bi-cart3"></i>
-                        <span class="cart-badge">0</span>
-                    </a>
-                    <a class="nav-link btn-login" href="#login">Login</a>
-                </div>
-
                 <!-- Mobile Menu Toggle -->
-                <button class="navbar-toggler mobile-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu">
+                <button class="navbar-toggler mobile-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-            </div>
 
-            <!-- Mobile Menu -->
-            <div class="collapse navbar-collapse mobile-menu" id="mobileMenu">
-                <div class="container-fluid px-4 py-3">
-                    <a class="nav-link-mobile" asp-controller="Events" asp-action="Index">Events</a>
-                    <a class="nav-link-mobile" asp-controller="Cart" asp-action="Index">Cart</a>
-                    <a class="nav-link-mobile" asp-controller="Customer" asp-action="MyReservations">My Reservations</a>
-                    <a class="nav-link-mobile" asp-controller="Organizer" asp-action="Register">Become Organizer</a>
-                    <a class="nav-link-mobile" href="#contact">Contact</a>
-                    <a class="nav-link-mobile" href="#login">Login</a>
+                <!-- Collapsible Content -->
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    <!-- Search Bar (Center) -->
+                    <form class="search-form mx-auto my-3 my-lg-0" asp-controller="Events" asp-action="Index" method="get">
+                        <div class="search-wrapper">
+                            <i class="bi bi-search search-icon"></i>
+                            <input type="text" name="searchTerm" class="search-input" placeholder="Search an event…" value="@Context.Request.Query["searchTerm"]">
+                        </div>
+                    </form>
+
+                    <!-- Navigation Links -->
+                    <ul class="navbar-nav nav-links ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Events" asp-action="Index">Events</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Organizer" asp-action="Register">Become Organizer</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#contact">Contact</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link cart-link" asp-controller="Cart" asp-action="Index">
+                                <i class="bi bi-cart3"></i>
+                                <span class="cart-badge">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn-login" href="#login">Login</a>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </nav>

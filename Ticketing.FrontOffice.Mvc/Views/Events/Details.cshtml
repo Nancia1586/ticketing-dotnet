@@ -98,10 +98,10 @@
                     </div>
                     
                     <!-- Seat Grid -->
-                    <div class="seat-grid" style="grid-template-columns: repeat(@venue.TotalColumns, 1fr);">
-                        @for (int r = 1; r <= venue.TotalRows; r++)
+                    <div class="seat-grid" style="grid-template-columns: repeat(@(venue?.TotalColumns ?? 10), 1fr);">
+                        @for (int r = 1; r <= (venue?.TotalRows ?? 10); r++)
                         {
-                            for (int c = 1; c <= venue.TotalColumns; c++)
+                            for (int c = 1; c <= (venue?.TotalColumns ?? 10); c++)
                             {
                                 var rowLetter = (char)('A' + r - 1);
                                 var seatLabel = $"{rowLetter}{c}";
@@ -192,7 +192,6 @@
                                             <div class="radio-indicator-custom me-3 rounded-circle" style="background-color: @typeColors[type.Id]; width: 24px; height: 24px;"></div>
                                             <div>
                                                 <h6 class="fw-bold mb-0 text-uppercase">@type.Name</h6>
-                                                <small class="text-secondary">@type.Description</small>
                                             </div>
                                         </div>
                                         <div class="fw-bold text-accent-primary fs-5">@type.Price.ToString("N0") <small class="fs-6 text-secondary">Ar</small></div>
@@ -279,7 +278,7 @@
         transition: all 0.3s ease;
     }
     
-    @media (max-width: 768px) {
+    @@media (max-width: 768px) {
         .event-details-hero {
             height: 400px;
         }

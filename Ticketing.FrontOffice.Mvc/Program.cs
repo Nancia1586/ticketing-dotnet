@@ -1,6 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Ticketing.Core.Data;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -14,13 +11,6 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
-
-// Database Configuration
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-                       ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-
-builder.Services.AddDbContext<TicketingDbContext>(options =>
-    options.UseSqlServer(connectionString, b => b.MigrationsAssembly("Ticketing.BackOffice.Razor")));
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<Ticketing.FrontOffice.Mvc.Services.CartService>();

@@ -40,39 +40,54 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                 return RedirectToAction("Index", "Cart");
             }
 
-            // Simulate Payment (always success)
-            
-            var reservations = new List<Reservation>();
-
-            foreach (var item in cart.Items)
+            try
             {
+                // Simulate Payment (always success)
+                
+                var reservations = new List<Reservation>();
+
+            // Group cart items by EventId and TicketTypeId to create one reservation per group
+            var groupedItems = cart.Items
+                .GroupBy(item => new { item.EventId, item.TicketTypeId })
+                .ToList();
+
+            foreach (var group in groupedItems)
+            {
+                var itemsInGroup = group.ToList();
+                var firstItem = itemsInGroup.First();
+                
+                // Collect all seats from all items in this group
+                var allSeats = itemsInGroup.SelectMany(item => item.Seats).ToList();
+                var totalQuantity = itemsInGroup.Sum(item => item.Quantity);
+                var totalAmount = itemsInGroup.Sum(item => item.Total);
+
                 var reservation = new Reservation
                 {
                     CustomerName = model.FullName,
                     Email = model.Email,
-                    EventId = item.EventId,
+                    EventId = firstItem.EventId,
                     ReservationDate = DateTime.UtcNow,
-                    SeatCount = item.Quantity,
+                    SeatCount = allSeats.Any() ? allSeats.Count : totalQuantity,
                     Status = ReservationStatus.Confirmed,
-                    TotalAmount = item.Total,
+                    TotalAmount = totalAmount,
                     PhoneNumber = "N/A" // Optional in form
                 };
 
-                // Add Seats
-                foreach (var seat in item.Seats)
+                // Add all Seats from the group
+                foreach (var seat in allSeats)
                 {
+                    var rowLetter = (char)('A' + seat.Row - 1);
                     reservation.Seats.Add(new Seat
                     {
                         PosX = seat.Row,
                         PosY = seat.Col,
-                        Code = $"R{seat.Row}-C{seat.Col}",
+                        Code = $"{rowLetter}{seat.Col}", // Format: A1, A2, B1, etc.
                         Status = SeatStatus.Reserved,
-                        TicketTypeId = item.TicketTypeId // Store ticket type on seat too? Or just Reservation?
+                        TicketTypeId = firstItem.TicketTypeId
                     });
                 }
                 
-                // If generic tickets (no seats), we might just stick with reservation count.
-                // But for completeness if Seats are provided we use them.
+                // If generic tickets (no seats), we use the quantity count.
 
                 var reservationId = await _dataAccess.CreateReservationAsync(reservation);
                 reservation.Id = reservationId;
@@ -87,7 +102,33 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
 
             _cartService.Clear();
 
-            return View("Confirmation", reservations);
+            // Load ticket types for all reservations to pass to view
+            var ticketTypeCache = new Dictionary<int, TicketType>();
+            foreach (var res in reservations)
+            {
+                foreach (var seat in res.Seats)
+                {
+                    if (!ticketTypeCache.ContainsKey(seat.TicketTypeId))
+                    {
+                        var ticketType = await _dataAccess.GetTicketTypeByIdAsync(seat.TicketTypeId);
+                        if (ticketType != null)
+                        {
+                            ticketTypeCache[seat.TicketTypeId] = ticketType;
+                        }
+                    }
+                }
+            }
+            
+                ViewBag.TicketTypes = ticketTypeCache;
+
+                return View("Confirmation", reservations);
+            }
+            catch (Exception ex)
+            {
+                // Log error and show error message
+                ModelState.AddModelError("", "An error occurred while processing your order. Please try again.");
+                return View("Index", model);
+            }
         }
     }
 }

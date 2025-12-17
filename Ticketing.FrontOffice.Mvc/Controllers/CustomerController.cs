@@ -26,10 +26,20 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                 return View();
             }
 
-            var reservations = await _dataAccess.GetReservationsByEmailAsync(email);
+            try
+            {
+                var reservations = await _dataAccess.GetReservationsByEmailAsync(email);
 
-            ViewBag.Email = email;
-            return View(reservations);
+                ViewBag.Email = email;
+                return View(reservations);
+            }
+            catch (Exception ex)
+            {
+                // Log error and return empty list
+                ModelState.AddModelError("", "Unable to retrieve reservations. Please try again later.");
+                ViewBag.Email = email;
+                return View(new List<Ticketing.Core.Models.Reservation>());
+            }
         }
     }
 }
