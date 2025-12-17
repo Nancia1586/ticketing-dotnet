@@ -8,17 +8,20 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
 {
     public class EditModel : PageModel
     {
-        private readonly IEventService _eventService; 
+        private readonly IEventService _eventService;
+        private readonly ICategoryService _categoryService;
 
-        public EditModel(IEventService eventService)
+        public EditModel(IEventService eventService, ICategoryService categoryService)
         {
             _eventService = eventService;
+            _categoryService = categoryService;
         }
 
         [BindProperty]
         public Event Event { get; set; } = default!; 
 
         public SelectList VenueSelectList { get; set; }
+        public SelectList CategorySelectList { get; set; }
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
@@ -39,6 +42,9 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
             var venues = await _eventService.GetAllVenuesAsync();
             VenueSelectList = new SelectList(venues, "Id", "Name");
             
+            var categories = await _categoryService.GetAllCategoriesAsync();
+            CategorySelectList = new SelectList(categories.Where(c => c.IsActive), "Id", "Name");
+            
             return Page();
         }
 
@@ -48,6 +54,9 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
             {
                 var venues = await _eventService.GetAllVenuesAsync();
                 VenueSelectList = new SelectList(venues, "Id", "Name");
+                
+                var categories = await _categoryService.GetAllCategoriesAsync();
+                CategorySelectList = new SelectList(categories.Where(c => c.IsActive), "Id", "Name");
                 return Page();
             }
 

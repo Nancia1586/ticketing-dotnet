@@ -1,0 +1,46 @@
+@page
+@model Ticketing.BackOffice.Razor.Pages.Categories.CreateModel
+
+@{
+    ViewData["Title"] = "Créer une Catégorie";
+}
+
+<div class="overflow-x-auto bg-white rounded-lg shadow-xl max-w-7xl p-10">
+    <h1 class="text-2xl font-extrabold mb-8 text-gray-900">Nouvelle Catégorie</h1>
+        
+    <form method="post">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="md:col-span-2">
+                <label asp-for="Category.Name" class="block text-sm font-medium text-gray-700 mb-2">Nom de la catégorie *</label>
+                <input asp-for="Category.Name" class="w-full h-10 px-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Ex: Cultures, Spectacles et concerts..." />
+                <span asp-validation-for="Category.Name" class="text-xs text-red-600 mt-1 block"></span>
+            </div>
+
+            <div class="md:col-span-2">
+                <label asp-for="Category.Description" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea asp-for="Category.Description" class="w-full h-32 p-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Description de la catégorie..."></textarea>
+                <span asp-validation-for="Category.Description" class="text-xs text-red-600 mt-1 block"></span>
+            </div>
+
+            <div class="mb-4 flex items-center">
+                <input asp-for="Category.IsActive" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                <label asp-for="Category.IsActive" class="ml-2 block text-sm font-medium text-gray-700">Active (Visible dans l'application)</label>
+            </div>
+        </div>
+
+        <div class="flex justify-end space-x-4 pt-8 mt-8 border-t">
+            <a asp-page="./Index" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Annuler
+            </a>
+            <button type="submit" class="inline-flex justify-center items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Créer la catégorie
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+}
+

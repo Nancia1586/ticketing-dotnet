@@ -37,6 +37,14 @@
                     <input asp-for="Event.Date" value="@Model.Event.Date.ToString("yyyy-MM-ddTHH:mm")"  type="datetime-local" class="w-full h-10 px-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
                     <span asp-validation-for="Event.Date" class="text-xs text-red-600 mt-1 block"></span>
                 </div>
+
+                <div>
+                    <label asp-for="Event.CategoryId" class="block text-sm font-medium text-gray-700 mb-2">Catégorie</label>
+                    <select asp-for="Event.CategoryId" asp-items="Model.CategorySelectList" class="w-full h-10 px-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        <option value="">-- Sélectionner une catégorie --</option>
+                    </select>
+                    <span asp-validation-for="Event.CategoryId" class="text-xs text-red-600 mt-1 block"></span>
+                </div>
             </div>
 
             <h2 class="text-lg font-semibold text-gray-700 border-t pt-6 mt-6 mb-4">Affiche de l'Événement</h2>
