@@ -70,7 +70,8 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                     SeatCount = allSeats.Any() ? allSeats.Count : totalQuantity,
                     Status = ReservationStatus.Confirmed,
                     TotalAmount = totalAmount,
-                    PhoneNumber = "N/A" // Optional in form
+                    PhoneNumber = "N/A", // Optional in form
+                    PaymentMethod = model.PaymentMethod
                 };
 
                 // Add all Seats from the group

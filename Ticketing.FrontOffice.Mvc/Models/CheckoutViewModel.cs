@@ -23,6 +23,10 @@ namespace Ticketing.FrontOffice.Mvc.Models
 
         [Required]
         public string CVV { get; set; } = string.Empty;
+
+        [Required]
+        [Display(Name = "Payment Method")]
+        public string PaymentMethod { get; set; } = "Credit Card";
         
         public decimal TotalAmount { get; set; }
     }

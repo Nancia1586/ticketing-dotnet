@@ -50,6 +50,24 @@
                     <hr class="my-5" style="border-color: var(--border-color);">
                     
                     <h5 class="fw-bold mb-4 border-bottom pb-3" style="border-color: var(--border-color) !important;">
+                        <i class="bi bi-wallet2 me-2 text-accent-primary"></i>Payment Method
+                    </h5>
+
+                    <div class="mb-5">
+                        <label asp-for="PaymentMethod" class="form-label fw-bold text-secondary">
+                            Choose Payment Method <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="PaymentMethod" class="form-select form-select-lg bg-card border-secondary text-white">
+                            <option value="Credit Card">Credit Card</option>
+                            <option value="Orange Money">Orange Money</option>
+                            <option value="Mvola">Mvola</option>
+                            <option value="Airtel Money">Airtel Money</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                        </select>
+                        <span asp-validation-for="PaymentMethod" class="text-danger"></span>
+                    </div>
+
+                    <h5 class="fw-bold mb-4 border-bottom pb-3" style="border-color: var(--border-color) !important;">
                         <i class="bi bi-credit-card me-2 text-accent-primary"></i>Payment Details
                     </h5>
 

@@ -18,6 +18,7 @@ namespace Ticketing.FrontOffice.Mvc.Models
     {
         public int Row { get; set; }
         public int Col { get; set; }
+        public int TicketTypeId { get; set; }
     }
 
     public class Cart

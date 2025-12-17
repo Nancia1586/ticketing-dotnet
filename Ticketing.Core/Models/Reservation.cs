@@ -16,6 +16,7 @@ namespace Ticketing.Core.Models
         public ReservationStatus Status { get; set; } = ReservationStatus.Pending;
         public DateTime ReservationDate { get; set; } = DateTime.UtcNow;
         public decimal TotalAmount { get; set; }
+        public string PaymentMethod { get; set; } = string.Empty;
 
         public ICollection<Seat> Seats { get; set; } = new List<Seat>();
 

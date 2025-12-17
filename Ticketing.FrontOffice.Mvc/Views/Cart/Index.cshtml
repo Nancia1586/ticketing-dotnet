@@ -57,7 +57,7 @@
                                                 @foreach (var seat in item.Seats)
                                                 {
                                                     <span class="badge bg-card border border-secondary px-2 py-1">
-                                                        R@seat.Row-C@seat.Col
+                                                        @((char)('A' + seat.Row - 1))@seat.Col
                                                     </span>
                                                 }
                                             </div>
