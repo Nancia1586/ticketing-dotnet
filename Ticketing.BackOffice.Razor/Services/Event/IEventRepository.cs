@@ -15,6 +15,6 @@ namespace Ticketing.BackOffice.Razor.Services
         Task<Event?> GetEventWithPlanByIdAsync(int id);
         Task UpdateEventPlanAsync(int eventId, List<TicketTypePlanDto> ticketTypePlans);
         
-        Task<IEnumerable<Venue>> GetAllVenuesAsync();
+
     }
 }

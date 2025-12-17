@@ -89,7 +89,7 @@ namespace Ticketing.BackOffice.Razor.Services
 
         public async Task<IEnumerable<Venue>> GetAllVenuesAsync()
         {
-             return await _httpClient.GetFromJsonAsync<IEnumerable<Venue>>("api/events/venues") ?? new List<Venue>();
+             return await _httpClient.GetFromJsonAsync<IEnumerable<Venue>>("api/venues") ?? new List<Venue>();
         }
     }
 }

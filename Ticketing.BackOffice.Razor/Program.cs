@@ -30,6 +30,7 @@ builder.Services.AddHttpClient<IEventService, EventApiService>(client =>
 
 
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IVenueService, VenueService>();
 
 builder.Services.AddRazorPages();
 
