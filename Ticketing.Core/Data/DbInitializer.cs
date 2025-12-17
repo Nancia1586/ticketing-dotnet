@@ -24,6 +24,17 @@ namespace Ticketing.Core.Data
             context.Organizers.Add(organizer);
             context.SaveChanges();
 
+            // Create default categories
+            var categories = new List<Category>
+            {
+                new Category { Name = "Cultures", Description = "Événements culturels", IsActive = true },
+                new Category { Name = "Spectacles et concerts", Description = "Spectacles et concerts", IsActive = true },
+                new Category { Name = "Foires et séminaires", Description = "Foires et séminaires", IsActive = true },
+                new Category { Name = "Autre", Description = "Autres types d'événements", IsActive = true }
+            };
+            context.Categories.AddRange(categories);
+            context.SaveChanges();
+
             var venue = new Venue
             {
                 Name = "La City Ivandry",
@@ -42,6 +53,7 @@ namespace Ticketing.Core.Data
                 Date = DateTime.Now.AddDays(14).AddHours(20).AddMinutes(30), // 2 weeks from now, 20:30
                 VenueId = venue.Id,
                 OrganizerId = organizer.Id,
+                CategoryId = categories[1].Id, // Spectacles et concerts
                 IsActive = true,
                 PosterUrl = "https://placehold.co/600x400/1a1a1a/FFF?text=MISENGY+TROPICAL+NIGHT"
             };

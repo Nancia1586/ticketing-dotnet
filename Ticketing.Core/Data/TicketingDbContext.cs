@@ -16,6 +16,7 @@ namespace Ticketing.Core.Data
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<Venue> Venues { get; set; }
         public DbSet<Organizer> Organizers { get; set; }
+        public DbSet<Category> Categories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,6 +33,12 @@ namespace Ticketing.Core.Data
             modelBuilder.Entity<Reservation>()
                 .Property(r => r.TotalAmount)
                 .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Event>()
+                .HasOne(e => e.Category)
+                .WithMany(c => c.Events)
+                .HasForeignKey(e => e.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             base.OnModelCreating(modelBuilder);
         }
