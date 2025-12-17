@@ -1,10 +1,22 @@
 @model Ticketing.FrontOffice.Mvc.Models.EventDetailsViewModel
+@functions {
+    public class GridCellConfig
+    {
+        public int r { get; set; }
+        public int c { get; set; }
+        public string type { get; set; }
+        public string label { get; set; }
+    }
+}
 @{
     ViewData["Title"] = Model.Event.Name;
     var venue = Model.Event.Venue;
     var hasSeating = venue != null && venue.TotalRows > 0 && venue.TotalColumns > 0;
     
-    var allSeats = Model.Event.TicketTypes.SelectMany(tt => tt.Seats).ToDictionary(s => new { s.PosX, s.PosY });
+    var allSeats = Model.Event.TicketTypes
+        .SelectMany(tt => tt.Seats)
+        .GroupBy(s => new { s.PosX, s.PosY })
+        .ToDictionary(g => g.Key, g => g.First());
     var reservedCoords = Model.Event.Reservations
         .Where(r => r.Status != Ticketing.Core.Models.ReservationStatus.Cancelled)
         .SelectMany(r => r.Seats)
@@ -12,7 +24,28 @@
         .ToHashSet();
 
     var typeColors = Model.Event.TicketTypes.ToDictionary(tt => tt.Id, tt => tt.Color);
+    var typeNames = Model.Event.TicketTypes.ToDictionary(tt => tt.Id, tt => tt.Name);
+    var typePrices = Model.Event.TicketTypes.ToDictionary(tt => tt.Id, tt => tt.Price);
     var timeRemaining = Model.Event.Date - DateTime.Now;
+
+    // Layout Configuration
+    var layoutConfig = new Dictionary<(int, int), GridCellConfig>();
+    if (venue != null && !string.IsNullOrEmpty(venue.LayoutJson))
+    {
+        try
+        {
+            var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var items = System.Text.Json.JsonSerializer.Deserialize<List<GridCellConfig>>(venue.LayoutJson, options);
+            if(items != null)
+            {
+                foreach(var item in items)
+                {
+                    layoutConfig[(item.r, item.c)] = item;
+                }
+            }
+        }
+        catch { /* Ignore invalid JSON */ }
+    }
     
     var bgImage = !string.IsNullOrEmpty(Model.Event.PosterUrl) 
         ? Model.Event.PosterUrl 
@@ -81,37 +114,45 @@
 <div class="container my-5">
     <div class="row g-5">
         <!-- Seat Selection Section -->
-        <div class="col-lg-7 order-2 order-lg-1">
+        <div class="col-lg-9 order-2 order-lg-1">
             <h3 class="fw-bold mb-4 text-uppercase border-start border-4 border-accent-primary ps-3" style="border-color: var(--accent-primary) !important;">
                 @(hasSeating && allSeats.Any() ? $"Seat Map - {venue?.Name}" : "General Admission")
             </h3>
             
-            <div class="seat-map-container">
+            <div class="seat-map-container" style="overflow-x: auto;">
                 @if (hasSeating && allSeats.Any())
                 {
                     <!-- Stage Indicator -->
-                    <div class="text-center mb-4">
-                        <div class="d-inline-block bg-card px-4 py-2 rounded-pill border border-accent-primary">
-                            <i class="bi bi-mic me-2 text-accent-primary"></i>
-                            <span class="fw-bold text-uppercase">Stage</span>
-                        </div>
-                    </div>
                     
                     <!-- Seat Grid -->
-                    <div class="seat-grid" style="grid-template-columns: repeat(@venue.TotalColumns, 1fr);">
+                    <div class="seat-grid custom-seat-grid" style="grid-template-columns: repeat(@venue.TotalColumns, 30px); justify-content: center;">
                         @for (int r = 1; r <= venue.TotalRows; r++)
                         {
                             for (int c = 1; c <= venue.TotalColumns; c++)
                             {
                                 var rowLetter = (char)('A' + r - 1);
                                 var seatLabel = $"{rowLetter}{c}";
+                                layoutConfig.TryGetValue((r, c), out var config);
+                                
+                                if (config != null && config.type == "void")
+                                {
+                                    <div class="void-cell" style="grid-column: @c; grid-row: @r;">
+                                        @if (!string.IsNullOrEmpty(config.label))
+                                        {
+                                            <span class="void-label">@config.label</span>
+                                        }
+                                    </div>
+                                    continue;
+                                }
+
                                 allSeats.TryGetValue(new { PosX = r, PosY = c }, out var seatEntity);
                                 var isReserved = reservedCoords.Contains(new { PosX = r, PosY = c });
                                 
                                 if (seatEntity != null)
                                 {
                                     var seatColor = typeColors.ContainsKey(seatEntity.TicketTypeId) ? typeColors[seatEntity.TicketTypeId] : "#95a5a6";
-                                    var ticketTypeName = seatEntity.TicketType?.Name ?? "Unknown";
+                                    var ticketTypeName = typeNames.ContainsKey(seatEntity.TicketTypeId) ? typeNames[seatEntity.TicketTypeId] : "Ticket";
+                                    var ticketPrice = typePrices.ContainsKey(seatEntity.TicketTypeId) ? typePrices[seatEntity.TicketTypeId] : 0;
                                     
                                     // Determine seat class based on ticket type name
                                     string seatClass = "regular";
@@ -124,8 +165,11 @@
                                          data-row="@r" 
                                          data-col="@c" 
                                          data-type-id="@seatEntity.TicketTypeId"
+                                         data-type-name="@ticketTypeName"
+                                         data-type-color="@seatColor"
+                                         data-price="@ticketPrice"
                                          style="@(isReserved ? "" : $"background-color: {seatColor};")"
-                                         title="@seatLabel - @ticketTypeName">
+                                         title="@seatLabel - @ticketTypeName (@ticketPrice.ToString("N0") Ar)">
                                         @seatLabel
                                     </div>
                                 }
@@ -149,7 +193,7 @@
                                 
                             <div class="legend-item">
                                 <span class="legend-color @legendClass" style="background-color: @typeColors[tt.Id];"></span>
-                                <span>@tt.Name</span>
+                                <span>@tt.Name - @tt.Price.ToString("N0") Ar</span>
                             </div>
                         }
                         <div class="legend-item">
@@ -170,7 +214,7 @@
         </div>
 
         <!-- Ticket Selection Sidebar -->
-        <div class="col-lg-5 order-1 order-lg-2">
+        <div class="col-lg-3 order-1 order-lg-2">
             <div class="sticky-top" style="top: 100px;">
                 <h3 class="fw-bold mb-4 text-uppercase border-start border-4 border-accent-primary ps-3" style="border-color: var(--accent-primary) !important;">
                     Select Tickets
@@ -179,31 +223,39 @@
                 <div class="card-custom p-4">
                     <form asp-controller="Cart" asp-action="AddToCart" method="post" id="bookingForm">
                         <input type="hidden" name="eventId" value="@Model.Event.Id" />
+                        <input type="hidden" name="ticketTypeId" id="ticketTypeIdInput" />
+                        
+                        <!-- Visual Seat List -->
+                        <div id="visualSeatList" class="mb-3"></div>
+                        
                         <div id="selectedSeatsContainer"></div>
                         
                         <!-- Ticket Types -->
-                        <div class="ticket-list d-flex flex-column gap-3 mb-4">
-                            @foreach (var type in Model.Event.TicketTypes)
-                            {
-                                <label class="ticket-option-custom position-relative p-3 border rounded-2 transition-all cursor-pointer" style="border-color: var(--border-color);">
-                                    <input type="radio" name="ticketTypeId" value="@type.Id" class="position-absolute opacity-0 ticket-radio" required>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="d-flex align-items-center">
-                                            <div class="radio-indicator-custom me-3 rounded-circle" style="background-color: @typeColors[type.Id]; width: 24px; height: 24px;"></div>
-                                            <div>
-                                                <h6 class="fw-bold mb-0 text-uppercase">@type.Name</h6>
+                        @if (!hasSeating || !allSeats.Any())
+                        {
+                            <div class="ticket-list d-flex flex-column gap-3 mb-4">
+                                @foreach (var type in Model.Event.TicketTypes)
+                                {
+                                    <label class="ticket-option-custom position-relative p-3 border rounded-2 transition-all cursor-pointer" style="border-color: var(--border-color);">
+                                        <input type="radio" name="ticketTypeId" value="@type.Id" class="position-absolute opacity-0 ticket-radio" required>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <div class="radio-indicator-custom me-3 rounded-circle" style="background-color: @typeColors[type.Id]; width: 24px; height: 24px;"></div>
+                                                <div>
+                                                    <h6 class="fw-bold mb-0 text-uppercase">@type.Name</h6>
 
+                                                </div>
                                             </div>
+                                            <div class="fw-bold text-accent-primary fs-5">@type.Price.ToString("N0") <small class="fs-6 text-secondary">Ar</small></div>
                                         </div>
-                                        <div class="fw-bold text-accent-primary fs-5">@type.Price.ToString("N0") <small class="fs-6 text-secondary">Ar</small></div>
-                                    </div>
-                                </label>
-                            }
-                        </div>
+                                    </label>
+                                }
+                            </div>
+                        }
 
                         @if (hasSeating && allSeats.Any())
                         {
-                            <div class="alert alert-light border mb-4 text-center bg-card" style="border-color: var(--border-color) !important;">
+                            <div class="alert alert-light border mb-4 text-center bg-card" id="emptyStateInfo" style="border-color: var(--border-color) !important;">
                                 <i class="bi bi-info-circle me-2 text-accent-primary"></i>
                                 Select your seats on the map above.<br>
                                 <strong id="seatSelectionStatus" class="text-accent-primary">0 seats selected</strong>
@@ -218,7 +270,7 @@
                         }
 
                         <div class="d-grid">
-                            <button type="submit" class="btn-primary-custom w-100 py-3">
+                            <button type="submit" class="btn-primary-custom w-100 py-3" id="addToCartBtn" @(hasSeating && allSeats.Any() ? "disabled" : "")>
                                 <i class="bi bi-cart-plus me-2"></i>Add to Cart
                             </button>
                         </div>
@@ -284,6 +336,44 @@
             height: 400px;
         }
     }
+    
+    .void-cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        text-align: center;
+        background-color: transparent;
+        pointer-events: none;
+    }
+    
+    .void-label {
+        background-color: var(--bg-card);
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm);
+        white-space: nowrap;
+    }
+
+    /* Custom Grid Overrides for Compact View */
+    .custom-seat-grid {
+        gap: 2px !important;
+    }
+    
+    .custom-seat-grid .seat {
+        width: 30px;
+        height: 30px;
+        font-size: 0.6rem;
+        border-radius: 2px;
+        margin: 0;
+        border: 1px solid rgba(255, 255, 255, 0.3); /* Visual delimitation */
+        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
 </style>
 
 @section Scripts {
@@ -292,18 +382,29 @@
             const seats = document.querySelectorAll('.seat-available');
             const container = document.getElementById('selectedSeatsContainer');
             const statusDiv = document.getElementById('seatSelectionStatus');
+            const ticketInput = document.getElementById('ticketTypeIdInput');
+            const addToCartBtn = document.getElementById('addToCartBtn');
+            const hasSeating = @((hasSeating && allSeats.Any()).ToString().ToLower());
+            
+            // Restore selection from cart
+            const initialSeats = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CartItems.SelectMany(i => i.Seats).Select(s => new { r = s.Row, c = s.Col })));
+            
+            if (initialSeats && initialSeats.length > 0) {
+                initialSeats.forEach(s => {
+                    // Find seat by row/col
+                    const seatEl = document.querySelector(`.seat-available[data-row="${s.r}"][data-col="${s.c}"]`);
+                    if (seatEl) {
+                        seatEl.classList.add('selected');
+                    }
+                });
+                // Update UI to reflect restored selection
+                updateSelectedSeats();
+            }
             
             // Seat selection
             seats.forEach(seat => {
                 seat.addEventListener('click', function() {
                     this.classList.toggle('selected');
-                    
-                    if (this.classList.contains('selected')) {
-                        const typeId = this.dataset.typeId;
-                        const radio = document.querySelector(`input[name="ticketTypeId"][value="${typeId}"]`);
-                        if(radio) radio.checked = true;
-                    }
-                    
                     updateSelectedSeats();
                 });
             });
@@ -311,30 +412,35 @@
             function updateSelectedSeats() {
                 container.innerHTML = '';
                 const selected = document.querySelectorAll('.seat.selected');
+                const visualContainer = document.getElementById('visualSeatList');
+                const emptyState = document.getElementById('emptyStateInfo');
                 
                 if (selected.length > 0) {
-                    const firstType = selected[0].dataset.typeId;
-                    let mixed = false;
-                    selected.forEach(s => {
-                        if(s.dataset.typeId !== firstType) {
-                            mixed = true;
-                            s.classList.remove('selected');
-                        }
-                    });
-                    if (mixed) {
-                        alert("Please select seats from the same ticket category.");
-                        return updateSelectedSeats();
+                    if (emptyState) emptyState.style.display = 'none';
+                    if(statusDiv) {
+                        statusDiv.textContent = selected.length + " seat(s) selected";
                     }
-                    
-                    if(statusDiv) statusDiv.textContent = selected.length + " seat(s) selected";
+                    if(addToCartBtn) addToCartBtn.disabled = false;
                 } else {
+                    if (emptyState) emptyState.style.display = 'block';
                     if(statusDiv) statusDiv.textContent = "0 seats selected";
+                    if(hasSeating && addToCartBtn) addToCartBtn.disabled = true;
+                    if(ticketInput) ticketInput.value = '';
                 }
 
-                const finalSelected = document.querySelectorAll('.seat.selected');
-                finalSelected.forEach((seat, index) => {
-                    const r = seat.dataset.row;
-                    const c = seat.dataset.col;
+                // Group and display visual list
+                const groups = {};
+                let grandTotal = 0;
+                
+                selected.forEach((s, index) => {
+                    // Populate hidden inputs
+                    const r = s.dataset.row;
+                    const c = s.dataset.col;
+                    const tId = s.dataset.typeId;
+                    const tName = s.dataset.typeName;
+                    const tColor = s.dataset.typeColor;
+                    const price = parseFloat(s.dataset.price || 0);
+                    const label = s.innerText.trim();
                     
                     const inputRow = document.createElement('input');
                     inputRow.type = 'hidden';
@@ -347,7 +453,58 @@
                     inputCol.name = `seats[${index}].col`;
                     inputCol.value = c;
                     container.appendChild(inputCol);
+
+                    const inputTypeId = document.createElement('input');
+                    inputTypeId.type = 'hidden';
+                    inputTypeId.name = `seats[${index}].TicketTypeId`;
+                    inputTypeId.value = tId;
+                    container.appendChild(inputTypeId);
+
+                    // Logic for Visual Grouping
+                    if(!groups[tId]) {
+                        groups[tId] = { name: tName, color: tColor, seats: [], subtotal: 0, price: price };
+                    }
+                    groups[tId].seats.push(label);
+                    groups[tId].subtotal += price;
+                    grandTotal += price;
                 });
+                
+                // Render Visual List
+                let html = '';
+                if(selected.length > 0 && visualContainer) {
+                     html += '<h6 class="text-secondary text-uppercase small fw-bold mb-3">Selected Seats</h6>';
+                     
+                     for (const tId in groups) {
+                        const g = groups[tId];
+                        html += `
+                            <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded" style="background-color: rgba(255,255,255,0.05);">
+                                <div class="d-flex align-items-center overflow-hidden">
+                                    <span class="badge me-2" style="background-color: ${g.color}">${g.name}</span>
+                                    <span class="text-dark small text-truncate" style="max-width: 150px;" title="${g.seats.join(', ')}">
+                                        ${g.seats.join(', ')}
+                                    </span>
+                                </div>
+                                <div class="text-end ms-2">
+                                    <div class="fw-bold text-accent-primary small">${g.subtotal.toLocaleString()} Ar</div>
+                                    <div class="text-secondary" style="font-size: 0.75rem;">${g.seats.length} x ${g.price.toLocaleString()}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    html += `
+                        <div class="border-top pt-2 mt-3 d-flex justify-content-between align-items-center" style="border-color: var(--border-color) !important;">
+                            <span class="text-dark fw-bold">TOTAL</span>
+                            <span class="text-accent-primary fw-bold fs-5">${grandTotal.toLocaleString()} Ar</span>
+                        </div>
+                    `;
+                    
+                    visualContainer.innerHTML = html;
+                    visualContainer.style.display = 'block';
+                } else if (visualContainer) {
+                    visualContainer.innerHTML = '';
+                    visualContainer.style.display = 'none';
+                }
             }
             
             // Countdown timer update

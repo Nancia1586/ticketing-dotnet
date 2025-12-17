@@ -15,6 +15,7 @@ builder.Services.AddDbContext<TicketingDbContext>(options =>
 
 // Register Repository for Data Access (Used by API Controller)
 builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 builder.Services.AddHttpContextAccessor();
 
 // Register API Controllers with JSON Options for handling cycles
