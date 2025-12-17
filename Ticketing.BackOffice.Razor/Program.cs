@@ -4,14 +4,11 @@ using Ticketing.BackOffice.Razor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorPages();
 
-// Récupération de la chaîne de connexion
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-// Ajout du DbContext pour l'injection de dépendances
 builder.Services.AddDbContext<TicketingDbContext>(options =>
     options.UseSqlServer(connectionString, b => b.MigrationsAssembly("Ticketing.BackOffice.Razor"))); 
 
@@ -31,7 +28,7 @@ builder.Services.AddHttpClient<IEventService, EventApiService>(client =>
     client.BaseAddress = new Uri(baseUrl);
 });
 
-builder.Services.AddScoped<IEventService, EventService>();
+
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 builder.Services.AddRazorPages();
