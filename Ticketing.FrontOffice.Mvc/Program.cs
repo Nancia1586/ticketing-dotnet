@@ -20,7 +20,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
                        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContext<TicketingDbContext>(options =>
-    options.UseSqlServer(connectionString, b => b.MigrationsAssembly("Ticketing.BackOffice.Razor")));
+    options.UseSqlServer(connectionString, b => b.MigrationsAssembly("Ticketing.FrontOffice.Mvc")));
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<Ticketing.FrontOffice.Mvc.Services.CartService>();
