@@ -1,0 +1,116 @@
+@page
+@model Ticketing.BackOffice.Razor.Pages.Reservations.IndexModel
+@{
+    ViewData["Title"] = "Gestion des Commandes";
+}
+
+<div class="p-6 bg-white rounded-xl shadow-sm border border-gray-100 mb-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Commandes & Réservations</h1>
+            <p class="text-gray-500 mt-1">Gérer les achats de billets et le statut des places.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-semibold border border-blue-100">
+                @Model.Reservations.Count() Total Commandes
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-50 border-b border-gray-100">
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Client</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Événement</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Places</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Montant</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Paiement</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Statut</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+                @foreach (var res in Model.Reservations)
+                {
+                    <tr class="hover:bg-blue-50/30 transition-colors group">
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col">
+                                <span class="font-bold text-gray-900">@res.CustomerName</span>
+                                <span class="text-xs text-gray-500">@res.Email</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-semibold text-gray-800">@res.Event.Name</span>
+                                <span class="text-xs text-gray-500">@res.ReservationDate.ToString("dd MMM yyyy, HH:mm")</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-bold">
+                                    @res.SeatCount
+                                </span>
+                                <div class="flex -space-x-1 overflow-hidden">
+                                    @foreach (var seat in res.Seats.Take(3))
+                                    {
+                                        <span class="inline-block px-1 bg-blue-100 text-blue-600 border border-blue-200 text-[10px] rounded uppercase font-bold">@seat.Code</span>
+                                    }
+                                    @if(res.Seats.Count > 3)
+                                    {
+                                        <span class="text-xs text-gray-400 font-bold ml-2">...@res.Seats.Count</span>
+                                    }
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="font-bold text-blue-700">@res.TotalAmount.ToString("N0") Ar</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full border border-gray-200 uppercase tracking-wider">
+                                @res.PaymentMethod
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            @{
+                                var statusClass = res.Status switch {
+                                    Ticketing.Core.Models.ReservationStatus.Confirmed => "bg-emerald-50 text-emerald-700 border-emerald-100",
+                                    Ticketing.Core.Models.ReservationStatus.Pending => "bg-amber-50 text-amber-700 border-amber-100",
+                                    Ticketing.Core.Models.ReservationStatus.Cancelled => "bg-rose-50 text-rose-700 border-rose-100",
+                                    _ => "bg-gray-50 text-gray-700 border-gray-100"
+                                };
+                            }
+                            <span class="px-3 py-1 @statusClass text-xs font-bold rounded-full border uppercase tracking-wider">
+                                @res.Status
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a asp-page="./Details" asp-route-id="@res.Id" class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-50 transition-all shadow-sm">
+                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                                Voir
+                            </a>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Reservations.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center">
+                                <svg class="w-12 h-12 text-gray-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                                </svg>
+                                <p class="text-gray-500 font-medium">Aucune commande trouvée.</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

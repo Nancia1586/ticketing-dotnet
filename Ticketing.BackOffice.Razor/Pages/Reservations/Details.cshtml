@@ -1,0 +1,201 @@
+@page "{id:int}"
+@model Ticketing.BackOffice.Razor.Pages.Reservations.DetailsModel
+@{
+    ViewData["Title"] = $"Commande #{Model.Reservation.Id}";
+}
+
+<div class="mb-8 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+        <a asp-page="./Index" class="p-2 bg-white border border-gray-200 rounded-lg text-gray-400 hover:text-blue-600 hover:border-blue-100 transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+        </a>
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Détails de la Commande #@Model.Reservation.Id</h1>
+            <p class="text-gray-500">Effectuée le @Model.Reservation.ReservationDate.ToString("F")</p>
+        </div>
+    </div>
+    
+    <div class="flex items-center gap-3">
+        <form method="post" asp-page-handler="UpdateStatus" asp-route-id="@Model.Reservation.Id" class="flex items-center gap-2">
+            <select name="status" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                @foreach (var status in Enum.GetValues<Ticketing.Core.Models.ReservationStatus>())
+                {
+                    @if (status == Model.Reservation.Status)
+                    {
+                        <option value="@status" selected>@status</option>
+                    }
+                    else
+                    {
+                        <option value="@status">@status</option>
+                    }
+                }
+            </select>
+            <button type="submit" class="px-4 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-all shadow-md">
+                Mettre à jour
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Info -->
+    <div class="lg:col-span-2 space-y-8">
+        <!-- Customer & Event Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Informations Client</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-gray-900">@Model.Reservation.CustomerName</p>
+                                <p class="text-xs text-gray-500">Nom Complet</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-gray-900">@Model.Reservation.Email</p>
+                                <p class="text-xs text-gray-500">Email</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Détails Événement</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-gray-900">@Model.Reservation.Event.Name</p>
+                                <p class="text-xs text-gray-500">Événement</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-rose-50 rounded-lg flex items-center justify-center text-rose-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-gray-900">@Model.Reservation.Event.Date.ToString("dd MMMM yyyy HH:mm")</p>
+                                <p class="text-xs text-gray-500">Date de l'événement</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seats List -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
+                <h3 class="text-sm font-bold text-gray-900">Billets & Places (@Model.Reservation.Seats.Count)</h3>
+                <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded">
+                    Total: @Model.Reservation.TotalAmount.ToString("N0") Ar
+                </span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-[10px] font-bold text-gray-400 uppercase">Code Place</th>
+                            <th class="px-6 py-3 text-[10px] font-bold text-gray-400 uppercase">Type de Billet</th>
+                            <th class="px-6 py-3 text-[10px] font-bold text-gray-400 uppercase">Prix</th>
+                            <th class="px-6 py-3 text-[10px] font-bold text-gray-400 uppercase">Position</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        @foreach (var seat in Model.Reservation.Seats)
+                        {
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="px-6 py-4">
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded border border-blue-200 uppercase">
+                                        @seat.Code
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm font-medium text-gray-700">@seat.TicketType?.Name</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm font-bold text-gray-900">@seat.TicketType?.Price.ToString("N0") Ar</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-xs text-gray-400 font-medium">Rangée @seat.PosX, Siège @seat.PosY</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Info -->
+    <div class="space-y-8">
+        <!-- Summary Card -->
+        <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl shadow-lg p-6 text-white">
+            <h3 class="text-blue-100 text-xs font-bold uppercase tracking-widest mb-6">Résumé de Paiement</h3>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-blue-100 text-sm">Quantité</span>
+                    <span class="font-bold">x @Model.Reservation.SeatCount Billets</span>
+                </div>
+                <div class="flex items-center justify-between border-t border-blue-500/30 pt-4">
+                    <span class="text-blue-100 text-sm">Mode de Paiement</span>
+                    <span class="font-bold flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                        </svg>
+                        @Model.Reservation.PaymentMethod
+                    </span>
+                </div>
+                <div class="flex items-center justify-between border-t border-blue-500/30 pt-4">
+                    <span class="text-blue-100 text-sm">Statut Actuel</span>
+                    <span class="font-bold">@Model.Reservation.Status</span>
+                </div>
+                <div class="mt-8 pt-6 border-t border-blue-400/50">
+                    <div class="flex items-baseline justify-between">
+                        <span class="text-blue-50 text-sm font-medium">TOTAL PAYÉ</span>
+                        <span class="text-3xl font-black">@Model.Reservation.TotalAmount.ToString("N0") Ar</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions or Log -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Actions Rapides</h3>
+            <div class="grid grid-cols-1 gap-3">
+                <button class="flex items-center gap-3 w-full p-3 text-left text-sm font-semibold text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all border border-transparent hover:border-gray-200">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                    </svg>
+                    Imprimer les Billets
+                </button>
+                <button class="flex items-center gap-3 w-full p-3 text-left text-sm font-semibold text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all border border-transparent hover:border-gray-200">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    Renvoyer la Confirmation
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
