@@ -173,9 +173,6 @@ namespace Ticketing.BackOffice.Razor.Services
             }
         }
 
-        public async Task<IEnumerable<Venue>> GetAllVenuesAsync()
-        {
-            return await _context.Venues.ToListAsync();
-        }
+
     }
 }

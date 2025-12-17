@@ -81,10 +81,6 @@ namespace Ticketing.BackOffice.Razor.Controllers
             return NoContent();
         }
 
-        [HttpGet("venues")]
-        public async Task<ActionResult<IEnumerable<Venue>>> GetVenues()
-        {
-            return Ok(await _eventRepository.GetAllVenuesAsync());
-        }
+
     }
 }

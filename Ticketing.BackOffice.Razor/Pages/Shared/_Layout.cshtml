@@ -86,6 +86,14 @@
                         </a>
                     </li>
                     <li>
+                        <a asp-page="/Categories/Index" class="sidebar-link flex items-center p-3 text-gray-700 rounded-lg hover:bg-blue-100/50 transition-all duration-200 group" data-page="/Categories">
+                            <svg class="w-5 h-5 text-gray-600 transition duration-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                            </svg>
+                            <span class="ml-3 font-medium">Catégories</span>
+                        </a>
+                    </li>
+                    <li>
                         <a asp-page="/Venues/Index" class="sidebar-link flex items-center p-3 text-gray-700 rounded-lg hover:bg-blue-100/50 transition-all duration-200 group" data-page="/Venues">
                             <svg class="w-5 h-5 text-gray-600 transition duration-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
@@ -192,6 +200,11 @@
                         <li class="me-2">
                             <a asp-page="/Events/Index" class="tab-link inline-flex items-center justify-center p-4 border-b-2 border-transparent rounded-t-lg text-gray-600 hover:text-blue-600 hover:border-blue-300 transition-all duration-200" data-page="/Events">
                                 Événements
+                            </a>
+                        </li>
+                        <li class="me-2">
+                            <a asp-page="/Categories/Index" class="tab-link inline-flex items-center justify-center p-4 border-b-2 border-transparent rounded-t-lg text-gray-600 hover:text-blue-600 hover:border-blue-300 transition-all duration-200" data-page="/Categories">
+                                Catégories
                             </a>
                         </li>
                         <li class="me-2">

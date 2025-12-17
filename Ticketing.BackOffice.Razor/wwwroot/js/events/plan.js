@@ -509,8 +509,8 @@ document.addEventListener("DOMContentLoaded", function () {
       toggleSeatAssignment(seatId, plans, activePlan);
 
       // Mise à jour de l'information sur le siège survolé
-      rowLetterInfo.textContent = indexToLetter(parseInt(cell.dataset.row));
-      colNumberInfo.textContent = cell.dataset.col;
+      if (rowLetterInfo) rowLetterInfo.textContent = indexToLetter(parseInt(cell.dataset.row));
+      if (colNumberInfo) colNumberInfo.textContent = cell.dataset.col;
     }
   });
 
@@ -529,8 +529,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (activeTicketTypeIndex === -1) return;
     const cell = e.target.closest(".seat-cell");
     if (cell) {
-      rowLetterInfo.textContent = indexToLetter(parseInt(cell.dataset.row));
-      colNumberInfo.textContent = cell.dataset.col;
+      if (rowLetterInfo) rowLetterInfo.textContent = indexToLetter(parseInt(cell.dataset.row));
+      if (colNumberInfo) colNumberInfo.textContent = cell.dataset.col;
     }
   });
 
