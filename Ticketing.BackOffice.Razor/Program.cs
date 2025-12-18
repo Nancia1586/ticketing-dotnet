@@ -8,6 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAuthorization(options =>
 {
+    options.AddPolicy("SysAdmin", policy => policy.RequireRole("SysAdmin"));
+    options.AddPolicy("Organizer", policy => policy.RequireRole("Organizer"));
     options.AddPolicy("SysAdminOrOrganizer", policy => policy.RequireRole("SysAdmin", "Organizer"));
 });
 
@@ -17,6 +19,9 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AuthorizeFolder("/Venues", "SysAdmin");
     options.Conventions.AuthorizeFolder("/Events", "SysAdminOrOrganizer");
     options.Conventions.AuthorizeFolder("/Reservations", "SysAdminOrOrganizer");
+    // Require authentication for all pages by default
+    options.Conventions.AuthorizePage("/Index");
+    options.Conventions.AuthorizeFolder("/"); 
 });
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -53,8 +58,7 @@ builder.Services.AddControllers()
 // Register HTTP Client for IEventService (Used by Razor Pages to call API)
 builder.Services.AddHttpClient<IEventService, EventApiService>(client =>
 {
-    var baseUrl = builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7281";
-    client.BaseAddress = new Uri(baseUrl);
+    // The base address will be set dynamically in EventApiService to match the current running port
 });
 
 
@@ -101,7 +105,7 @@ using (var scope = app.Services.CreateScope())
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     
-    // context.Database.Migrate(); // Optional: Auto-migrate
+    context.Database.Migrate(); // Auto-migrate
     await DbInitializer.Initialize(context, userManager, roleManager);
 }
 

@@ -1,44 +1,119 @@
 @page
 @model Ticketing.BackOffice.Razor.Pages.Account.LoginModel
 @{
+    Layout = null; // Remove the default layout
     ViewData["Title"] = "Log in";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-4">
-        <div class="card shadow-lg border-0 rounded-lg">
-            <div class="card-header bg-primary text-white text-center py-4">
-                <h3 class="font-weight-light my-1">Ticketing Admin Login</h3>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Ticketing Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9ff;
+        }
+    </style>
+</head>
+<body class="bg-sky-50">
+    <div class="min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-2xl border border-gray-100">
+            <div>
+                <div class="mx-auto h-20 w-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-200">
+                    <svg class="h-12 w-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <h2 class="mt-8 text-center text-4xl font-extrabold text-blue-900 tracking-tight">
+                    Ticketing Admin
+                </h2>
+                <p class="mt-3 text-center text-sm text-gray-500 font-medium">
+                    Secure Dashboard Access
+                </p>
             </div>
-            <div class="card-body p-5">
-                <form method="post">
-                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
-                    <div class="form-floating mb-3">
-                        <input asp-for="Input.Email" class="form-control" placeholder="name@example.com" />
-                        <label asp-for="Input.Email">Email address</label>
-                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+            
+            <form class="mt-10 space-y-6" method="post">
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="text-sm text-red-600 bg-red-50 p-4 rounded-xl border border-red-100 animate-pulse">
+                        <div asp-validation-summary="All" class="list-none"></div>
                     </div>
-                    <div class="form-floating mb-3">
-                        <input asp-for="Input.Password" class="form-control" type="password" placeholder="Password" />
-                        <label asp-for="Input.Password">Password</label>
-                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                }
+                
+                <div class="space-y-4">
+                    <div>
+                        <label asp-for="Input.Email" class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Email Address</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
+                                </svg>
+                            </div>
+                            <input asp-for="Input.Email" class="block w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 outline-none" placeholder="admin@ticketing.com">
+                        </div>
+                        <span asp-validation-for="Input.Email" class="text-xs text-red-500 mt-1 ml-1"></span>
                     </div>
-                    <div class="form-check mb-3">
-                        <input asp-for="Input.RememberMe" class="form-check-input" />
-                        <label asp-for="Input.RememberMe" class="form-check-label">Remember me</label>
+
+                    <div>
+                        <label asp-for="Input.Password" class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                            </div>
+                            <input asp-for="Input.Password" type="password" class="block w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 outline-none" placeholder="••••••••">
+                        </div>
+                        <span asp-validation-for="Input.Password" class="text-xs text-red-500 mt-1 ml-1"></span>
                     </div>
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg">Log in</button>
+                </div>
+
+                <div class="flex items-center justify-between px-1">
+                    <div class="flex items-center">
+                        <input asp-for="Input.RememberMe" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer">
+                        <label asp-for="Input.RememberMe" class="ml-2.5 text-sm font-medium text-gray-600 cursor-pointer select-none">Remember me</label>
                     </div>
-                </form>
-            </div>
-            <div class="card-footer text-center py-3 bg-light">
-                <div class="small text-muted">Use seeded credentials: admin@ticketing.com / Admin123!</div>
+                    <a href="#" class="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">Forgot password?</a>
+                </div>
+
+                <div>
+                    <button type="submit" class="w-full flex justify-center py-4 px-4 border border-transparent text-base font-bold rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all duration-200 shadow-lg shadow-blue-100">
+                        Sign In to System
+                    </button>
+                </div>
+            </form>
+            
+            <div class="mt-8 pt-8 border-t border-gray-100">
+                <div class="flex flex-col items-center">
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Quick Access Credentials</span>
+                    <div class="w-full flex gap-3">
+                        <div class="flex-1 p-3 bg-blue-50 rounded-xl border border-blue-100 group hover:border-blue-200 transition-colors">
+                            <p class="text-[10px] text-blue-400 font-bold uppercase mb-1">Email</p>
+                            <p class="text-xs text-blue-900 font-mono font-semibold select-all">admin@ticketing.com</p>
+                        </div>
+                        <div class="flex-1 p-3 bg-indigo-50 rounded-xl border border-indigo-100 group hover:border-indigo-200 transition-colors">
+                            <p class="text-[10px] text-indigo-400 font-bold uppercase mb-1">Password</p>
+                            <p class="text-xs text-indigo-900 font-mono font-semibold select-all">Admin123!</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+        
+        <p class="mt-8 text-center text-sm text-gray-400">
+            &copy; 2025 Ticketing Platform . All Rights Reserved.
+        </p>
     </div>
-</div>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>

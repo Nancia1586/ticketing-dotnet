@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using Ticketing.Core.Models
+@inject UserManager<ApplicationUser> UserManager
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -157,14 +160,16 @@
                     <div class="flex items-center space-x-4 ml-4">
                         @if (User.Identity.IsAuthenticated)
                         {
+                            var currentUser = await UserManager.GetUserAsync(User);
+                            var displayName = currentUser?.FullName ?? User.Identity.Name;
                             <!-- User Profile -->
                             <div class="flex items-center space-x-3">
                                 <div class="flex items-center space-x-2">
                                     <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                                        <span>@(User.Identity.Name?[0].ToString().ToUpper() ?? "U")</span>
+                                        <span>@(displayName?[0].ToString().ToUpper() ?? "U")</span>
                                     </div>
                                     <div class="hidden md:block text-left">
-                                        <p class="text-sm font-medium text-gray-900">@User.Identity.Name</p>
+                                        <p class="text-sm font-medium text-gray-900">@displayName</p>
                                         <p class="text-xs text-gray-500">@(User.IsInRole("SysAdmin") ? "Admin" : "Organizer")</p>
                                     </div>
                                 </div>
@@ -214,14 +219,6 @@
                                 </a>
                             </li>
                         }
-                        <li class="me-2">
-                            <a asp-page="/Privacy" class="tab-link inline-flex items-center justify-center p-4 border-b-2 border-transparent rounded-t-lg text-gray-600 hover:text-blue-600 hover:border-blue-300 transition-all duration-200" data-page="/Privacy">
-                                Privacy
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
                         <li class="me-2">
                             <a asp-page="/Privacy" class="tab-link inline-flex items-center justify-center p-4 border-b-2 border-transparent rounded-t-lg text-gray-600 hover:text-blue-600 hover:border-blue-300 transition-all duration-200" data-page="/Privacy">
                                 Privacy

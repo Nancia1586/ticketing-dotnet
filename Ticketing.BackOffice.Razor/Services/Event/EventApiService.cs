@@ -14,6 +14,7 @@ namespace Ticketing.BackOffice.Razor.Services
             var request = httpContextAccessor.HttpContext?.Request;
             if (request != null)
             {
+                // Dynamically detect the port we are running on
                 var baseUrl = $"{request.Scheme}://{request.Host}";
                 _httpClient.BaseAddress = new Uri(baseUrl);
             }

@@ -7,6 +7,7 @@ using Ticketing.Core.Models;
 
 namespace Ticketing.BackOffice.Razor.Pages.Account
 {
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     public class LoginModel : PageModel
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -48,6 +49,10 @@ namespace Ticketing.BackOffice.Razor.Pages.Account
             }
 
             returnUrl ??= Url.Content("~/");
+
+            // Pre-fill default credentials
+            Input.Email = "admin@ticketing.com";
+            Input.Password = "Admin123!";
 
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);

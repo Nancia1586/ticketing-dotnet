@@ -5,6 +5,7 @@ using Ticketing.Core.Models;
 
 namespace Ticketing.BackOffice.Razor.Pages.Account
 {
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     public class LogoutModel : PageModel
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
