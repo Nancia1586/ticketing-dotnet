@@ -19,6 +19,7 @@ namespace Ticketing.Core.Models
         public string PaymentMethod { get; set; } = string.Empty;
 
         public ICollection<Seat> Seats { get; set; } = new List<Seat>();
+        public ICollection<ReservationDetail> ReservationDetails { get; set; } = new List<ReservationDetail>();
 
         public int EventId { get; set; }
         public Event Event { get; set; } = null!;

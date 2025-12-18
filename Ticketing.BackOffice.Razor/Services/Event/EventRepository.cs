@@ -14,14 +14,20 @@ namespace Ticketing.BackOffice.Razor.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<Event>> GetAllEventsAsync()
+        public async Task<IEnumerable<Event>> GetAllEventsAsync(int? organizerId = null)
         {
-            // Inclure les TicketTypes pour affichage dans l'admin si nécessaire
-            return await _context.Events
+            var query = _context.Events
                                  .Include(e => e.TicketTypes)
                                  .Include(e => e.Venue)
                                  .Include(e => e.Category)
-                                 .ToListAsync();
+                                 .AsQueryable();
+
+            if (organizerId.HasValue)
+            {
+                query = query.Where(e => e.OrganizerId == organizerId);
+            }
+
+            return await query.ToListAsync();
         }
 
         public async Task<Event?> GetEventByIdAsync(int id)

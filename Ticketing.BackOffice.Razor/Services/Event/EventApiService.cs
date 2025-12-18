@@ -24,9 +24,14 @@ namespace Ticketing.BackOffice.Razor.Services
             }
         }
 
-        public async Task<IEnumerable<Event>> GetAllEventsAsync()
+        public async Task<IEnumerable<Event>> GetAllEventsAsync(int? organizerId = null)
         {
-            return await _httpClient.GetFromJsonAsync<IEnumerable<Event>>("api/events") ?? new List<Event>();
+            var url = "api/events";
+            if (organizerId.HasValue)
+            {
+                url += $"?organizerId={organizerId}";
+            }
+            return await _httpClient.GetFromJsonAsync<IEnumerable<Event>>(url) ?? new List<Event>();
         }
 
         public async Task<Event?> GetEventByIdAsync(int id)

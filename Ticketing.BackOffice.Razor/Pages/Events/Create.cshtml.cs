@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Ticketing.BackOffice.Razor.Services;
 using Ticketing.Core.Models;
@@ -10,11 +11,13 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
     {
         private readonly IEventService _eventService;
         private readonly ICategoryService _categoryService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public CreateModel(IEventService eventService, ICategoryService categoryService)
+        public CreateModel(IEventService eventService, ICategoryService categoryService, UserManager<ApplicationUser> userManager)
         {
             _eventService = eventService;
             _categoryService = categoryService;
+            _userManager = userManager;
         }
 
         [BindProperty]
@@ -51,6 +54,12 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
                 Event.PosterUrl = Event.PosterBase64; 
                 
                 Event.PosterBase64 = null; 
+            }
+            
+            if (User.IsInRole("Organizer"))
+            {
+                var user = await _userManager.GetUserAsync(User);
+                Event.OrganizerId = user?.OrganizationId;
             }
             
             await _eventService.CreateEventAsync(Event);

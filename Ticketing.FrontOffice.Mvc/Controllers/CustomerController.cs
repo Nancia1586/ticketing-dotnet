@@ -12,14 +12,13 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
             _dataAccess = dataAccess;
         }
 
-        public IActionResult MyReservations()
+        public async Task<IActionResult> MyReservations(string? email)
         {
-            return View();
-        }
+            if (User.Identity.IsAuthenticated && string.IsNullOrEmpty(email))
+            {
+                email = User.Identity.Name;
+            }
 
-        [HttpPost]
-        public async Task<IActionResult> MyReservations(string email)
-        {
             if (string.IsNullOrEmpty(email))
             {
                 ModelState.AddModelError("", "Email is required.");

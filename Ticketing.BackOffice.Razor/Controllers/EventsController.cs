@@ -16,9 +16,9 @@ namespace Ticketing.BackOffice.Razor.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Event>>> GetEvents()
+        public async Task<ActionResult<IEnumerable<Event>>> GetEvents([FromQuery] int? organizerId = null)
         {
-            var events = await _eventRepository.GetAllEventsAsync();
+            var events = await _eventRepository.GetAllEventsAsync(organizerId);
             return Ok(events);
         }
 

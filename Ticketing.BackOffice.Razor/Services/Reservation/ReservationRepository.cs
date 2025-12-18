@@ -13,12 +13,19 @@ namespace Ticketing.BackOffice.Razor.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<Reservation>> GetAllReservationsAsync()
+        public async Task<IEnumerable<Reservation>> GetAllReservationsAsync(int? organizerId = null)
         {
-            return await _context.Reservations
+            var query = _context.Reservations
                 .Include(r => r.Event)
                 .Include(r => r.Seats)
-                .OrderByDescending(r => r.ReservationDate)
+                .AsQueryable();
+
+            if (organizerId.HasValue)
+            {
+                query = query.Where(r => r.Event.OrganizerId == organizerId);
+            }
+
+            return await query.OrderByDescending(r => r.ReservationDate)
                 .ToListAsync();
         }
 
