@@ -20,6 +20,7 @@ namespace Ticketing.BackOffice.Razor.Services
             return await _context.Events
                                  .Include(e => e.TicketTypes)
                                  .Include(e => e.Venue)
+                                 .Include(e => e.Category)
                                  .ToListAsync();
         }
 
