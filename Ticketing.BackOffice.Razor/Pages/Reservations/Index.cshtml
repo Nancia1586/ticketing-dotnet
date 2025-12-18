@@ -1,18 +1,18 @@
 @page
 @model Ticketing.BackOffice.Razor.Pages.Reservations.IndexModel
 @{
-    ViewData["Title"] = "Gestion des Commandes";
+    ViewData["Title"] = "Réservations";
 }
 
 <div class="p-6 bg-white rounded-xl shadow-sm border border-gray-100 mb-8">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Commandes & Réservations</h1>
+            <h1 class="text-2xl font-bold text-gray-900">Réservations</h1>
             <p class="text-gray-500 mt-1">Gérer les achats de billets et le statut des places.</p>
         </div>
         <div class="flex items-center gap-3">
             <span class="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-semibold border border-blue-100">
-                @Model.Reservations.Count() Total Commandes
+                @Model.Reservations.Count() Total Réservations
             </span>
         </div>
     </div>
@@ -105,7 +105,7 @@
                                 <svg class="w-12 h-12 text-gray-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                                 </svg>
-                                <p class="text-gray-500 font-medium">Aucune commande trouvée.</p>
+                                <p class="text-gray-500 font-medium">Aucune réservation trouvée.</p>
                             </div>
                         </td>
                     </tr>
