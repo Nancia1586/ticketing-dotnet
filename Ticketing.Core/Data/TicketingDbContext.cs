@@ -42,6 +42,12 @@ namespace Ticketing.Core.Data
                 .Property(rd => rd.Subtotal)
                 .HasPrecision(18, 2);
 
+            modelBuilder.Entity<ReservationDetail>()
+                .HasOne(rd => rd.TicketType)
+                .WithMany()
+                .HasForeignKey(rd => rd.TicketTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<Event>()
                 .HasOne(e => e.Category)
                 .WithMany(c => c.Events)

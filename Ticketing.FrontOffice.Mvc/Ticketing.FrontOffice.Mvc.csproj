@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Ticketing.Core\Ticketing.Core.csproj" />
+    <ProjectReference Include="..\Ticketing.BackOffice.Razor\Ticketing.BackOffice.Razor.csproj" />
   </ItemGroup>
 
   <ItemGroup>

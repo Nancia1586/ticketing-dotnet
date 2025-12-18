@@ -613,7 +613,7 @@ namespace Ticketing.BackOffice.Razor.Migrations
                     b.HasOne("Ticketing.Core.Models.TicketType", "TicketType")
                         .WithMany()
                         .HasForeignKey("TicketTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Reservation");

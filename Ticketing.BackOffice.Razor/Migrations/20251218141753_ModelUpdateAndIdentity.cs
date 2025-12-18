@@ -82,7 +82,7 @@ namespace Ticketing.BackOffice.Razor.Migrations
                         column: x => x.TicketTypeId,
                         principalTable: "TicketTypes",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
