@@ -18,7 +18,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         @foreach (var item in Model.Events) {
             <div class="flex flex-col bg-neutral-primary-soft border border-default rounded-md shadow-xs md:flex-row md:max-w-xl md:flex-row md:max-w-xl">
-                <div class="h-64 md:h-64 md:w-64 mb-4 md:mb-0 bg-gray-200 flex items-center justify-center overflow-hidden rounded-l-md">
+                <div class="h-64 md:h-64 md:w-3/5 mb-4 md:mb-0 bg-gray-200 flex items-center justify-center overflow-hidden rounded-l-md">
                     @if (!string.IsNullOrEmpty(item.PosterUrl))
                     {
                         <img class="object-cover w-full h-full" src="@item.PosterUrl" alt="Poster de @item.Name">
@@ -32,7 +32,24 @@
                 </div>
                 <div class="flex flex-col gap-3 leading-normal p-4 w-full">
                     <div class="flex items-start justify-between">
-                        <a asp-page="./Plan" asp-route-id="@item.Id" class="text-xl font-bold tracking-tight text-heading">@Html.DisplayFor(modelItem => item.Name)</a>
+                        <div class="flex flex-col gap-2">
+                            <a asp-page="./Plan" asp-route-id="@item.Id" class="text-xl font-bold tracking-tight text-heading">@Html.DisplayFor(modelItem => item.Name)</a>
+                            <div class="flex items-center gap-2">
+                                @if (item.IsActive)
+                                {
+                                    <span class="bg-green-500 text-white text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                        Actif
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="bg-red-500 text-white text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                        Inactif
+                                    </span>
+                                }
+                                <span class="bg-neutral-primary-soft border border-default text-heading text-xs font-medium px-1.5 py-0.5 rounded-full">@Html.DisplayFor(modelItem => item.Category.Name)</span>
+                            </div>
+                        </div>
                         <div>
                             <button data-popover-target="popover-click-@item.Id" data-popover-trigger="click" type="button" data-popover-placement="bottom" class="text-gray-600 border border-gray-200 p-0.5 rounded-md hover:bg-gray-50 transition">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ellipsis-icon lucide-ellipsis"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
@@ -106,10 +123,7 @@
                             </div>
                         </div>
                     </div>
-                    <span class="flex items-center justify-center h-6 w-[62px] text-xs font-semibold rounded-md whitespace-nowrap
-                        @(item.IsActive ? "bg-green-200 text-green-700" : "bg-red-200 text-red-700")">
-                        @(item.IsActive ? "Actif" : "Inactif") 
-                    </span>
+    
                     <p class="text-gray-600">@Html.DisplayFor(modelItem => item.Description)</p>
                     <div class="flex flex-col items-start gap-2 text-gray-600">
                         <p class="flex items-center gap-3">
