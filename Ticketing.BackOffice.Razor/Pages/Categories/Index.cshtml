@@ -68,29 +68,41 @@
                                 <div class="flex space-x-4">
                                     <span class="p-2 bg-indigo-100 rounded-md" title="Modifier">
                                         <a asp-page="./Edit" asp-route-id="@category.Id" class="text-indigo-600 hover:text-indigo-900">
-                                            <i class="bi bi-pencil"></i> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-pen-icon lucide-square-pen">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-pen-icon lucide-square-pen">
                                             <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></svg>
                                         </a>
                                     </span>
-                                    <form method="post" asp-page-handler="ToggleStatus" class="inline">
-                                        <input type="hidden" name="id" value="@category.Id" />
-                                        <input type="hidden" name="isActive" value="@(category.IsActive ? "false" : "true")" />
-                                        <button type="submit" class="p-2 rounded-md bg-yellow-100 text-yellow-600 hover:text-yellow-900" title="@(category.IsActive ? "Désactiver" : "Activer")">
-                                            <i class="bi bi-toggle-@(category.IsActive ? "on" : "off")"></i>
-                                            @if (category.IsActive) {
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-minus-icon lucide-shield-minus"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1-1z"/><path d="M9 12h6"/></svg>
-                                            } else {
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check-icon lucide-shield-check"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
-                                            }
-                                        </button>
-                                    </form>
-                                    <form method="post" asp-page-handler="Delete" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?');">
-                                        <input type="hidden" name="id" value="@category.Id" />
-                                        <button type="submit" class="p-2 rounded-md bg-red-100 text-red-600 hover:text-red-900" title="Supprimer">
-                                            <i class="bi bi-trash"></i>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                                        </button>
-                                    </form>
+                                    
+                                    <button type="button" 
+                                            class="action-button p-2 rounded-md bg-yellow-100 text-yellow-600 hover:text-yellow-900" 
+                                            title="@(category.IsActive ? "Désactiver" : "Activer")"
+                                            data-action-type="status"
+                                            data-id="@category.Id"
+                                            data-name="@category.Name"
+                                            data-handler="ToggleStatus"
+                                            data-message="@(category.IsActive ? $"Êtes-vous sûr de vouloir désactiver la catégorie '{category.Name}'?" : $"Êtes-vous sûr de vouloir activer la catégorie '{category.Name}'?")"
+                                            data-status="@(category.IsActive ? "false" : "true")"
+                                            data-confirm-text="@(category.IsActive ? "Désactiver" : "Activer")">
+                                        <i class="bi bi-toggle-@(category.IsActive ? "on" : "off")"></i>
+                                        @if (category.IsActive) {
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-minus-icon lucide-shield-minus"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M9 12h6"/></svg>
+                                        } else {
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check-icon lucide-shield-check"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1-1z"/><path d="m9 12 2 2 4-4"/></svg>
+                                        }
+                                    </button>
+
+                                    <button type="button" 
+                                            class="action-button p-2 rounded-md bg-red-100 text-red-600 hover:text-red-900" 
+                                            title="Supprimer"
+                                            data-action-type="delete"
+                                            data-id="@category.Id"
+                                            data-name="@category.Name"
+                                            data-handler="Delete"
+                                            data-message="Êtes-vous sûr de vouloir supprimer définitivement la catégorie '@category.Name'? Cette action est irréversible."
+                                            data-confirm-text="Supprimer">
+                                        <i class="bi bi-trash"></i>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -100,4 +112,106 @@
         </div>
     }
 </div>
+
+<div id="confirmation-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-gray-900 bg-opacity-50 transition-opacity duration-300">
+    <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md m-4 transform transition-all duration-300 scale-95 opacity-0">
+        <h3 id="modal-title" class="text-lg font-bold text-gray-900 mb-4">Confirmation de l'Action</h3>
+        <p id="modal-message" class="text-gray-600 mb-6">
+            Êtes-vous sûr de vouloir procéder à cette action ?
+        </p>
+        
+        <form id="action-form" method="post" class="hidden">
+            <input type="hidden" name="id" id="modal-id" />
+            <input type="hidden" name="isActive" id="modal-is-active" value="false" />
+        </form>
+
+        <div class="flex justify-end space-x-3">
+            <button id="cancel-button" type="button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+                Annuler
+            </button>
+            <button id="confirm-button" type="button" class="btn-primary px-4 py-2 text-sm font-medium rounded-lg ">
+                Confirmer
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modal = document.getElementById('confirmation-modal');
+            const modalDialog = modal.querySelector('div:first-child');
+            const confirmButton = document.getElementById('confirm-button');
+            const cancelButton = document.getElementById('cancel-button');
+            const actionForm = document.getElementById('action-form');
+            const modalTitle = document.getElementById('modal-title');
+            const modalMessage = document.getElementById('modal-message');
+            const modalIdInput = document.getElementById('modal-id');
+            const modalIsActive = document.getElementById('modal-is-active');
+
+            function showModal() {
+                modal.classList.remove('hidden', 'opacity-0');
+                modal.classList.add('flex', 'opacity-100');
+                modalDialog.classList.remove('scale-95', 'opacity-0');
+                modalDialog.classList.add('scale-100', 'opacity-100');
+            }
+
+            function hideModal() {
+                modalDialog.classList.remove('scale-100', 'opacity-100');
+                modalDialog.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    modal.classList.remove('flex', 'opacity-100');
+                    modal.classList.add('hidden', 'opacity-0');
+                }, 300);
+            }
+
+            document.querySelectorAll('.action-button').forEach(button => {
+                button.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    
+                    const id = this.dataset.id;
+                    const name = this.dataset.name;
+                    const handler = this.dataset.handler;
+                    const message = this.dataset.message;
+                    const status = this.dataset.status;
+                    const confirmText = this.dataset.confirmText;
+                    const actionType = this.dataset.actionType;
+
+                    modalMessage.textContent = message;
+                    confirmButton.textContent = confirmText;
+                    
+                    if (actionType === 'delete') {
+                        modalTitle.textContent = "Suppression Définitive";
+                        confirmButton.classList.remove('btn-primary', 'bg-green-600', 'hover:bg-green-700');
+                        confirmButton.classList.add('bg-red-600', 'hover:bg-red-700', 'text-white', 'hover:text-white');
+                    } else {
+                        modalTitle.textContent = `${confirmText} la catégorie`;
+                        confirmButton.classList.remove('bg-red-600', 'hover:bg-red-700');
+                        confirmButton.classList.add('btn-primary');
+                    }
+
+                    modalIdInput.value = id;
+                    modalIsActive.value = status || 'false';
+
+                    actionForm.action = `?handler=${handler}`;
+
+                    showModal();
+                });
+            });
+
+            confirmButton.addEventListener('click', function () {
+                actionForm.submit();
+                hideModal();
+            });
+
+            cancelButton.addEventListener('click', hideModal);
+
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    hideModal();
+                }
+            });
+        });
+    </script>
+}
 
