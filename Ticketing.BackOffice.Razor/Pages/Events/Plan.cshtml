@@ -56,7 +56,7 @@
                     for (int i = 0; i < Model.TicketTypePlans.Count; i++)
                     {
                         var plan = Model.TicketTypePlans[i];
-                        <div class="ticket-type-row bg-gray-50 p-4 rounded-lg shadow-sm grid grid-cols-12 gap-4 items-center border-2 border-transparent cursor-pointer" 
+                        <div class="ticket-type-row bg-gray-50 p-4 rounded-lg shadow-sm grid grid-cols-10 gap-4 items-center border-2 border-transparent cursor-pointer" 
                              data-index="@i" 
                              data-ticket-type-id="@plan.TicketTypeId"
                              data-color="@plan.Color">
@@ -78,13 +78,7 @@
                                 <input name="TicketTypePlans[@i].Price" value="@plan.Price" type="number" step="0.01" min="0" class="input-field mt-2 type-price-input" required />
                             </div>
                             
-                            <div class="col-span-2">
-                                <label class="block text-xs font-medium text-gray-500">Placement</label>
-                                <select name="TicketTypePlans[@i].IsReservedSeating" class="select-field mt-2 is-reserved-seating" data-original-value="@plan.IsReservedSeating.ToString().ToLower()">
-                                    <option value="true" selected="@(plan.IsReservedSeating)">Réservé</option> 
-                                    <option value="false" selected="@(!plan.IsReservedSeating)">Libre</option>
-                                </select>
-                            </div>
+
                             
                             <div class="col-span-3 text-sm text-gray-600 flex items-center space-x-2 mt-5 ml-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-blue-500 lucide lucide-lock-keyhole-icon lucide-lock-keyhole lock-icon-container"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>
@@ -148,7 +142,7 @@
 </div>
 
 <script id="type-template" type="text/html">
-    <div class="ticket-type-row bg-gray-50 p-4 rounded-lg shadow-sm grid grid-cols-12 gap-4 items-center border-2 border-transparent cursor-pointer" 
+    <div class="ticket-type-row bg-gray-50 p-4 rounded-lg shadow-sm grid grid-cols-10 gap-4 items-center border-2 border-transparent cursor-pointer" 
          data-index="__INDEX__" 
          data-ticket-type-id="0"
          data-color="#3b82f6">
@@ -170,13 +164,7 @@
             <input name="TicketTypePlans[__INDEX__].Price" value="50.00" type="number" step="0.01" min="0" class="input-field mt-2 type-price-input" required />
         </div>
         
-        <div class="col-span-2">
-            <label class="block text-xs font-medium text-gray-500">Placement</label>
-            <select name="TicketTypePlans[__INDEX__].IsReservedSeating" class="select-field mt-2 is-reserved-seating" data-original-value="true">
-                <option value="true" selected>Réservé</option> 
-                <option value="false">Libre</option>
-            </select>
-        </div>
+
 
         <div class="col-span-3 text-sm text-gray-600 flex items-center space-x-2 mt-5 ml-4">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-blue-500 lucide lucide-lock-keyhole-icon lucide-lock-keyhole lock-icon-container"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>

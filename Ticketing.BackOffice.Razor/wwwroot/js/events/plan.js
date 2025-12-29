@@ -51,8 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const plans = [];
     typeElements.forEach((el) => {
       let seatsArray;
-      const isReserved =
-        el.querySelector(".is-reserved-seating").value === "true";
+
       const jsonValue = el.querySelector(".selected-seats-json").value || "[]";
 
       try {
@@ -67,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
         name: el.querySelector(".type-name-input").value,
         price: parseFloat(el.querySelector(".type-price-input").value),
         color: el.querySelector(".type-color-value").value,
-        isReservedSeating: isReserved,
+        isReservedSeating: true,
         selectedSeats: new Set(seatsArray),
         element: el,
       };
@@ -122,11 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
     plans.forEach((plan) => {
       const countSpan = plan.element.querySelector(".seat-count-display");
       if (countSpan) {
-        if (plan.isReservedSeating) {
-          countSpan.textContent = `${plan.selectedSeats.size} sièges assignés`;
-        } else {
-          countSpan.textContent = `${plan.selectedSeats.size} sièges assignés (Zone Libre)`;
-        }
+        countSpan.textContent = `${plan.selectedSeats.size} sièges assignés`;
       }
     });
 
@@ -167,9 +162,7 @@ document.addEventListener("DOMContentLoaded", function () {
             cell.style.backgroundColor = assignedType.color;
             cell.setAttribute(
               "title",
-              `Rangée ${rowLetter}, Colonne ${c} - ${assignedType.name} (${
-                assignedType.isReservedSeating ? "Réservé" : "Libre"
-              })`
+              `Rangée ${rowLetter}, Colonne ${c} - ${assignedType.name}`
             );
             cell.style.color = getContrastColor(assignedType.color);
           } else {
@@ -212,9 +205,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         <span class="color-display mr-2 w-6 h-3" style="background-color: ${
                           planData.color
                         };"></span>
-                        ${name} (${planData.price} Ar) (${
-        planData.isReserved ? "Réservé" : "Libre"
-      })
+                        ${name} (${planData.price} Ar)
                     `;
       legendContainer.appendChild(legendItem);
     });
@@ -326,7 +317,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (countSpan) {
         const modeText = activePlan.isReservedSeating
           ? "sièges assignés"
-          : "sièges assignés (Zone Libre)";
+          : "sièges assignés";
         countSpan.textContent = `${activePlan.selectedSeats.size} ${modeText}`;
       }
     }
@@ -371,14 +362,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // Mettre à jour l'info sur la sélection
-        const isReserved =
-          newActiveRow.querySelector(".is-reserved-seating").value === "true";
-        const modeLabel = isReserved ? "Réservé" : "Libre";
         activeSelectionInfo.querySelector(
           ".font-semibold"
         ).textContent = `Mode sélection actif : ${
           newActiveRow.querySelector(".type-name-input").value
-        } (${modeLabel})`;
+        }`;
         activeSelectionInfo.classList.remove("hidden");
       }
     }
@@ -437,26 +425,12 @@ document.addEventListener("DOMContentLoaded", function () {
       renderGrid();
     } else if (target.classList.contains("type-name-input")) {
       if (index === activeTicketTypeIndex) {
-        const isReserved =
-          row.querySelector(".is-reserved-seating").value === "true";
-        const modeLabel = isReserved ? "Réservé" : "Libre";
         activeSelectionInfo.querySelector(
           ".font-semibold"
-        ).textContent = `Mode sélection actif : ${target.value} (${modeLabel})`;
+        ).textContent = `Mode sélection actif : ${target.value}`;
       }
       renderGrid();
-    } else if (target.classList.contains("is-reserved-seating")) {
-      // Mettre à jour le mode de sélection si le type actif est modifié
-      if (index === activeTicketTypeIndex) {
-        const isReserved = target.value === "true";
-        const modeLabel = isReserved ? "Réservé" : "Libre";
-        activeSelectionInfo.querySelector(
-          ".font-semibold"
-        ).textContent = `Mode sélection actif : ${
-          row.querySelector(".type-name-input").value
-        } (${modeLabel})`;
-      }
-      renderGrid(); // Redessine pour mettre à jour la légende et les compteurs
+
     }
   });
 

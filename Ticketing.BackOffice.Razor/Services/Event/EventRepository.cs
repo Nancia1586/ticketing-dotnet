@@ -93,8 +93,7 @@ namespace Ticketing.BackOffice.Razor.Services
                         EventId = eventId,
                         Name = planInput.Name,
                         Price = planInput.Price,
-                        Color = planInput.Color,
-                        IsReservedSeating = planInput.IsReservedSeating
+                        Color = planInput.Color
                     };
                     eventToUpdate.TicketTypes.Add(ticketType);
                 }
@@ -106,7 +105,6 @@ namespace Ticketing.BackOffice.Razor.Services
                         ticketType.Name = planInput.Name;
                         ticketType.Price = planInput.Price;
                         ticketType.Color = planInput.Color;
-                        ticketType.IsReservedSeating = planInput.IsReservedSeating;
                     }
                     else
                     {

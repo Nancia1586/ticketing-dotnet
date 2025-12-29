@@ -168,7 +168,7 @@ namespace Ticketing.FrontOffice.Mvc.Services
         public async Task<TicketType?> GetTicketTypeByIdAsync(int id)
         {
             var query = @"
-                SELECT Id, Name, Price, TotalCapacity, Color, IsReservedSeating, EventId
+                SELECT Id, Name, Price, TotalCapacity, Color, EventId
                 FROM TicketTypes
                 WHERE Id = @Id";
 
@@ -188,7 +188,6 @@ namespace Ticketing.FrontOffice.Mvc.Services
                     Price = reader.GetDecimal("Price"),
                     TotalCapacity = reader.GetInt32("TotalCapacity"),
                     Color = reader.GetString("Color"),
-                    IsReservedSeating = reader.GetBoolean("IsReservedSeating"),
                     EventId = reader.GetInt32("EventId")
                 };
             }
@@ -200,7 +199,7 @@ namespace Ticketing.FrontOffice.Mvc.Services
         {
             var ticketTypes = new List<TicketType>();
             var query = @"
-                SELECT Id, Name, Price, TotalCapacity, Color, IsReservedSeating, EventId
+                SELECT Id, Name, Price, TotalCapacity, Color, EventId
                 FROM TicketTypes
                 WHERE EventId = @EventId";
 
@@ -217,7 +216,6 @@ namespace Ticketing.FrontOffice.Mvc.Services
                     Price = reader.GetDecimal("Price"),
                     TotalCapacity = reader.GetInt32("TotalCapacity"),
                     Color = reader.GetString("Color"),
-                    IsReservedSeating = reader.GetBoolean("IsReservedSeating"),
                     EventId = reader.GetInt32("EventId")
                 };
 

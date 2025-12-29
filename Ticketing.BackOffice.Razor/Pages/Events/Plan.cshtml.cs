@@ -47,7 +47,7 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
                 Name = tt.Name,
                 Price = tt.Price,
                 Color = tt.Color,
-                IsReservedSeating = tt.IsReservedSeating,
+
                 SelectedSeatsJson = JsonSerializer.Serialize(tt.Seats.Select(s => s.Code).ToArray())
             }).ToList();
 

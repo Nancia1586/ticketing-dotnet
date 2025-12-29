@@ -7,7 +7,7 @@ namespace Ticketing.Core.Models
         public decimal Price { get; set; }
         public int TotalCapacity { get; set; } 
         public string Color { get; set; } = "#3b82f6";
-        public bool IsReservedSeating { get; set; } = true; 
+
         
         public int EventId { get; set; }
         public Event Event { get; set; } = null!;
