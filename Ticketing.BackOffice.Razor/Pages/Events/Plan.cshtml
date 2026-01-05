@@ -28,6 +28,18 @@
         @* <div asp-validation-summary="All" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"></div> *@
         <input type="hidden" name="eventId" value="@Model.Event.Id" />
 
+        @if (Model.Event.IsSubmitted)
+        {
+            <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4" role="alert">
+                <p class="font-bold">Événement soumis</p>
+                <p>Cet événement a été soumis et ne peut plus être modifié. Il est maintenant visible sur le site public.</p>
+            </div>
+            <script>
+                // Disable seat interaction
+                window.isEventSubmitted = true;
+            </script>
+        }
+
         <div class="p-6 bg-gray-50 rounded-lg border">
             <div class="flex flex-col gap-4">
                 <h3 class="text-xl font-semibold text-gray-700">Lieu & Dimensions</h3>
@@ -68,14 +80,14 @@
                             <div class="col-span-3">
                                 <label class="block text-xs font-medium text-gray-500">Nom / Couleur</label>
                                 <div class="flex items-center space-x-2 mt-2">
-                                    <input name="TicketTypePlans[@i].Name" value="@plan.Name" placeholder="Ex: VIP" class="input-field type-name-input" required />
-                                    <input type="color" class="color-picker-input" value="@plan.Color" data-index="@i"/>
+                                    <input name="TicketTypePlans[@i].Name" value="@plan.Name" placeholder="Ex: VIP" class="input-field type-name-input" required @(Model.Event.IsSubmitted ? "disabled" : "") />
+                                    <input type="color" class="color-picker-input" value="@plan.Color" data-index="@i" @(Model.Event.IsSubmitted ? "disabled" : "")/>
                                 </div>
                             </div>
                             
                             <div class="col-span-3">
                                 <label class="block text-xs font-medium text-gray-500">Prix (Ar)</label>
-                                <input name="TicketTypePlans[@i].Price" value="@plan.Price" type="number" step="0.01" min="0" class="input-field mt-2 type-price-input" required />
+                                <input name="TicketTypePlans[@i].Price" value="@plan.Price" type="number" step="0.01" min="0" class="input-field mt-2 type-price-input" required @(Model.Event.IsSubmitted ? "disabled" : "") />
                             </div>
                             
 
@@ -86,9 +98,12 @@
                             </div>
 
                             <div class="col-span-1 flex justify-end">
-                                <button type="button" class="remove-type-btn text-red-500 hover:text-red-700 font-bold py-1 px-2 rounded transition duration-150">
-                                    &times;
-                                </button>
+                                @if (!Model.Event.IsSubmitted)
+                                {
+                                    <button type="button" class="remove-type-btn text-red-500 hover:text-red-700 font-bold py-1 px-2 rounded transition duration-150">
+                                        &times;
+                                    </button>
+                                }
                             </div>
                         </div>
                     }
@@ -98,9 +113,12 @@
                 </p>
             </div>
 
-            <button type="button" id="add-type-btn" class="btn-primary text-sm rounded-md py-2 px-4">
-                Ajouter un type de ticket
-            </button>
+            @if (!Model.Event.IsSubmitted)
+            {
+                <button type="button" id="add-type-btn" class="btn-primary text-sm rounded-md py-2 px-4">
+                    Ajouter un type de ticket
+                </button>
+            }
         </div>
         
         <div class="p-6 bg-gray-100 rounded-lg border">
@@ -129,13 +147,21 @@
         </div>
 
         <div class="flex justify-end items-center mt-8 pt-6 border-t border-gray-200">
-            <div class="space-x-4">
+            <div class="space-x-4 flex items-center">
                 <a asp-page="./Edit" asp-route-id="@Model.Event.Id" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
                     Retour à l'événement
                 </a>
-                <button type="submit" class="btn-primary text-sm rounded-md py-2 px-4">
-                    Sauvegarder Plan & Types
-                </button>
+                
+                @if (!Model.Event.IsSubmitted)
+                {
+                    <button type="submit" class="btn-primary text-sm rounded-md py-2 px-4">
+                        Sauvegarder Plan & Types
+                    </button>
+                    
+                    <button type="submit" asp-page-handler="Submit" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out ml-4" onclick="return confirm('Êtes-vous sûr de vouloir soumettre cet événement ? Il ne sera plus modifiable après soumission.');">
+                        Soumettre Finalement
+                    </button>
+                }
             </div>
         </div>
     </form>

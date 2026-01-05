@@ -377,6 +377,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Gestion de l'ajout/suppression/activation des types
   addTypeBtn.addEventListener("click", function () {
+    if (window.isEventSubmitted) return;
     const newRowHtml = typeTemplate.replace(/__INDEX__/g, typeIndex);
     ticketTypesContainer.insertAdjacentHTML("beforeend", newRowHtml);
     typeIndex++;
@@ -385,6 +386,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   ticketTypesContainer.addEventListener("click", function (e) {
+    if (window.isEventSubmitted) return;
     const target = e.target;
     const targetRow = target.closest(".ticket-type-row");
     if (!targetRow) return;
@@ -438,6 +440,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // MOUSE DOWN : Début de la sélection
   planGrid.addEventListener("mousedown", function (e) {
+    if (window.isEventSubmitted) return;
+    
     // La grille est toujours cliquable
     if (activeTicketTypeIndex === -1) {
       // Indiquer à l'utilisateur qu'il doit sélectionner un type

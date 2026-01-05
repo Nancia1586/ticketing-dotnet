@@ -17,6 +17,7 @@ namespace Ticketing.Core.Models
         public DateTime Date { get; set; }
         public string? PosterUrl { get; set; }
         public bool IsActive { get; set; } = true;
+        public bool IsSubmitted { get; set; } = false;
         public int CategoryId { get; set; }
         public Category? Category { get; set; }
 

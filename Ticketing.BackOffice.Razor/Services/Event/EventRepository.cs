@@ -178,6 +178,14 @@ namespace Ticketing.BackOffice.Razor.Services
             }
         }
 
-
+        public async Task SubmitEventAsync(int id)
+        {
+            var eventToUpdate = await _context.Events.FindAsync(id);
+            if (eventToUpdate != null)
+            {
+                eventToUpdate.IsSubmitted = true;
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }

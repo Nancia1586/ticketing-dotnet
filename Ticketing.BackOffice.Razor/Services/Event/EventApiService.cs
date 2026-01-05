@@ -75,6 +75,12 @@ namespace Ticketing.BackOffice.Razor.Services
              response.EnsureSuccessStatusCode();
         }
 
+        public async Task SubmitEventAsync(int id)
+        {
+            var response = await _httpClient.PostAsync($"api/events/{id}/submit", null);
+            response.EnsureSuccessStatusCode();
+        }
+
         public async Task<Event?> GetEventWithPlanByIdAsync(int id)
         {
             try 
