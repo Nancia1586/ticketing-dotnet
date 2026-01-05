@@ -18,6 +18,7 @@ namespace Ticketing.Core.Models
         // Format: Array of objects { r: row, c: col, type: 'stage'|'void'|... }
         public string LayoutJson { get; set; } = "[]";
 
+        [System.Text.Json.Serialization.JsonIgnore]
         public ICollection<Event> Events { get; set; } = new List<Event>();
     }
 }

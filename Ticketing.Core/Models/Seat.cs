@@ -18,6 +18,7 @@ namespace Ticketing.Core.Models
         [System.Text.Json.Serialization.JsonIgnore]
         public TicketType TicketType { get; set; } = null!;
         public int? ReservationId { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public Reservation? Reservation { get; set; }
     }
 }
