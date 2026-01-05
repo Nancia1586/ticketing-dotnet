@@ -26,7 +26,7 @@ namespace Ticketing.FrontOffice.Mvc.Services
                 FROM Events e
                 LEFT JOIN Venues v ON e.VenueId = v.Id
                 LEFT JOIN Categories c ON e.CategoryId = c.Id
-                WHERE e.IsActive = 1";
+                WHERE e.IsActive = 1 AND e.IsSubmitted = 1";
 
             var parameters = new List<SqlParameter>();
 

@@ -67,22 +67,40 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
 
         public async Task<IActionResult> OnPostAsync(int eventId)
         {
+            var loadedEvent = await _eventService.GetEventWithPlanByIdAsync(eventId);
+            if (loadedEvent == null) return NotFound();
+
             if (!ModelState.IsValid)
             {
-                var loadedEvent = await _eventService.GetEventWithPlanByIdAsync(eventId); 
-                if (loadedEvent != null)
+                Event = loadedEvent;
+                if (Event.Venue != null)
                 {
-                    Event = loadedEvent;
-                    if (Event.Venue != null)
-                    {
-                        TotalRows = Event.Venue.TotalRows;
-                        TotalColumns = Event.Venue.TotalColumns;
-                    }
+                    TotalRows = Event.Venue.TotalRows;
+                    TotalColumns = Event.Venue.TotalColumns;
                 }
                 return Page();
             }
 
+            if (loadedEvent.IsSubmitted)
+            {
+                 // Prevent modification if already submitted
+                 return RedirectToPage("./Plan", new { id = eventId });
+            }
+
             await _eventService.UpdateEventPlanAsync(eventId, TicketTypePlans);
+
+            return RedirectToPage("./Plan", new { id = eventId });
+        }
+
+        public async Task<IActionResult> OnPostSubmitAsync(int eventId)
+        {
+            var loadedEvent = await _eventService.GetEventWithPlanByIdAsync(eventId);
+            if (loadedEvent == null) return NotFound();
+
+            if (!loadedEvent.IsSubmitted)
+            {
+                await _eventService.SubmitEventAsync(eventId);
+            }
 
             return RedirectToPage("./Plan", new { id = eventId });
         }

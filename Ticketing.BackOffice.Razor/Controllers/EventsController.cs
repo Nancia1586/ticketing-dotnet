@@ -81,6 +81,12 @@ namespace Ticketing.BackOffice.Razor.Controllers
             return NoContent();
         }
 
+        [HttpPost("{id}/submit")]
+        public async Task<IActionResult> SubmitEvent(int id)
+        {
+            await _eventRepository.SubmitEventAsync(id);
+            return NoContent();
+        }
 
     }
 }
