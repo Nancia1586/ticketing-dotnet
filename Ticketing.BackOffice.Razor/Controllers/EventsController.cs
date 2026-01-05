@@ -69,9 +69,22 @@ namespace Ticketing.BackOffice.Razor.Controllers
         [HttpGet("{id}/plan")]
         public async Task<ActionResult<Event>> GetEventWithPlan(int id)
         {
-            var evt = await _eventRepository.GetEventWithPlanByIdAsync(id);
-            if (evt == null) return NotFound();
-            return Ok(evt);
+            try 
+            {
+                var evt = await _eventRepository.GetEventWithPlanByIdAsync(id);
+                if (evt == null) return NotFound();
+                return Ok(evt);
+            }
+            catch (Exception ex)
+            {
+                // Return detailed error for debugging
+                return StatusCode(500, new { 
+                    message = "Internal Server Error in GetEventWithPlan", 
+                    error = ex.Message, 
+                    inner = ex.InnerException?.Message,
+                    stackTrace = ex.StackTrace 
+                });
+            }
         }
 
         [HttpPut("{id}/plan")]

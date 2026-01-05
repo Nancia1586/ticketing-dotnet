@@ -22,6 +22,7 @@ namespace Ticketing.Core.Models
         public ICollection<ReservationDetail> ReservationDetails { get; set; } = new List<ReservationDetail>();
 
         public int EventId { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public Event Event { get; set; } = null!;
     }
 }

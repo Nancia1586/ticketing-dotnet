@@ -15,6 +15,7 @@ namespace Ticketing.Core.Models
         public SeatStatus Status { get; set; } = SeatStatus.Free;
         
         public int TicketTypeId { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public TicketType TicketType { get; set; } = null!;
         public int? ReservationId { get; set; }
         public Reservation? Reservation { get; set; }

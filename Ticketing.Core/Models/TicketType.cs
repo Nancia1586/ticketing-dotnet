@@ -10,6 +10,7 @@ namespace Ticketing.Core.Models
 
         
         public int EventId { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public Event Event { get; set; } = null!;
         
         public ICollection<Seat> Seats { get; set; } = new List<Seat>();
