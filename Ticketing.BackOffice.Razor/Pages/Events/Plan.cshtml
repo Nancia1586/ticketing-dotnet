@@ -148,8 +148,8 @@
 
         <div class="flex justify-end items-center mt-8 pt-6 border-t border-gray-200">
             <div class="space-x-4 flex items-center">
-                <a asp-page="./Edit" asp-route-id="@Model.Event.Id" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
-                    Retour à l'événement
+                <a asp-page="./Index" asp-route-id="@Model.Event.Id" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
+                    Retour aux événements
                 </a>
                 
                 @if (!Model.Event.IsSubmitted)
@@ -158,12 +158,89 @@
                         Sauvegarder Plan & Types
                     </button>
                     
-                    <button type="submit" asp-page-handler="Submit" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out ml-4" onclick="return confirm('Êtes-vous sûr de vouloir soumettre cet événement ? Il ne sera plus modifiable après soumission.');">
+                    <button type="button" id="trigger-submit-modal" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out ml-4">
                         Soumettre Finalement
                     </button>
+                    <!-- Hidden real submit button -->
+                    <button type="submit" asp-page-handler="Submit" id="real-submit-btn" class="hidden"></button>
                 }
             </div>
+            <!-- Submission Confirmation Modal -->
+    <div id="submission-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-gray-900 bg-opacity-50 transition-opacity duration-300">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md m-4 transform transition-all duration-300 scale-95 opacity-0">
+            <div class="flex items-center gap-3 mb-4 text-green-600 border-b border-gray-100 pb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <h3 class="text-lg font-bold text-gray-900">Confirmation de soumission</h3>
+            </div>
+            <p class="text-gray-600 mb-6">
+                Êtes-vous sûr de vouloir soumettre cet événement ? <br/>
+                <span class="text-xs text-red-500 font-semibold mt-2 block">Cette action est irréversible. L'événement ne sera plus modifiable.</span>
+            </p>
+            
+            <div class="flex justify-end space-x-3">
+                <button id="submission-cancel" type="button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+                    Annuler
+                </button>
+                <button type="button" id="confirm-submission-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 text-sm font-medium rounded-lg transition shadow-lg shadow-green-100">
+                    Confirmer la soumission
+                </button>
+            </div>
         </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('submission-modal');
+            const triggerBtn = document.getElementById('trigger-submit-modal');
+            const cancelBtn = document.getElementById('submission-cancel');
+            const confirmBtn = document.getElementById('confirm-submission-btn');
+            const realSubmitBtn = document.getElementById('real-submit-btn');
+            const modalDialog = modal.querySelector('div:first-child');
+
+            function showModal() {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => {
+                    modal.classList.add('opacity-100');
+                    modalDialog.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }
+
+            function hideModal() {
+                modalDialog.classList.remove('scale-100', 'opacity-100');
+                modal.classList.remove('opacity-100');
+                setTimeout(() => {
+                    modal.classList.remove('flex');
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+
+            if (triggerBtn) {
+                triggerBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showModal();
+                });
+            }
+
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', hideModal);
+            }
+
+            if (confirmBtn && realSubmitBtn) {
+                confirmBtn.addEventListener('click', function() {
+                    realSubmitBtn.click();
+                    hideModal();
+                });
+            }
+
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    hideModal();
+                }
+            });
+        });
+    </script>
+</div>
     </form>
 </div>
 

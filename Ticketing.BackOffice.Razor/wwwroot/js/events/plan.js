@@ -376,14 +376,17 @@ document.addEventListener("DOMContentLoaded", function () {
   // Événements
 
   // Gestion de l'ajout/suppression/activation des types
-  addTypeBtn.addEventListener("click", function () {
-    if (window.isEventSubmitted) return;
-    const newRowHtml = typeTemplate.replace(/__INDEX__/g, typeIndex);
-    ticketTypesContainer.insertAdjacentHTML("beforeend", newRowHtml);
-    typeIndex++;
-    updateIndices();
-    setActiveSelection(typeIndex - 1);
-  });
+  // Gestion de l'ajout/suppression/activation des types
+  if (addTypeBtn) {
+    addTypeBtn.addEventListener("click", function () {
+        if (window.isEventSubmitted) return;
+        const newRowHtml = typeTemplate.replace(/__INDEX__/g, typeIndex);
+        ticketTypesContainer.insertAdjacentHTML("beforeend", newRowHtml);
+        typeIndex++;
+        updateIndices();
+        setActiveSelection(typeIndex - 1);
+    });
+  }
 
   ticketTypesContainer.addEventListener("click", function (e) {
     if (window.isEventSubmitted) return;
