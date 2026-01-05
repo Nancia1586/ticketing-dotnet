@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Ticketing.BackOffice.Razor.Services;
 using Ticketing.Core.Models;
+using System.Text.Json;
 
 namespace Ticketing.BackOffice.Razor.Controllers
 {
@@ -18,8 +19,27 @@ namespace Ticketing.BackOffice.Razor.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Event>>> GetEvents([FromQuery] int? organizerId = null)
         {
-            var events = await _eventRepository.GetAllEventsAsync(organizerId);
-            return Ok(events);
+            try 
+            {
+                var events = await _eventRepository.GetAllEventsAsync(organizerId);
+                // Manual serialization to catch cycles here
+                var options = new JsonSerializerOptions
+                {
+                    ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles,
+                    WriteIndented = true
+                };
+                var json = JsonSerializer.Serialize(events, options);
+                return Content(json, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { 
+                    message = "Error fetching and serializing events", 
+                    error = ex.Message, 
+                    inner = ex.InnerException?.Message,
+                    stackTrace = ex.StackTrace 
+                });
+            }
         }
 
         [HttpGet("{id}")]
@@ -73,11 +93,23 @@ namespace Ticketing.BackOffice.Razor.Controllers
             {
                 var evt = await _eventRepository.GetEventWithDetailsByIdAsync(id);
                 if (evt == null) return NotFound();
-                return Ok(evt);
+
+                var options = new JsonSerializerOptions
+                {
+                    ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles,
+                    WriteIndented = true
+                };
+                var json = JsonSerializer.Serialize(evt, options);
+                return Content(json, "application/json");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = ex.Message });
+                return StatusCode(500, new { 
+                    message = "Error fetching and serializing event details", 
+                    error = ex.Message, 
+                    inner = ex.InnerException?.Message,
+                    stackTrace = ex.StackTrace 
+                });
             }
         }
 
@@ -88,13 +120,19 @@ namespace Ticketing.BackOffice.Razor.Controllers
             {
                 var evt = await _eventRepository.GetEventWithPlanByIdAsync(id);
                 if (evt == null) return NotFound();
-                return Ok(evt);
+
+                var options = new JsonSerializerOptions
+                {
+                    ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles,
+                    WriteIndented = true
+                };
+                var json = JsonSerializer.Serialize(evt, options);
+                return Content(json, "application/json");
             }
             catch (Exception ex)
             {
-                // Return detailed error for debugging
                 return StatusCode(500, new { 
-                    message = "Internal Server Error in GetEventWithPlan", 
+                    message = "Error fetching and serializing event plan", 
                     error = ex.Message, 
                     inner = ex.InnerException?.Message,
                     stackTrace = ex.StackTrace 
