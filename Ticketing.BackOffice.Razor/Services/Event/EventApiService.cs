@@ -81,6 +81,18 @@ namespace Ticketing.BackOffice.Razor.Services
             response.EnsureSuccessStatusCode();
         }
 
+        public async Task<Event?> GetEventWithDetailsByIdAsync(int id)
+        {
+            try 
+            {
+                return await _httpClient.GetFromJsonAsync<Event>($"api/events/{id}/details");
+            } 
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) 
+            {
+                return null;
+            }
+        }
+
         public async Task<Event?> GetEventWithPlanByIdAsync(int id)
         {
             try 

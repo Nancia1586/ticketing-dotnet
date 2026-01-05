@@ -66,6 +66,21 @@ namespace Ticketing.BackOffice.Razor.Controllers
             return NoContent();
         }
 
+        [HttpGet("{id}/details")]
+        public async Task<ActionResult<Event>> GetEventWithDetails(int id)
+        {
+            try 
+            {
+                var evt = await _eventRepository.GetEventWithDetailsByIdAsync(id);
+                if (evt == null) return NotFound();
+                return Ok(evt);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
         [HttpGet("{id}/plan")]
         public async Task<ActionResult<Event>> GetEventWithPlan(int id)
         {

@@ -13,6 +13,7 @@ namespace Ticketing.BackOffice.Razor.Services
         Task ToggleEventStatusAsync(int id, bool isActive);
 
         Task<Event?> GetEventWithPlanByIdAsync(int id);
+        Task<Event?> GetEventWithDetailsByIdAsync(int id);
         Task UpdateEventPlanAsync(int eventId, List<TicketTypePlanDto> ticketTypePlans);
         Task SubmitEventAsync(int id);
         

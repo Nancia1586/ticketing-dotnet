@@ -69,6 +69,18 @@ namespace Ticketing.BackOffice.Razor.Services
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 
+        public async Task<Event?> GetEventWithDetailsByIdAsync(int id)
+        {
+            return await _context.Events
+                .Include(e => e.Venue)
+                .Include(e => e.Category)
+                .Include(e => e.TicketTypes)
+                .ThenInclude(tt => tt.Seats)
+                .Include(e => e.Reservations)
+                .ThenInclude(r => r.Seats)
+                .FirstOrDefaultAsync(e => e.Id == id);
+        }
+
         public async Task UpdateEventPlanAsync(int eventId, List<TicketTypePlanDto> ticketTypePlans)
         {
             var eventToUpdate = await GetEventWithPlanByIdAsync(eventId);
