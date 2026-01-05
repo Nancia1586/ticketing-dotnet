@@ -5,9 +5,11 @@ namespace Ticketing.Core.Models
         public int Id { get; set; }
         
         public int ReservationId { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public Reservation Reservation { get; set; } = null!;
         
         public int TicketTypeId { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public TicketType TicketType { get; set; } = null!;
         
         public int Quantity { get; set; }

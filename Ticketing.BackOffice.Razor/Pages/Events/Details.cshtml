@@ -1,0 +1,250 @@
+@page "{id:int}"
+@model Ticketing.BackOffice.Razor.Pages.Events.DetailsModel
+@using Ticketing.Core.Models;
+@using System.Linq;
+
+@{
+    ViewData["Title"] = $"Détails de l'événement: {Model.Event.Name}";
+}
+
+<link rel="stylesheet" href="~/css/events/plan.css" asp-append-version="true" />
+
+<div class="max-w-7xl mx-auto space-y-8 pb-10">
+    <!-- Header Section -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="flex flex-col md:flex-row">
+            <div class="md:w-1/3 h-64 md:h-auto bg-gray-100">
+                @if (!string.IsNullOrEmpty(Model.Event.PosterUrl))
+                {
+                    <img src="@Model.Event.PosterUrl" alt="Poster" class="w-full h-full object-cover" />
+                }
+                else
+                {
+                    <div class="w-full h-full flex items-center justify-center text-gray-400">
+                        <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                }
+            </div>
+            <div class="p-8 md:w-2/3 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-bold rounded-full border border-blue-100 uppercase tracking-wider">
+                            @Model.Event.Category?.Name
+                        </span>
+                        @if (Model.Event.IsSubmitted)
+                        {
+                            <span class="px-3 py-1 bg-green-50 text-green-600 text-xs font-bold rounded-full border border-green-100 uppercase tracking-wider">
+                                Soumis
+                            </span>
+                        }
+                    </div>
+                    <h1 class="text-3xl font-extrabold text-gray-900 mb-2">@Model.Event.Name</h1>
+                    <p class="text-gray-600 mb-6 leading-relaxed">@Model.Event.Description</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div class="flex items-center gap-3 text-gray-700">
+                            <div class="p-2 bg-gray-50 rounded-lg">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 font-bold uppercase">Lieu</p>
+                                <p class="font-semibold">@Model.Event.Venue?.Name</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 text-gray-700">
+                            <div class="p-2 bg-gray-50 rounded-lg">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 font-bold uppercase">Date & Heure</p>
+                                <p class="font-semibold">@Model.Event.Date.ToString("dd MMMM yyyy à HH:mm")</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 mt-8 pt-6 border-t border-gray-100">
+                    <a asp-page="./Edit" asp-route-id="@Model.Event.Id" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition shadow-sm">
+                        Modifier
+                    </a>
+                    <a asp-page="./Plan" asp-route-id="@Model.Event.Id" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-100">
+                        Configurer le Plan
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left: Seating Plan -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">Plan de salle interactif</h3>
+                    <div class="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest">
+                        <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                        Vue lecture seule
+                    </div>
+                </div>
+
+                <input type="hidden" id="total-rows-input" value="@Model.Event.Venue?.TotalRows" />
+                <input type="hidden" id="total-columns-input" value="@Model.Event.Venue?.TotalColumns" />
+                <input type="hidden" id="venue-layout-json" value="@Model.Event.Venue?.LayoutJson" />
+
+                <!-- Mock TicketTypes for JS -->
+                <div id="ticket-types-container" class="hidden">
+                    @for (int i = 0; i < Model.Event.TicketTypes.Count; i++)
+                    {
+                        var tt = Model.Event.TicketTypes.ElementAt(i);
+                        var seatsJson = System.Text.Json.JsonSerializer.Serialize(tt.Seats.Select(s => s.Code).ToArray());
+                        <div class="ticket-type-row" data-index="@i">
+                            <input class="type-name-input" value="@tt.Name" />
+                            <input class="type-price-input" value="@tt.Price" />
+                            <input class="type-color-value" value="@tt.Color" />
+                            <input class="selected-seats-json" value="@seatsJson" />
+                        </div>
+                    }
+                </div>
+
+                <div id="plan-grid-wrapper" class="relative overflow-auto max-h-[600px] p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                    <div id="plan-grid"></div>
+                </div>
+
+                <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4" id="legend-container">
+                    <!-- Legend generated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Sales Stats -->
+        <div class="space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <h3 class="text-xl font-bold text-gray-900 mb-6 font-primary text-black">État des ventes</h3>
+                
+                <div class="space-y-4 mb-8">
+                    @foreach (var stat in Model.SalesSummary)
+                    {
+                        var percentage = stat.Capacity > 0 ? (int)((double)stat.Sold / stat.Capacity * 100) : 0;
+                        <div class="p-4 rounded-xl border border-gray-100 bg-gray-50/50">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-bold text-gray-700 flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full" style="background-color: @stat.Color"></span>
+                                    @stat.Name
+                                </span>
+                                <span class="text-xs font-bold text-gray-400 uppercase">@stat.Price.ToString("N0") Ar</span>
+                            </div>
+                            <div class="flex items-end justify-between mb-1">
+                                <p class="text-lg font-black text-gray-900">@stat.Sold <span class="text-xs font-normal text-gray-400">/ @stat.Capacity</span></p>
+                                <p class="text-sm font-bold text-blue-600">@percentage%</p>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                                <div class="h-full rounded-full transition-all duration-500" style="width: @percentage%; background-color: @stat.Color"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="p-6 bg-blue-600 rounded-2xl text-white shadow-lg shadow-blue-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-blue-100 text-sm font-bold uppercase tracking-wider">Revenu Total</span>
+                        <svg class="w-6 h-6 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <p class="text-3xl font-black">@Model.TotalRevenue.ToString("N0") <span class="text-lg font-normal">Ar</span></p>
+                    <div class="mt-4 pt-4 border-t border-blue-500/50 flex justify-between text-xs font-bold uppercase text-blue-100">
+                        <span>Total Billets</span>
+                        <span>@Model.TotalSold / @Model.TotalCapacity</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reservations Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-6 border-b border-gray-50 flex items-center justify-between">
+            <h3 class="text-xl font-bold text-gray-900 font-primary text-black">Liste des réservations</h3>
+            <span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-lg uppercase">
+                @Model.Event.Reservations.Count Réservations
+            </span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-50/50 text-xs font-bold text-gray-400 uppercase tracking-widest">
+                        <th class="px-6 py-4">Client</th>
+                        <th class="px-6 py-4">Places</th>
+                        <th class="px-6 py-4">Montant</th>
+                        <th class="px-6 py-4">Paiement</th>
+                        <th class="px-6 py-4">Statut</th>
+                        <th class="px-6 py-4">Date</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    @foreach (var res in Model.Event.Reservations.OrderByDescending(r => r.ReservationDate))
+                    {
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-gray-900">@res.CustomerName</span>
+                                    <span class="text-xs text-gray-400">@res.Email</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex flex-wrap gap-1">
+                                    @foreach (var seat in res.Seats)
+                                    {
+                                        <span class="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-black rounded border border-blue-100">@seat.Code</span>
+                                    }
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="font-black text-gray-900">@res.TotalAmount.ToString("N0") Ar</span>
+                            </td>
+                            <td class="px-6 py-4 uppercase text-[10px] font-black text-gray-400">
+                                @res.PaymentMethod
+                            </td>
+                            <td class="px-6 py-4">
+                                @{
+                                    var (bg, text) = res.Status switch {
+                                        Ticketing.Core.Models.ReservationStatus.Confirmed => ("bg-green-50", "text-green-600"),
+                                        Ticketing.Core.Models.ReservationStatus.Pending => ("bg-amber-50", "text-amber-600"),
+                                        Ticketing.Core.Models.ReservationStatus.Cancelled => ("bg-red-50", "text-red-600"),
+                                        _ => ("bg-gray-50", "text-gray-600")
+                                    };
+                                }
+                                <span class="px-2.5 py-1 @bg @text text-[10px] font-black rounded-full uppercase tracking-tighter">
+                                    @res.Status
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-xs text-gray-400">
+                                @res.ReservationDate.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Event.Reservations.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-400 italic">
+                                Aucune réservation pour le moment.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/events/details.js" asp-append-version="true"></script>
+}

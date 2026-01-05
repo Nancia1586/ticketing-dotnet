@@ -32,19 +32,29 @@ namespace Ticketing.BackOffice.Razor.Services
             {
                 url += $"?organizerId={organizerId}";
             }
-            return await _httpClient.GetFromJsonAsync<IEnumerable<Event>>(url) ?? new List<Event>();
+            
+            var response = await _httpClient.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Server returned {response.StatusCode}: {errorContent}");
+            }
+
+            return await response.Content.ReadFromJsonAsync<IEnumerable<Event>>() ?? new List<Event>();
         }
 
         public async Task<Event?> GetEventByIdAsync(int id)
         {
-            try 
+            var response = await _httpClient.GetAsync($"api/events/{id}");
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return null;
+            
+            if (!response.IsSuccessStatusCode)
             {
-                return await _httpClient.GetFromJsonAsync<Event>($"api/events/{id}");
-            } 
-            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) 
-            {
-                return null;
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Server returned {response.StatusCode}: {errorContent}");
             }
+
+            return await response.Content.ReadFromJsonAsync<Event>();
         }
 
         public async Task<Event> CreateEventAsync(Event newEvent)
@@ -81,16 +91,32 @@ namespace Ticketing.BackOffice.Razor.Services
             response.EnsureSuccessStatusCode();
         }
 
+        public async Task<Event?> GetEventWithDetailsByIdAsync(int id)
+        {
+            var response = await _httpClient.GetAsync($"api/events/{id}/details");
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return null;
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Server returned {response.StatusCode}: {errorContent}");
+            }
+
+            return await response.Content.ReadFromJsonAsync<Event>();
+        }
+
         public async Task<Event?> GetEventWithPlanByIdAsync(int id)
         {
-            try 
+            var response = await _httpClient.GetAsync($"api/events/{id}/plan");
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return null;
+            
+            if (!response.IsSuccessStatusCode)
             {
-                return await _httpClient.GetFromJsonAsync<Event>($"api/events/{id}/plan");
-            } 
-            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) 
-            {
-                return null;
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Server returned {response.StatusCode}: {errorContent}");
             }
+
+            return await response.Content.ReadFromJsonAsync<Event>();
         }
 
         public async Task UpdateEventPlanAsync(int eventId, List<TicketTypePlanDto> ticketTypePlans)
