@@ -48,6 +48,11 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
         {
             try
             {
+                if (id <= 0)
+                {
+                    return NotFound();
+                }
+
                 var evt = await _dataAccess.GetEventByIdAsync(id);
 
                 if (evt == null)
@@ -59,10 +64,18 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                 var cart = _cartService.GetCart();
                 var cartItemsForEvent = cart.Items.Where(i => i.EventId == id).ToList();
 
+                // Get similar events (same category, excluding current event)
+                var similarEvents = await _dataAccess.GetActiveEventsAsync();
+                similarEvents = similarEvents
+                    .Where(e => e.Id != id && (e.CategoryId == evt.CategoryId || e.CategoryId == 0))
+                    .Take(4)
+                    .ToList();
+
                 var viewModel = new EventDetailsViewModel
                 {
                     Event = evt,
-                    CartItems = cartItemsForEvent
+                    CartItems = cartItemsForEvent,
+                    SimilarEvents = similarEvents
                 };
 
                 return View(viewModel);

@@ -13,20 +13,12 @@ namespace Ticketing.FrontOffice.Mvc.Models
         public string Email { get; set; } = string.Empty;
 
         [Required]
-        [CreditCard] // Simple validation
-        [Display(Name = "Card Number")]
-        public string CardNumber { get; set; } = string.Empty;
-
-        [Required]
-        [Display(Name = "Valid Until (MM/YY)")]
-        public string ExpiryDate { get; set; } = string.Empty;
-
-        [Required]
-        public string CVV { get; set; } = string.Empty;
-
-        [Required]
         [Display(Name = "Payment Method")]
         public string PaymentMethod { get; set; } = "Credit Card";
+
+        [Display(Name = "Phone Number")]
+        [Phone]
+        public string? PhoneNumber { get; set; }
         
         public decimal TotalAmount { get; set; }
     }
