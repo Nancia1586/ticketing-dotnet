@@ -13,7 +13,7 @@ namespace Ticketing.BackOffice.Razor.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<Reservation>> GetAllReservationsAsync(int? organizerId = null)
+        public async Task<IEnumerable<Reservation>> GetAllReservationsAsync(int? organizerId = null, string? searchTerm = null)
         {
             var query = _context.Reservations
                 .Include(r => r.Event)
@@ -23,6 +23,19 @@ namespace Ticketing.BackOffice.Razor.Services
             if (organizerId.HasValue)
             {
                 query = query.Where(r => r.Event.OrganizerId == organizerId);
+            }
+
+            // Search functionality
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                searchTerm = searchTerm.Trim();
+                query = query.Where(r => 
+                    r.Reference.Contains(searchTerm) ||
+                    r.CustomerName.Contains(searchTerm) ||
+                    r.Email.Contains(searchTerm) ||
+                    r.Event.Name.Contains(searchTerm) ||
+                    (r.PaymentReference != null && r.PaymentReference.Contains(searchTerm))
+                );
             }
 
             return await query.OrderByDescending(r => r.ReservationDate)

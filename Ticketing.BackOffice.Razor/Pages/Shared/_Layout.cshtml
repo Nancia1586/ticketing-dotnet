@@ -6,7 +6,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Ticketing Admin</title>
+    <title>@ViewData["Title"] - Tiktek Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -60,7 +60,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                         </svg>
                     </div>
-                    <span class="self-center text-xl font-bold whitespace-nowrap text-blue-900">Ticketing Admin</span>
+                    <span class="self-center text-xl font-bold whitespace-nowrap text-blue-900">Tiktek Admin</span>
                 </div>
             </a>
             <div class="mb-6">
@@ -80,7 +80,7 @@
             <div>
                 <p class="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-3 px-2">PAGES</p>
                 <ul class="space-y-1">
-                    @if (User.Identity.IsAuthenticated)
+                    @if (User.Identity?.IsAuthenticated == true)
                     {
                         <li>
                             <a asp-page="/Events/Index" class="sidebar-link flex items-center p-3 text-gray-700 rounded-lg hover:bg-blue-100/50 transition-all duration-200 group" data-page="/Events">
@@ -223,6 +223,11 @@
                                     Commandes
                                 </a>
                             </li>
+                            <li class="me-2">
+                                <a asp-page="/Seats/Index" class="tab-link inline-flex items-center justify-center p-4 border-b-2 border-transparent rounded-t-lg text-gray-600 hover:text-blue-600 hover:border-blue-300 transition-all duration-200" data-page="/Seats">
+                                    Billets
+                                </a>
+                            </li>
                         }
                         <li class="me-2">
                             <a asp-page="/Privacy" class="tab-link inline-flex items-center justify-center p-4 border-b-2 border-transparent rounded-t-lg text-gray-600 hover:text-blue-600 hover:border-blue-300 transition-all duration-200" data-page="/Privacy">
@@ -245,7 +250,7 @@
         <footer class="bg-white border-t border-gray-200 mt-auto">
             <div class="px-4 py-3 lg:px-6">
                 <div class="flex items-center justify-center text-sm text-gray-500">
-                    &copy; 2025 - Ticketing Admin - <a asp-page="/Privacy" class="ml-1 text-blue-600 hover:text-blue-700 hover:underline transition-colors">Confidentialité</a>
+                    &copy; 2025 - Tiktek Admin - <a asp-page="/Privacy" class="ml-1 text-blue-600 hover:text-blue-700 hover:underline transition-colors">Confidentialité</a>
                 </div>
             </div>
         </footer>

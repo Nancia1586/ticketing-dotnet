@@ -65,9 +65,9 @@ public class IndexModel : PageModel
         }
 
         var events = (await _eventService.GetAllEventsAsync(organizerId)).ToList();
-        var reservations = (await _reservationRepository.GetAllReservationsAsync(organizerId)).ToList();
+        var reservations = (await _reservationRepository.GetAllReservationsAsync(organizerId, null)).ToList();
         var categories = (await _categoryService.GetAllCategoriesAsync()).ToList();
-
+    
         // Event status counts
         EventsSellingCount = events.Count(e => e.IsActive && e.IsSubmitted && e.Date > DateTime.Now);
         EventsPendingCount = events.Count(e => !e.IsSubmitted);

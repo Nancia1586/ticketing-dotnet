@@ -17,9 +17,12 @@ namespace Ticketing.BackOffice.Razor.Pages.Reservations
         }
 
         public IEnumerable<Reservation> Reservations { get; set; } = new List<Reservation>();
+        public string? SearchTerm { get; set; }
 
-        public async Task OnGetAsync()
+        public async Task OnGetAsync(string? searchTerm = null)
         {
+            SearchTerm = searchTerm;
+            
             int? organizerId = null;
             if (User.IsInRole("Organizer"))
             {
@@ -27,7 +30,8 @@ namespace Ticketing.BackOffice.Razor.Pages.Reservations
                 organizerId = user?.OrganizationId;
             }
 
-            Reservations = await _reservationRepository.GetAllReservationsAsync(organizerId);
+
+            Reservations = await _reservationRepository.GetAllReservationsAsync(organizerId, searchTerm);
         }
     }
 }

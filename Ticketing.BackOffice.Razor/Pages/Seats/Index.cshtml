@@ -1,0 +1,217 @@
+@page
+@model Ticketing.BackOffice.Razor.Pages.Seats.IndexModel
+@using Ticketing.Core.Models
+@{
+    ViewData["Title"] = "Statut des Billets";
+}
+
+<div class="p-6 bg-white rounded-xl shadow-sm border border-gray-100 mb-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Statut des Billets</h1>
+            <p class="text-gray-500 mt-1">Voir tous les billets : payés, commandés ou libres</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <div class="text-xs font-bold text-gray-500 uppercase mb-1">Total</div>
+            <div class="text-2xl font-bold text-gray-900">@Model.TotalSeats</div>
+        </div>
+        <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+            <div class="text-xs font-bold text-green-600 uppercase mb-1">Libres</div>
+            <div class="text-2xl font-bold text-green-700">@Model.FreeSeats</div>
+        </div>
+        <div class="bg-amber-50 rounded-lg p-4 border border-amber-200">
+            <div class="text-xs font-bold text-amber-600 uppercase mb-1">Commandés</div>
+            <div class="text-2xl font-bold text-amber-700">@Model.ReservedSeats</div>
+        </div>
+        <div class="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
+            <div class="text-xs font-bold text-emerald-600 uppercase mb-1">Payés</div>
+            <div class="text-2xl font-bold text-emerald-700">@Model.TakenSeats</div>
+        </div>
+        <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+            <div class="text-xs font-bold text-blue-600 uppercase mb-1">Retenus</div>
+            <div class="text-2xl font-bold text-blue-700">@Model.HeldSeats</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" class="flex flex-col md:flex-row gap-3">
+        <div class="flex-1">
+            <select name="eventId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Tous les événements</option>
+                @foreach (var evt in Model.Events)
+                {
+                    <option value="@evt.Id" selected="@(Model.SelectedEventId == evt.Id)">@evt.Name</option>
+                }
+            </select>
+        </div>
+        <div class="flex-1">
+            <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Tous les statuts</option>
+                <option value="0" selected="@(Model.SelectedStatus == SeatStatus.Free)">Libre</option>
+                <option value="1" selected="@(Model.SelectedStatus == SeatStatus.Held)">Retenu</option>
+                <option value="2" selected="@(Model.SelectedStatus == SeatStatus.Reserved)">Commandé</option>
+                <option value="3" selected="@(Model.SelectedStatus == SeatStatus.Taken)">Payé</option>
+            </select>
+        </div>
+        <div class="flex-1">
+            <input 
+                type="text" 
+                name="searchTerm" 
+                value="@Model.SearchTerm" 
+                placeholder="Rechercher par code, client..." 
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+        </div>
+        <div class="flex gap-2">
+            <button 
+                type="submit" 
+                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+            >
+                Filtrer
+            </button>
+            <a 
+                asp-page="./Index" 
+                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
+            >
+                Réinitialiser
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Seats Table -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-50 border-b border-gray-100">
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Code</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Événement</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Type de Billet</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Prix</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Statut</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Client</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Réservation</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+                @foreach (var seat in Model.Seats)
+                {
+                    <tr class="hover:bg-blue-50/30 transition-colors group">
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded border border-blue-200 uppercase">
+                                @seat.Code
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-sm font-semibold text-gray-800">@seat.EventName</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-sm text-gray-700">@seat.TicketTypeName</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="font-bold text-gray-900">@seat.Price.ToString("N0") Ar</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            @{
+                                var statusClass = seat.Status switch {
+                                    SeatStatus.Free => "bg-green-50 text-green-700 border-green-100",
+                                    SeatStatus.Held => "bg-blue-50 text-blue-700 border-blue-100",
+                                    SeatStatus.Reserved => "bg-amber-50 text-amber-700 border-amber-100",
+                                    SeatStatus.Taken => "bg-emerald-50 text-emerald-700 border-emerald-100",
+                                    _ => "bg-gray-50 text-gray-700 border-gray-100"
+                                };
+                                var statusText = seat.Status switch {
+                                    SeatStatus.Free => "Libre",
+                                    SeatStatus.Held => "Retenu",
+                                    SeatStatus.Reserved => "Commandé",
+                                    SeatStatus.Taken => "Payé",
+                                    _ => seat.Status.ToString()
+                                };
+                            }
+                            <span class="px-3 py-1 @statusClass text-xs font-bold rounded-full border uppercase tracking-wider">
+                                @statusText
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            @if (!string.IsNullOrEmpty(seat.CustomerName))
+                            {
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-medium text-gray-900">@seat.CustomerName</span>
+                                    @if (seat.ReservationStatus.HasValue)
+                                    {
+                                        var resStatusClass = seat.ReservationStatus.Value switch {
+                                            ReservationStatus.Confirmed => "text-emerald-600",
+                                            ReservationStatus.Pending => "text-amber-600",
+                                            ReservationStatus.Cancelled => "text-rose-600",
+                                            _ => "text-gray-600"
+                                        };
+                                        <span class="text-xs @resStatusClass font-semibold">@seat.ReservationStatus.Value</span>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-xs text-gray-400">-</span>
+                            }
+                        </td>
+                        <td class="px-6 py-4">
+                            @if (seat.ReservationId.HasValue)
+                            {
+                                <div class="flex flex-col">
+                                    @if (!string.IsNullOrEmpty(seat.ReservationReference))
+                                    {
+                                        <span class="text-xs font-bold text-blue-700">@seat.ReservationReference</span>
+                                    }
+                                    @if (seat.ReservationDate.HasValue)
+                                    {
+                                        <span class="text-xs text-gray-500">@seat.ReservationDate.Value.ToString("dd MMM yyyy")</span>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-xs text-gray-400">-</span>
+                            }
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            @if (seat.ReservationId.HasValue)
+                            {
+                                <a asp-page="/Reservations/Details" asp-route-id="@seat.ReservationId" 
+                                   class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-50 transition-all shadow-sm">
+                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                    Voir
+                                </a>
+                            }
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Seats.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center">
+                                <svg class="w-12 h-12 text-gray-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <p class="text-gray-500 font-medium">Aucun billet trouvé.</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+

@@ -96,7 +96,7 @@ namespace Ticketing.BackOffice.Razor.Services
 
             foreach (var planInput in ticketTypePlans)
             {
-                TicketType ticketType;
+                TicketType? ticketType;
 
                 if (planInput.TicketTypeId == 0)
                 {
