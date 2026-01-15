@@ -7,6 +7,7 @@ namespace Ticketing.Core.Models
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty; // Event code for reservation references (e.g., "REKO")
         
         public int VenueId { get; set; }
         public Venue? Venue { get; set; }

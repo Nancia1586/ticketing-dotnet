@@ -27,6 +27,8 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
             try
             {
                 var evt = await _dataAccess.GetEventByIdAsync(eventId);
+                if (evt == null) return NotFound();
+                
                 // Normalize seats list (remove null entries)
                 var validSeats = seats?.Where(s => s != null && s.Row > 0 && s.Col > 0).ToList() ?? new List<SeatSelection>();
 
@@ -81,7 +83,7 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
 
                 return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
+            catch
             {
                 // Log error and redirect to events page
                 TempData["Error"] = "Unable to add item to cart. Please try again.";

@@ -17,6 +17,9 @@ namespace Ticketing.Core.Models
         public DateTime ReservationDate { get; set; } = DateTime.UtcNow;
         public decimal TotalAmount { get; set; }
         public string PaymentMethod { get; set; } = string.Empty;
+        public string? PaymentReference { get; set; }
+        public string? NotificationToken { get; set; }
+        public string Reference { get; set; } = string.Empty; // Reservation reference (e.g., "REKO-001", "REKO-002")
 
         public ICollection<Seat> Seats { get; set; } = new List<Seat>();
         public ICollection<ReservationDetail> ReservationDetails { get; set; } = new List<ReservationDetail>();

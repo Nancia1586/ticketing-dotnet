@@ -3,7 +3,8 @@ namespace Ticketing.Core.Models
     public enum SeatStatus {
         Free,
         Held,
-        Reserved
+        Reserved,
+        Taken
     }
 
     public class Seat
