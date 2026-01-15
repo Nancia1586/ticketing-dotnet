@@ -64,7 +64,7 @@
                             </div>
                             <div>
                                 <p class="text-xs text-gray-400 font-bold uppercase">Date & Heure</p>
-                                <p class="font-semibold">@Model.Event.Date.ToString("dd MMMM yyyy à HH:mm")</p>
+                                <p class="font-semibold">@Model.Event.Date.ToFrenchDateString("dd MMMM yyyy 'à' HH:mm")</p>
                             </div>
                         </div>
                     </div>
@@ -232,11 +232,11 @@
                                     };
                                 }
                                 <span class="px-2.5 py-1 @bg @text text-[10px] font-black rounded-full uppercase tracking-tighter">
-                                    @res.Status
+                                    @res.Status.ToFrenchString()
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-xs text-gray-400">
-                                @res.ReservationDate.ToString("dd/MM/yyyy HH:mm")
+                                @res.ReservationDate.ToFrenchDateString("dd/MM/yyyy HH:mm")
                             </td>
                         </tr>
                     }

@@ -1,5 +1,5 @@
 @{
-    ViewData["Title"] = "Payment Failed";
+    ViewData["Title"] = "Paiement Échoué";
 }
 
 <div class="container my-5">
@@ -12,18 +12,18 @@
                     </div>
                 </div>
                 
-                <h1 class="display-5 fw-bold mb-3">Payment Failed</h1>
-                <p class="text-secondary mb-5">We're sorry, but your payment could not be processed at this time. No funds have been deducted from your account.</p>
+                <h1 class="display-5 fw-bold mb-3">Paiement Échoué</h1>
+                <p class="text-secondary mb-5">Nous sommes désolés, mais votre paiement n'a pas pu être traité pour le moment. Aucun fonds n'a été débité de votre compte.</p>
 
                 <div class="alert alert-warning bg-card border-warning border-opacity-25 mb-5">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-exclamation-triangle-fill me-3 fs-4 text-warning"></i>
                         <div class="text-start">
-                            <h6 class="fw-bold mb-1">Possible Reasons:</h6>
+                            <h6 class="fw-bold mb-1">Raisons Possibles :</h6>
                             <ul class="small mb-0 opacity-75">
-                                <li>Insufficient balance in your account</li>
-                                <li>Transaction cancelled by user</li>
-                                <li>Authentication failed</li>
+                                <li>Solde insuffisant sur votre compte</li>
+                                <li>Transaction annulée par l'utilisateur</li>
+                                <li>Échec de l'authentification</li>
                             </ul>
                         </div>
                     </div>
@@ -31,10 +31,10 @@
 
                 <div class="d-grid gap-3">
                     <a href="@Url.Action("Index", "Cart")" class="btn-primary-custom py-3 fs-5">
-                        <i class="bi bi-arrow-repeat me-2"></i>Try Again
+                        <i class="bi bi-arrow-repeat me-2"></i>Réessayer
                     </a>
                     <a href="@Url.Action("Index", "Home")" class="btn btn-link text-secondary text-decoration-none fw-bold">
-                        Back to Home
+                        Retour à l'Accueil
                     </a>
                 </div>
             </div>

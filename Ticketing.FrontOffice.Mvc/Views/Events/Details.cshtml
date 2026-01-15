@@ -13,9 +13,9 @@
     {
         <div class="container my-5">
             <div class="alert alert-danger">
-                <h4>Event Not Found</h4>
-                <p>The event you are looking for does not exist or has been removed.</p>
-                <a asp-controller="Events" asp-action="Index" class="btn btn-primary">Back to Events</a>
+                <h4>Événement Introuvable</h4>
+                <p>L'événement que vous recherchez n'existe pas ou a été supprimé.</p>
+                <a asp-controller="Events" asp-action="Index" class="btn btn-primary">Retour aux Événements</a>
             </div>
         </div>
         return;
@@ -147,7 +147,7 @@
                                     <i class="bi bi-calendar event-detail-icon"></i>
                                     <div>
                                         <span class="event-detail-label">DATE :</span>
-                                        <span class="event-detail-value">@Model.Event.Date.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("fr-FR"))</span>
+                                        <span class="event-detail-value">@Model.Event.Date.ToFrenchDateString("dd MMMM yyyy")</span>
                                     </div>
                                 </div>
 
@@ -174,7 +174,7 @@
                                     <i class="bi bi-geo-alt event-detail-icon"></i>
                                     <div>
                                         <span class="event-detail-label">LIEU :</span>
-                                        <span class="event-detail-value">@(venue?.Name ?? "TBA")@(venue != null && !string.IsNullOrEmpty(venue.Address) ? $", {venue.Address}" : "")</span>
+                                        <span class="event-detail-value">@(venue?.Name ?? "À confirmer")@(venue != null && !string.IsNullOrEmpty(venue.Address) ? $", {venue.Address}" : "")</span>
                                     </div>
                                 </div>
                             </div>
@@ -223,7 +223,7 @@
         <!-- Seat Selection Section -->
         <div class="col-lg-9 order-2 order-lg-1">
             <h3 class="fw-bold mb-4 text-uppercase border-start border-4 border-accent-primary ps-3" style="border-color: var(--accent-primary) !important;">
-                @(hasSeating && allSeats.Any() ? $"Seat Map - {venue?.Name}" : "General Admission")
+                @(hasSeating && allSeats.Any() ? $"Plan des Places - {venue?.Name}" : "Entrée Générale")
             </h3>
             
             <div class="seat-map-container" style="overflow-x: auto;">
@@ -300,8 +300,8 @@
                 {
                     <div class="text-center py-5">
                         <i class="bi bi-person-standing display-1 text-secondary mb-3"></i>
-                        <h4 class="text-secondary">General Admission</h4>
-                        <p class="text-muted">No assigned seating - first come, first served</p>
+                        <h4 class="text-secondary">Entrée Générale</h4>
+                        <p class="text-muted">Pas de places assignées - premier arrivé, premier servi</p>
                     </div>
                 }
             </div>
@@ -311,7 +311,7 @@
         <div class="col-lg-3 order-1 order-lg-2">
             <div class="sticky-top" style="top: 100px; z-index: 100;">
                 <h3 class="fw-bold mb-4 text-uppercase border-start border-4 border-accent-primary ps-3" style="border-color: var(--accent-primary) !important;">
-                    Select Tickets
+                    Sélectionner les Billets
                 </h3>
                 
                 <div class="card-custom p-4">
@@ -409,7 +409,7 @@
                                 <div class="event-card-details">
                                     <div class="event-detail-item">
                                         <i class="bi bi-calendar-event me-2"></i>
-                                        <span>@similarEvent.Date.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("fr-FR"))</span>
+                                        <span>@similarEvent.Date.ToFrenchDateString("dd MMMM yyyy")</span>
                                     </div>
                                     <div class="event-detail-item">
                                         <i class="bi bi-clock me-2"></i>
