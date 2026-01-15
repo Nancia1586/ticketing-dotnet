@@ -4,11 +4,22 @@
     {
         public int r { get; set; }
         public int c { get; set; }
-        public string type { get; set; }
-        public string label { get; set; }
+        public string type { get; set; } = string.Empty;
+        public string label { get; set; } = string.Empty;
     }
 }
 @{
+    if (Model == null || Model.Event == null)
+    {
+        <div class="container my-5">
+            <div class="alert alert-danger">
+                <h4>Event Not Found</h4>
+                <p>The event you are looking for does not exist or has been removed.</p>
+                <a asp-controller="Events" asp-action="Index" class="btn btn-primary">Back to Events</a>
+            </div>
+        </div>
+        return;
+    }
     ViewData["Title"] = Model.Event.Name;
     var venue = Model.Event.Venue;
     var hasSeating = venue != null && venue.TotalRows > 0 && venue.TotalColumns > 0;
@@ -54,53 +65,149 @@
             : "https://placehold.co/1920x600/1a1a1a/FFF?text=" + Uri.EscapeDataString(Model.Event.Name));
 }
 
-<!-- Full-Width Hero Section -->
-<div class="event-details-hero position-relative overflow-hidden">
-    <div class="hero-background-image" style="background-image: url('@bgImage');"></div>
-    <div class="hero-gradient-overlay"></div>
-    
-    <div class="container position-relative" style="z-index: 2;">
-        <div class="row align-items-end" style="min-height: 500px; padding: 4rem 0;">
-            <div class="col-lg-8 mb-4">
-                <h1 class="display-2 fw-bold text-white mb-4">@Model.Event.Name.ToUpper()</h1>
-                <p class="text-white fs-5 mb-4 opacity-90">@Model.Event.Description</p>
-                
-                <!-- Info Pills -->
-                <div class="d-flex flex-wrap gap-3 mb-4">
-                    <div class="info-pill">
-                        <i class="bi bi-geo-alt-fill"></i>
-                        <span>@(venue?.Name ?? "TBA")</span>
+<!-- Event Header Section -->
+<div class="container my-5">
+    <div class="row g-4">
+        <!-- Main Content - Left Side -->
+        <div class="col-lg-8">
+            <!-- Event Poster -->
+            <div class="event-poster-wrapper mb-4">
+                <img src="@bgImage" alt="@Model.Event.Name" class="event-poster-image" />
+                @if (Model.Event.Date < DateTime.Now)
+                {
+                    <div class="event-ended-banner">
+                        <span>L'événement est terminé.</span>
                     </div>
-                    <div class="info-pill">
-                        <i class="bi bi-calendar-event"></i>
-                        <span>@Model.Event.Date.ToString("MMM dd, yyyy")</span>
-                    </div>
-                    <div class="info-pill">
-                        <i class="bi bi-clock"></i>
-                        <span>@Model.Event.Date.ToString("HH:mm")</span>
-                    </div>
-                </div>
+                }
             </div>
             
-            <div class="col-lg-4">
-                @if(timeRemaining.TotalSeconds > 0)
+            <!-- Event Title and Description -->
+            <div class="event-info-main">
+                <h1 class="event-title-modern mb-3">@Model.Event.Name</h1>
+                @if (!string.IsNullOrEmpty(Model.Event.Description))
                 {
-                    <div class="countdown-box">
-                        <h5 class="text-uppercase mb-3 text-accent-primary" style="letter-spacing: 2px;">Starts In</h5>
-                        <div class="d-flex justify-content-center gap-2">
-                            <div class="countdown-item">
-                                <span class="countdown-number" id="days">@timeRemaining.Days</span>
-                                <span class="countdown-label">Days</span>
+                    <div class="event-description-content">
+                        @Html.Raw(Model.Event.Description.Replace("\n", "<br />"))
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Sidebar - Right Side with Details and Legend -->
+        <div class="col-lg-4">
+            <div class="sticky-top" style="top: 100px; z-index: 100;">
+                <!-- Tags -->
+                <div class="event-tags mb-3">
+                    @if (Model.Event.Category != null)
+                    {
+                        <span class="event-tag">@Model.Event.Category.Name</span>
+                    }
+                    @if (venue != null)
+                    {
+                        <span class="event-tag">Concert</span>
+                    }
+                    <span class="event-tag">Live</span>
+                </div>
+
+                <!-- Share Buttons -->
+                <div class="event-share mb-4">
+                    <span class="share-label me-3">Partager :</span>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path" target="_blank" class="share-btn">
+                        <i class="bi bi-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?url=@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path&text=@Uri.EscapeDataString(Model.Event.Name)" target="_blank" class="share-btn">
+                        <i class="bi bi-twitter"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/sharing/share-offsite/?url=@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path" target="_blank" class="share-btn">
+                        <i class="bi bi-linkedin"></i>
+                    </a>
+                    <a href="https://www.instagram.com/" target="_blank" class="share-btn">
+                        <i class="bi bi-instagram"></i>
+                    </a>
+                </div>
+
+                <!-- Event Details and Legend Side by Side -->
+                @if (hasSeating && allSeats.Any())
+                {
+                    <div class="row g-2">
+                        <!-- Event Details Card -->
+                        <div class="col-12">
+                            <div class="event-details-card">
+                                <h3 class="event-details-title mb-4">Détail de l'événement</h3>
+                                
+                                <div class="event-detail-row">
+                                    <i class="bi bi-folder event-detail-icon"></i>
+                                    <div>
+                                        <span class="event-detail-label">CATÉGORIE :</span>
+                                        <span class="event-detail-value">@(Model.Event.Category?.Name ?? "Non spécifiée")</span>
+                                    </div>
+                                </div>
+
+                                <div class="event-detail-row">
+                                    <i class="bi bi-calendar event-detail-icon"></i>
+                                    <div>
+                                        <span class="event-detail-label">DATE :</span>
+                                        <span class="event-detail-value">@Model.Event.Date.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("fr-FR"))</span>
+                                    </div>
+                                </div>
+
+                                <div class="event-detail-row">
+                                    <i class="bi bi-clock event-detail-icon"></i>
+                                    <div>
+                                        <span class="event-detail-label">HEURES :</span>
+                                        <span class="event-detail-value">@Model.Event.Date.ToString("HH:mm")</span>
+                                    </div>
+                                </div>
+
+                                @if (Model.Event.Organizer != null)
+                                {
+                                    <div class="event-detail-row">
+                                        <i class="bi bi-person event-detail-icon"></i>
+                                        <div>
+                                            <span class="event-detail-label">ORGANISATEUR :</span>
+                                            <span class="event-detail-value">@Model.Event.Organizer.Name</span>
+                                        </div>
+                                    </div>
+                                }
+
+                                <div class="event-detail-row">
+                                    <i class="bi bi-geo-alt event-detail-icon"></i>
+                                    <div>
+                                        <span class="event-detail-label">LIEU :</span>
+                                        <span class="event-detail-value">@(venue?.Name ?? "TBA")@(venue != null && !string.IsNullOrEmpty(venue.Address) ? $", {venue.Address}" : "")</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="countdown-number">:</div>
-                            <div class="countdown-item">
-                                <span class="countdown-number" id="hours">@timeRemaining.Hours</span>
-                                <span class="countdown-label">Hours</span>
-                            </div>
-                            <div class="countdown-number">:</div>
-                            <div class="countdown-item">
-                                <span class="countdown-number" id="minutes">@timeRemaining.Minutes</span>
-                                <span class="countdown-label">Min</span>
+                        </div>
+                        
+                        <!-- Seat Legend -->
+                        <div class="col-12">
+                            <div class="seat-legend-container">
+                                <h4 class="legend-title" style="color: var(--text-primary); font-weight: 600;">Légende</h4>
+                                <div class="seat-legend">
+                                    @foreach(var tt in Model.Event.TicketTypes.OrderBy(t => t.Price))
+                                    {
+                                        <div class="legend-item">
+                                            <div class="legend-color-box" style="background-color: @typeColors[tt.Id];"></div>
+                                            <div class="legend-text">
+                                                <span class="legend-name">@tt.Name</span>
+                                                <span class="legend-price">@tt.Price.ToString("N0") Ar</span>
+                                            </div>
+                                        </div>
+                                    }
+                                    <div class="legend-item">
+                                        <div class="legend-color-box seat-occupied"></div>
+                                        <div class="legend-text">
+                                            <span class="legend-name">Occupé</span>
+                                        </div>
+                                    </div>
+                                    <div class="legend-item">
+                                        <div class="legend-color-box seat-selected"></div>
+                                        <div class="legend-text">
+                                            <span class="legend-name">Sélectionné</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -122,83 +229,70 @@
             <div class="seat-map-container" style="overflow-x: auto;">
                 @if (hasSeating && allSeats.Any())
                 {
-                    <!-- Stage Indicator -->
-                    
-                    <!-- Seat Grid -->
-                    <div class="seat-grid custom-seat-grid" style="grid-template-columns: repeat(@venue.TotalColumns, 30px); justify-content: center;">
-                        @for (int r = 1; r <= venue.TotalRows; r++)
-                        {
-                            for (int c = 1; c <= venue.TotalColumns; c++)
+                    <!-- Seat Grid with Labels -->
+                    <div class="seat-grid-wrapper">
+                        <!-- Column Headers -->
+                        <div class="seat-grid-header-row" style="grid-template-columns: 30px repeat(@venue.TotalColumns, 36px);">
+                            <div class="grid-header-cell"></div>
+                            @for (int c = 1; c <= venue.TotalColumns; c++)
+                            {
+                                <div class="grid-header-cell">@c</div>
+                            }
+                        </div>
+                        
+                        <!-- Seat Grid with Row Labels -->
+                        <div class="seat-grid-with-labels" style="grid-template-columns: 30px repeat(@venue.TotalColumns, 36px);">
+                            @for (int r = 1; r <= venue.TotalRows; r++)
                             {
                                 var rowLetter = (char)('A' + r - 1);
-                                var seatLabel = $"{rowLetter}{c}";
-                                layoutConfig.TryGetValue((r, c), out var config);
+                                <!-- Row Label -->
+                                <div class="row-label">@rowLetter</div>
                                 
-                                if (config != null && config.type == "void")
+                                <!-- Seats in Row -->
+                                @for (int c = 1; c <= venue.TotalColumns; c++)
                                 {
-                                    <div class="void-cell" style="grid-column: @c; grid-row: @r;">
-                                        @if (!string.IsNullOrEmpty(config.label))
-                                        {
-                                            <span class="void-label">@config.label</span>
-                                        }
-                                    </div>
-                                    continue;
-                                }
+                                    var seatLabel = $"{rowLetter}{c}";
+                                    layoutConfig.TryGetValue((r, c), out var config);
+                                    
+                                    if (config != null && config.type == "void")
+                                    {
+                                        <div class="seat-cell void-cell" title="@(config.label ?? "Zone non assignable")">
+                                            @if (!string.IsNullOrEmpty(config.label))
+                                            {
+                                                <span class="void-label-text">@config.label</span>
+                                            }
+                                        </div>
+                                        continue;
+                                    }
 
-                                allSeats.TryGetValue(new { PosX = r, PosY = c }, out var seatEntity);
-                                var isReserved = reservedCoords.Contains(new { PosX = r, PosY = c });
-                                
-                                if (seatEntity != null)
-                                {
-                                    var seatColor = typeColors.ContainsKey(seatEntity.TicketTypeId) ? typeColors[seatEntity.TicketTypeId] : "#95a5a6";
-                                    var ticketTypeName = typeNames.ContainsKey(seatEntity.TicketTypeId) ? typeNames[seatEntity.TicketTypeId] : "Ticket";
-                                    var ticketPrice = typePrices.ContainsKey(seatEntity.TicketTypeId) ? typePrices[seatEntity.TicketTypeId] : 0;
+                                    allSeats.TryGetValue(new { PosX = r, PosY = c }, out var seatEntity);
+                                    var isReserved = reservedCoords.Contains(new { PosX = r, PosY = c });
                                     
-                                    // Determine seat class based on ticket type name
-                                    string seatClass = "regular";
-                                    if (ticketTypeName.ToLower().Contains("vip") || ticketTypeName.ToLower().Contains("gold") || ticketTypeName.ToLower().Contains("premium"))
-                                        seatClass = "vip";
-                                    else if (ticketTypeName.ToLower().Contains("economy") || ticketTypeName.ToLower().Contains("bronze"))
-                                        seatClass = "economy";
-                                    
-                                    <div class="seat @seatClass @(isReserved ? "occupied" : "seat-available")" 
-                                         data-row="@r" 
-                                         data-col="@c" 
-                                         data-type-id="@seatEntity.TicketTypeId"
-                                         data-type-name="@ticketTypeName"
-                                         data-type-color="@seatColor"
-                                         data-price="@ticketPrice"
-                                         style="@(isReserved ? "" : $"background-color: {seatColor};")"
-                                         title="@seatLabel - @ticketTypeName (@ticketPrice.ToString("N0") Ar)">
-                                        @seatLabel
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="seat" style="background-color: transparent; border: none; cursor: default;"></div>
+                                    if (seatEntity != null)
+                                    {
+                                        var seatColor = typeColors.ContainsKey(seatEntity.TicketTypeId) ? typeColors[seatEntity.TicketTypeId] : "#E5E7EB";
+                                        var ticketTypeName = typeNames.ContainsKey(seatEntity.TicketTypeId) ? typeNames[seatEntity.TicketTypeId] : "Ticket";
+                                        var ticketPrice = typePrices.ContainsKey(seatEntity.TicketTypeId) ? typePrices[seatEntity.TicketTypeId] : 0;
+                                        var textColor = isReserved ? "#FFFFFF" : "#1F2937";
+                                        
+                                        <div class="seat-cell @(isReserved ? "seat-occupied" : "seat-available")" 
+                                             style="background-color: @(isReserved ? "#1F2937" : seatColor); color: @textColor;"
+                                             data-row="@r" 
+                                             data-col="@c" 
+                                             data-type-id="@seatEntity.TicketTypeId"
+                                             data-type-name="@ticketTypeName"
+                                             data-type-color="@seatColor"
+                                             data-price="@ticketPrice"
+                                             title="@seatLabel - @ticketTypeName (@ticketPrice.ToString("N0") Ar)">
+                                            @seatLabel
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="seat-cell seat-empty" style="background-color: #FFFFFF; border: 1px solid #E5E7EB;"></div>
+                                    }
                                 }
                             }
-                        }
-                    </div>
-                    
-                    <!-- Seat Legend -->
-                    <div class="seat-legend">
-                        @foreach(var tt in Model.Event.TicketTypes)
-                        {
-                            string legendClass = "regular";
-                            if (tt.Name.ToLower().Contains("vip") || tt.Name.ToLower().Contains("gold") || tt.Name.ToLower().Contains("premium"))
-                                legendClass = "vip";
-                            else if (tt.Name.ToLower().Contains("economy") || tt.Name.ToLower().Contains("bronze"))
-                                legendClass = "economy";
-                                
-                            <div class="legend-item">
-                                <span class="legend-color @legendClass" style="background-color: @typeColors[tt.Id];"></span>
-                                <span>@tt.Name - @tt.Price.ToString("N0") Ar</span>
-                            </div>
-                        }
-                        <div class="legend-item">
-                            <span class="legend-color occupied"></span>
-                            <span>Occupied</span>
                         </div>
                     </div>
                 }
@@ -215,7 +309,7 @@
 
         <!-- Ticket Selection Sidebar -->
         <div class="col-lg-3 order-1 order-lg-2">
-            <div class="sticky-top" style="top: 100px;">
+            <div class="sticky-top" style="top: 100px; z-index: 100;">
                 <h3 class="fw-bold mb-4 text-uppercase border-start border-4 border-accent-primary ps-3" style="border-color: var(--accent-primary) !important;">
                     Select Tickets
                 </h3>
@@ -281,31 +375,311 @@
     </div>
 </div>
 
+<!-- Similar Events Section -->
+@if (Model.SimilarEvents != null && Model.SimilarEvents.Any())
+{
+    <div class="container my-5">
+        <div class="mb-4">
+            <h2 class="display-6 fw-bold mb-2">Événements similaires</h2>
+            <p class="text-secondary">Découvrez d'autres événements qui pourraient vous intéresser</p>
+        </div>
+        
+        <div class="row g-4">
+            @foreach (var similarEvent in Model.SimilarEvents)
+            {
+                var similarBgImage = !string.IsNullOrEmpty(similarEvent.PosterUrl) 
+                    ? similarEvent.PosterUrl 
+                    : (!string.IsNullOrEmpty(similarEvent.PosterBase64) 
+                        ? $"data:image/png;base64,{similarEvent.PosterBase64}" 
+                        : "https://placehold.co/400x500/1a1a1a/FFF?text=" + Uri.EscapeDataString(similarEvent.Name));
+                var similarMinPrice = similarEvent.TicketTypes.Any() ? similarEvent.TicketTypes.Min(t => t.Price) : 0;
+                
+                <div class="col-md-6 col-lg-3">
+                    <a asp-controller="Events" asp-action="Details" asp-route-id="@similarEvent.Id" class="text-decoration-none">
+                        <div class="event-card-modern">
+                            <div class="event-card-image-wrapper">
+                                <img src="@similarBgImage" alt="@similarEvent.Name" class="event-card-image" />
+                                @if (similarEvent.Category != null)
+                                {
+                                    <span class="event-category-badge">@similarEvent.Category.Name</span>
+                                }
+                            </div>
+                            <div class="event-card-content">
+                                <h3 class="event-card-title-modern">@similarEvent.Name</h3>
+                                <div class="event-card-details">
+                                    <div class="event-detail-item">
+                                        <i class="bi bi-calendar-event me-2"></i>
+                                        <span>@similarEvent.Date.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("fr-FR"))</span>
+                                    </div>
+                                    <div class="event-detail-item">
+                                        <i class="bi bi-clock me-2"></i>
+                                        <span>@similarEvent.Date.ToString("HH:mm")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+}
+
 <style>
-    .event-details-hero {
-        height: 600px;
-        margin-top: -80px;
-        margin-bottom: 4rem;
+    /* Event Poster Styles */
+    .event-poster-wrapper {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        background: #f5f5f5;
+        z-index: 1;
+    }
+
+    .event-poster-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        position: relative;
+        z-index: 1;
+    }
+
+    .event-ended-banner {
+        position: absolute;
+        top: 20px;
+        left: 0;
+        right: 0;
+        background: rgba(220, 38, 38, 0.95);
+        color: white;
+        padding: 8px 16px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+        z-index: 10;
+    }
+
+    /* Event Info Sidebar */
+    .event-info-sidebar {
+        padding: 0;
+    }
+
+    .event-info-main {
+        padding: 0;
+    }
+
+    .event-title-modern {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        line-height: 1.2;
+    }
+
+    .event-subtitle {
+        font-size: 1rem;
+        color: #666;
+        line-height: 1.6;
+    }
+
+    .event-description-content {
+        font-size: 1rem;
+        color: #333;
+        line-height: 1.8;
+        margin-bottom: 2rem;
+    }
+
+    /* Event Tags */
+    .event-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .event-tag {
+        background: #f0f0f0;
+        color: #333;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    /* Share Buttons */
+    .event-share {
+        display: flex;
+        align-items: center;
+    }
+
+    .share-label {
+        font-weight: 500;
+        color: #666;
+        font-size: 0.875rem;
+    }
+
+    .share-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #f0f0f0;
+        color: #333;
+        text-decoration: none;
+        margin-right: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .share-btn:hover {
+        background: #333;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Event Details Card - Ultra Compact Version */
+    .event-details-card {
+        background: white;
+        border-radius: 6px;
+        padding: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-top: 0;
+    }
+
+    .event-details-title {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem !important;
+    }
+
+    .event-detail-row {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+    }
+
+    .event-detail-icon {
+        font-size: 0.75rem;
+        color: #666;
+        margin-right: 0.4rem;
+        margin-top: 1px;
+        width: 14px;
+        flex-shrink: 0;
+    }
+
+    .event-detail-label {
+        display: block;
+        font-size: 0.6rem;
+        font-weight: 600;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        margin-bottom: 0.1rem;
+    }
+
+    .event-detail-value {
+        display: block;
+        font-size: 0.75rem;
+        color: #1a1a1a;
+        font-weight: 500;
+        line-height: 1.2;
+    }
+
+    .event-map {
+        margin-top: 0.5rem;
     }
     
-    .hero-background-image {
+    .event-map iframe {
+        height: 120px !important;
+    }
+
+    /* Similar Events Cards */
+    .event-card-modern {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .event-card-modern:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .event-card-image-wrapper {
+        position: relative;
+        width: 100%;
+        padding-top: 75%;
+        overflow: hidden;
+        background: #f5f5f5;
+        z-index: 1;
+    }
+
+    .event-card-image {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background-size: cover;
-        background-position: center;
-        filter: blur(0px);
+        object-fit: cover;
+        z-index: 1;
     }
-    
-    .hero-gradient-overlay {
+
+    .event-category-badge {
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(to bottom, rgba(11, 18, 32, 0.3) 0%, rgba(11, 18, 32, 0.95) 100%);
+        top: 12px;
+        right: 12px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #333;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        z-index: 10;
+    }
+
+    .event-card-content {
+        padding: 1.25rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .event-card-title-modern {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .event-card-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: auto;
+    }
+
+    .event-detail-item {
+        display: flex;
+        align-items: center;
+        font-size: 0.875rem;
+        color: #666;
+    }
+
+    .event-detail-item i {
+        color: #999;
+        width: 18px;
     }
     
     .ticket-option-custom {
@@ -360,26 +734,197 @@
         white-space: nowrap;
     }
 
-    /* Custom Grid Overrides for Compact View */
-    .custom-seat-grid {
-        gap: 2px !important;
+    /* Interactive Seat Grid Style */
+    .seat-grid-wrapper {
+        background: var(--bg-light);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        padding: 1rem;
     }
     
-    .custom-seat-grid .seat {
-        width: 30px;
-        height: 30px;
+    .seat-grid-header-row {
+        display: grid;
+        gap: 3px;
+        margin-bottom: 6px;
+    }
+    
+    .grid-header-cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        height: 24px;
+    }
+    
+    .seat-grid-with-labels {
+        display: grid;
+        gap: 3px;
+    }
+    
+    .row-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        height: 36px;
+    }
+    
+    .seat-cell {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 600;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .seat-cell.seat-available {
+        cursor: pointer;
+        z-index: 1;
+    }
+    
+    .seat-cell.seat-available:hover {
+        transform: scale(1.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        z-index: 20;
+        position: relative;
+    }
+    
+    .seat-cell.seat-available.selected {
+        background: #10B981 !important;
+        color: white !important;
+        border-color: #059669 !important;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+        z-index: 30;
+        position: relative;
+    }
+    
+    .seat-cell.seat-available.selected:hover {
+        z-index: 30;
+    }
+    
+    .seat-cell.seat-occupied {
+        background: #1F2937 !important;
+        color: white !important;
+        cursor: not-allowed;
+        opacity: 0.8;
+        z-index: 0;
+        position: relative;
+    }
+    
+    .seat-cell.seat-empty {
+        background: #FFFFFF;
+        border: 1px solid #E5E7EB;
+        cursor: default;
+        z-index: 0;
+        position: relative;
+    }
+    
+    .seat-cell.void-cell {
+        background: #F3F4F6 !important;
+        color: #9CA3AF !important;
+        cursor: not-allowed;
+        border: 1px solid #E5E7EB;
+        z-index: 0;
+        position: relative;
+    }
+    
+    .void-label-text {
         font-size: 0.6rem;
-        border-radius: 2px;
-        margin: 0;
-        border: 1px solid rgba(255, 255, 255, 0.3); /* Visual delimitation */
-        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Seat Legend Styles - Ultra Compact Version */
+    .seat-legend-container {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 0.75rem;
+    }
+    
+    .legend-title {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+    
+    .seat-legend {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.15rem 0;
+    }
+    
+    .legend-color-box {
+        width: 18px;
+        height: 18px;
+        border-radius: 3px;
+        border: 1.5px solid rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    
+    .legend-color-box.seat-occupied {
+        background: #1F2937 !important;
+        border-color: #1F2937;
+    }
+    
+    .legend-color-box.seat-selected {
+        background: #10B981 !important;
+        border-color: #059669;
+    }
+    
+    .legend-text {
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+        flex: 1;
+    }
+    
+    .legend-name {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+        line-height: 1.15;
+    }
+    
+    .legend-price {
+        font-size: 0.65rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        line-height: 1.15;
     }
 </style>
 
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const seats = document.querySelectorAll('.seat-available');
+            const seats = document.querySelectorAll('.seat-cell.seat-available');
             const container = document.getElementById('selectedSeatsContainer');
             const statusDiv = document.getElementById('seatSelectionStatus');
             const ticketInput = document.getElementById('ticketTypeIdInput');
@@ -392,7 +937,7 @@
             if (initialSeats && initialSeats.length > 0) {
                 initialSeats.forEach(s => {
                     // Find seat by row/col
-                    const seatEl = document.querySelector(`.seat-available[data-row="${s.r}"][data-col="${s.c}"]`);
+                    const seatEl = document.querySelector(`.seat-cell.seat-available[data-row="${s.r}"][data-col="${s.c}"]`);
                     if (seatEl) {
                         seatEl.classList.add('selected');
                     }
@@ -404,14 +949,16 @@
             // Seat selection
             seats.forEach(seat => {
                 seat.addEventListener('click', function() {
-                    this.classList.toggle('selected');
-                    updateSelectedSeats();
+                    if (!this.classList.contains('seat-occupied')) {
+                        this.classList.toggle('selected');
+                        updateSelectedSeats();
+                    }
                 });
             });
 
             function updateSelectedSeats() {
                 container.innerHTML = '';
-                const selected = document.querySelectorAll('.seat.selected');
+                const selected = document.querySelectorAll('.seat-cell.seat-available.selected');
                 const visualContainer = document.getElementById('visualSeatList');
                 const emptyState = document.getElementById('emptyStateInfo');
                 

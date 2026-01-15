@@ -1,6 +1,6 @@
 @model List<Ticketing.Core.Models.Event>
 @{
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = "Accueil";
 }
 
 <!-- Hero Carousel Section -->
@@ -8,7 +8,7 @@
 {
     <div class="container-fluid px-0 mb-5">
         <div class="hero-carousel" id="heroCarousel">
-            @for (int i = 0; i < Model.Count; i++)
+            @for (int i = 0; i < Math.Min(Model.Count, 5); i++)
             {
                 var evt = Model[i];
                 var bgImage = !string.IsNullOrEmpty(evt.PosterUrl) 
@@ -25,9 +25,9 @@
                             <h1 class="hero-carousel-title">@evt.Name</h1>
                             <p class="hero-carousel-tagline">@(evt.Description.Length > 150 ? evt.Description.Substring(0, 150) + "..." : evt.Description)</p>
                             <div class="d-flex align-items-center gap-3 flex-wrap">
-                                <span class="hero-carousel-price">From @minPrice.ToString("N0") Ar</span>
+                                <span class="hero-carousel-price">Dès @minPrice.ToString("N0") MGA</span>
                                 <a asp-controller="Events" asp-action="Details" asp-route-id="@evt.Id" class="btn-primary-custom">
-                                    Book Now <i class="bi bi-arrow-right ms-2"></i>
+                                    Réserver maintenant <i class="bi bi-arrow-right ms-2"></i>
                                 </a>
                             </div>
                         </div>
@@ -57,10 +57,10 @@ else
                 <div style="background: linear-gradient(135deg, #0B1220 0%, #1F2937 100%); width: 100%; height: 100%;"></div>
                 <div class="hero-carousel-overlay">
                     <div class="container text-center">
-                        <h1 class="hero-carousel-title">Welcome to EventTicketing</h1>
-                        <p class="hero-carousel-tagline">Discover and book amazing events happening around you</p>
+                        <h1 class="hero-carousel-title">Bienvenue sur Tiktek</h1>
+                        <p class="hero-carousel-tagline">Découvrez et réservez des événements incroyables</p>
                         <a asp-controller="Events" asp-action="Index" class="btn-primary-custom mt-3">
-                            Explore Events <i class="bi bi-arrow-right ms-2"></i>
+                            Explorer les événements <i class="bi bi-arrow-right ms-2"></i>
                         </a>
                     </div>
                 </div>
@@ -69,44 +69,104 @@ else
     </div>
 }
 
-<!-- Featured Events Grid -->
+<!-- Statistics Section -->
 <div class="container my-5">
-    <div class="d-flex justify-content-between align-items-center mb-5">
-        <div>
-            <h2 class="display-5 fw-bold mb-2">Featured Events</h2>
-            <p class="text-secondary">Discover the most exciting events happening near you</p>
+    <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold mb-3" style="color: var(--text-primary);">Nos chiffres clés</h2>
+        <p class="fs-5" style="color: var(--text-secondary);">Quelques données marquantes sur notre plateforme.</p>
+    </div>
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="stats-card">
+                <div class="stats-number">@(Model?.Count ?? 0)</div>
+                <div class="stats-label">Événements</div>
+            </div>
         </div>
-        <a asp-controller="Events" asp-action="Index" class="text-accent-primary text-decoration-none d-flex align-items-center">
-            View All <i class="bi bi-arrow-right ms-2"></i>
-        </a>
+        <div class="col-md-4">
+            <div class="stats-card">
+                <div class="stats-number">0</div>
+                <div class="stats-label">Commandes</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card">
+                <div class="stats-number">0</div>
+                <div class="stats-label">Tickets</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming Events Section -->
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold mb-3" style="color: var(--text-primary);">Événements à venir</h2>
+        <p class="fs-5" style="color: var(--text-secondary);">Découvrez tous les événements à venir et réservez vos places dès maintenant !</p>
     </div>
     
-    <div class="row g-4">
+    <!-- Filter Tabs -->
+    @if (Model != null && Model.Any())
+    {
+        var categories = Model.Select(e => e.Category).Where(c => c != null).Distinct().ToList();
+        <div class="filter-tabs mb-4">
+            <a href="#" class="filter-tab active" data-category="all">
+                <i class="bi bi-grid"></i>
+                <span>Tous</span>
+                <span class="badge bg-secondary ms-2">@Model.Count</span>
+            </a>
+            @foreach (var category in categories)
+            {
+                var count = Model.Count(e => e.Category?.Id == category.Id);
+                <a href="#" class="filter-tab" data-category="@category.Id">
+                    <i class="bi bi-calendar-event"></i>
+                    <span>@category.Name</span>
+                    <span class="badge bg-secondary ms-2">@count</span>
+                </a>
+            }
+        </div>
+    }
+    
+    <div class="row g-4" id="eventsContainer">
         @if (Model != null && Model.Any())
         {
-            @foreach (var evt in Model.Take(6))
+            @foreach (var evt in Model)
             {
                 var bgImage = !string.IsNullOrEmpty(evt.PosterUrl) 
                     ? evt.PosterUrl 
                     : (!string.IsNullOrEmpty(evt.PosterBase64) 
                         ? $"data:image/png;base64,{evt.PosterBase64}" 
-                        : "https://placehold.co/400x600/1a1a1a/FFF?text=" + Uri.EscapeDataString(evt.Name));
+                        : "https://placehold.co/400x500/1a1a1a/FFF?text=" + Uri.EscapeDataString(evt.Name));
                 var minPrice = evt.TicketTypes.Any() ? evt.TicketTypes.Min(t => t.Price) : 0;
                 
-                <div class="col-md-6 col-lg-4 col-xl-3">
+                <div class="col-md-6 col-lg-4 col-xl-3 event-item" data-category="@(evt.Category?.Id ?? 0)">
                     <a asp-controller="Events" asp-action="Details" asp-route-id="@evt.Id" class="text-decoration-none">
-                        <div class="event-card fade-in">
-                            <img src="@bgImage" alt="@evt.Name" />
-                            <div class="event-card-overlay">
-                                <h3 class="event-card-title">@evt.Name</h3>
-                                <div class="event-card-meta">
-                                    <div><i class="bi bi-calendar-event me-2"></i>@evt.Date.ToString("MMM dd, yyyy")</div>
-                                    <div><i class="bi bi-clock me-2"></i>@evt.Date.ToString("HH:mm")</div>
-                                    <div><i class="bi bi-geo-alt me-2"></i>@(evt.Venue?.Name ?? "TBA")</div>
-                                </div>
-                                <div class="event-card-cta">
-                                    <span class="hero-carousel-price mb-2 d-inline-block">From @minPrice.ToString("N0") Ar</span>
-                                    <button class="btn-primary-custom w-100">Book Ticket</button>
+                        <div class="event-card-modern">
+                            <div class="event-card-image-wrapper">
+                                <img src="@bgImage" alt="@evt.Name" class="event-card-image" />
+                                @if (evt.Category != null)
+                                {
+                                    <span class="event-category-badge">@evt.Category.Name</span>
+                                }
+                            </div>
+                            <div class="event-card-content">
+                                <h3 class="event-card-title-modern">@evt.Name</h3>
+                                <div class="event-card-details">
+                                    <div class="event-detail-item">
+                                        <i class="bi bi-calendar-event"></i>
+                                        <span>@evt.Date.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("fr-FR"))</span>
+                                    </div>
+                                    <div class="event-detail-item">
+                                        <i class="bi bi-clock"></i>
+                                        <span>@evt.Date.ToString("HH:mm")</span>
+                                    </div>
+                                    <div class="event-detail-item">
+                                        <i class="bi bi-geo-alt"></i>
+                                        <span>@(evt.Venue?.Name ?? "TBA")</span>
+                                    </div>
+                                    <div class="event-detail-item event-price">
+                                        <i class="bi bi-currency-exchange"></i>
+                                        <span>Dès @minPrice.ToString("N0") MGA</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -116,18 +176,17 @@ else
         }
         else
         {
-            <!-- Empty State with Call to Action -->
             <div class="col-12">
                 <div class="card-custom p-5 text-center">
-                    <i class="bi bi-calendar-x display-1 text-accent-primary mb-4"></i>
-                    <h3 class="fw-bold mb-3">No Events Available Yet</h3>
-                    <p class="text-secondary mb-4 fs-5">We're working on bringing you amazing events. Check back soon!</p>
+                    <i class="bi bi-calendar-x display-1 mb-4" style="color: var(--accent-primary);"></i>
+                    <h3 class="fw-bold mb-3" style="color: var(--text-primary);">Aucun événement disponible</h3>
+                    <p class="mb-4 fs-5" style="color: var(--text-secondary);">Nous travaillons à vous apporter des événements incroyables. Revenez bientôt !</p>
                     <div class="d-flex gap-3 justify-content-center flex-wrap">
                         <a asp-controller="Organizer" asp-action="Register" class="btn-primary-custom">
-                            <i class="bi bi-person-plus me-2"></i>Become an Organizer
+                            <i class="bi bi-person-plus me-2"></i>Devenir organisateur
                         </a>
                         <a asp-controller="Events" asp-action="Index" class="btn-secondary-custom">
-                            <i class="bi bi-search me-2"></i>Browse All Events
+                            <i class="bi bi-search me-2"></i>Voir tous les événements
                         </a>
                     </div>
                 </div>
@@ -139,10 +198,10 @@ else
 <!-- Call to Action Section -->
 <div class="container my-5">
     <div class="card-custom p-5 text-center" style="background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);">
-        <h3 class="display-6 fw-bold mb-3">Ready to Create Your Event?</h3>
-        <p class="text-secondary mb-4 fs-5">Join thousands of organizers and start selling tickets today</p>
+        <h3 class="display-6 fw-bold mb-3">Prêt à créer votre événement ?</h3>
+        <p class="text-secondary mb-4 fs-5">Rejoignez des milliers d'organisateurs et commencez à vendre des billets dès aujourd'hui</p>
         <a asp-controller="Organizer" asp-action="Register" class="btn-primary-custom btn-lg">
-            <i class="bi bi-rocket-takeoff me-2"></i>Get Started Now
+            <i class="bi bi-rocket-takeoff me-2"></i>Commencer maintenant
         </a>
     </div>
 </div>
@@ -202,17 +261,152 @@ else
 }
 
 <style>
-    .event-card {
-        height: 500px;
+    .event-card-modern {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
     }
-    
+
+    .event-card-modern:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .event-card-image-wrapper {
+        position: relative;
+        width: 100%;
+        padding-top: 75%; /* 4:3 aspect ratio */
+        overflow: hidden;
+        background: #f5f5f5;
+    }
+
+    .event-card-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .event-category-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #333;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .event-card-content {
+        padding: 1.25rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .event-card-title-modern {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .event-card-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: auto;
+    }
+
+    .event-detail-item {
+        display: flex;
+        align-items: center;
+        font-size: 0.875rem;
+        color: #666;
+    }
+
+    .event-detail-item i {
+        color: #999;
+        width: 18px;
+    }
+
+    .event-price {
+        margin-top: 0.5rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #e5e5e5;
+        color: #1a1a1a;
+    }
+
+    .event-price span {
+        color: #1a1a1a;
+    }
+
     @@media (max-width: 768px) {
-        .event-card {
-            height: 400px;
-        }
-        
         .hero-carousel {
             height: 400px !important;
         }
     }
+    
+    /* Filter functionality */
+    .event-item {
+        display: block;
+    }
+    
+    .event-item.hidden {
+        display: none;
+    }
 </style>
+
+<script>
+    // Filter functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterTabs = document.querySelectorAll('.filter-tab');
+        const eventItems = document.querySelectorAll('.event-item');
+        
+        filterTabs.forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all tabs
+                filterTabs.forEach(t => t.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Get category filter
+                const categoryId = this.getAttribute('data-category');
+                
+                // Filter events
+                eventItems.forEach(item => {
+                    if (categoryId === 'all') {
+                        item.classList.remove('hidden');
+                    } else {
+                        const itemCategory = item.getAttribute('data-category');
+                        if (itemCategory === categoryId) {
+                            item.classList.remove('hidden');
+                        } else {
+                            item.classList.add('hidden');
+                        }
+                    }
+                });
+            });
+        });
+    });
+</script>

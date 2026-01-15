@@ -8,38 +8,38 @@
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card shadow">
-                <div class="card-header bg-dark text-white">
-                    <h3 class="mb-0">Become an Organizer</h3>
+                <div class="card-header text-white">
+                    <h3 class="mb-0">Devenir organisateur</h3>
                 </div>
                 <div class="card-body p-4">
                     <form asp-action="Register">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         
                         <div class="mb-3">
-                            <label asp-for="Name" class="form-label">Full Name</label>
+                            <label asp-for="Name" class="form-label">Nom complet</label>
                             <input asp-for="Name" class="form-control" />
                             <span asp-validation-for="Name" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="OrganizationName" class="form-label">Organization Name</label>
+                            <label asp-for="OrganizationName" class="form-label">Nom de l'organisation</label>
                             <input asp-for="OrganizationName" class="form-control" />
                             <span asp-validation-for="OrganizationName" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="Email" class="form-label">Email Address</label>
+                            <label asp-for="Email" class="form-label">Adresse email</label>
                             <input asp-for="Email" type="email" class="form-control" />
                             <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="Password" class="form-label">Password</label>
+                            <label asp-for="Password" class="form-label">Mot de passe</label>
                             <input asp-for="Password" type="password" class="form-control" />
                             <span asp-validation-for="Password" class="text-danger"></span>
                         </div>
 
-                        <button type="submit" class="btn btn-dark w-100 mt-3">Register</button>
+                        <button type="submit" class="btn btn-dark w-100 mt-3">S'inscrire</button>
                     </form>
                 </div>
             </div>

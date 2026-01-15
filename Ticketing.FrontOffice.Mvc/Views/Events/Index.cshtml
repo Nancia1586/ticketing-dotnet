@@ -1,42 +1,41 @@
 @model Ticketing.FrontOffice.Mvc.Models.EventListViewModel
 
 @{
-    ViewData["Title"] = "Events";
+    ViewData["Title"] = "Événements";
 }
 
 <div class="container my-5">
     <!-- Page Header -->
     <div class="text-center mb-5">
-        <h1 class="display-4 fw-bold mb-3">Discover Amazing Events</h1>
-        <p class="text-secondary fs-5">Find and book tickets for the best events happening near you</p>
+        <h1 class="display-4 fw-bold mb-3">Événements à venir</h1>
+        <p class="text-secondary fs-5">Découvrez tous les événements à venir et réservez vos places dès maintenant !</p>
     </div>
 
     <!-- Search & Filter -->
     <div class="row justify-content-center mb-5">
-        <div class="col-lg-10">
-            <form method="get" class="card-custom p-4">
-                <div class="row g-3">
-                    <div class="col-md-8">
-                        <div class="search-wrapper">
-                            <i class="bi bi-search search-icon"></i>
-                            <input type="text" name="searchTerm" class="search-input" placeholder="Search events by name..." value="@Model.SearchTerm" />
+        <div class="col-lg-10 col-xl-8">
+            <div class="events-search-container">
+                <form method="get" class="events-search-form">
+                    <div class="events-search-row">
+                        <div class="events-search-field-wrapper">
+                            <i class="bi bi-search events-search-field-icon"></i>
+                            <input type="text" name="searchTerm" class="events-search-field" placeholder="Rechercher un événement..." value="@Model.SearchTerm" />
+                        </div>
+                        <div class="events-date-field-wrapper">
+                            <input type="date" name="filterDate" class="events-date-field" value="@Model.FilterDate?.ToString("yyyy-MM-dd")" placeholder="jj/mm/aaaa" />
+                            <i class="bi bi-calendar3 events-date-field-icon"></i>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <input type="date" name="filterDate" class="form-control form-control-lg bg-card border-secondary text-white" value="@Model.FilterDate?.ToString("yyyy-MM-dd")" />
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-12 d-flex gap-2 justify-content-end">
-                        <button type="submit" class="btn-primary-custom">
-                            <i class="bi bi-search me-2"></i>Search
+                    <div class="events-search-actions">
+                        <button type="submit" class="events-search-btn">
+                            <i class="bi bi-search me-2"></i>Rechercher
                         </button>
-                        <a asp-action="Index" class="btn-secondary-custom">
-                            <i class="bi bi-x-circle me-2"></i>Clear
+                        <a asp-action="Index" class="events-clear-btn">
+                            <i class="bi bi-x-circle me-2"></i>Effacer
                         </a>
                     </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -46,8 +45,8 @@
         {
             <div class="col-12 text-center py-5">
                 <i class="bi bi-calendar-x display-1 text-secondary mb-3"></i>
-                <h3 class="text-secondary mb-2">No events found</h3>
-                <p class="text-muted">Try adjusting your search criteria or check back later.</p>
+                <h3 class="text-secondary mb-2">Aucun événement trouvé</h3>
+                <p class="text-muted">Essayez d'ajuster vos critères de recherche ou revenez plus tard.</p>
             </div>
         }
         else
@@ -58,34 +57,38 @@
                     ? item.PosterUrl 
                     : (!string.IsNullOrEmpty(item.PosterBase64) 
                         ? $"data:image/png;base64,{item.PosterBase64}" 
-                        : "https://placehold.co/400x600/1a1a1a/FFF?text=" + Uri.EscapeDataString(item.Name));
+                        : "https://placehold.co/400x500/1a1a1a/FFF?text=" + Uri.EscapeDataString(item.Name));
                 var minPrice = item.TicketTypes.Any() ? item.TicketTypes.Min(t => t.Price) : 0;
                 
                 <div class="col-md-6 col-lg-4 col-xl-3">
                     <a asp-action="Details" asp-route-id="@item.Id" class="text-decoration-none">
-                        <div class="event-card fade-in">
-                            <img src="@bgImage" alt="@item.Name" />
-                            <div class="event-card-overlay">
-                                <h3 class="event-card-title">@item.Name</h3>
-                                <div class="event-card-meta">
-                                    <div class="mb-2">
-                                        <i class="bi bi-calendar-event me-2 text-accent-primary"></i>
-                                        <span>@item.Date.ToString("MMM dd, yyyy")</span>
+                        <div class="event-card-modern">
+                            <div class="event-card-image-wrapper">
+                                <img src="@bgImage" alt="@item.Name" class="event-card-image" />
+                                @if (item.Category != null)
+                                {
+                                    <span class="event-category-badge">@item.Category.Name</span>
+                                }
+                            </div>
+                            <div class="event-card-content">
+                                <h3 class="event-card-title-modern">@item.Name</h3>
+                                <div class="event-card-details">
+                                    <div class="event-detail-item">
+                                        <i class="bi bi-calendar-event me-2"></i>
+                                        <span>@item.Date.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("fr-FR"))</span>
                                     </div>
-                                    <div class="mb-2">
-                                        <i class="bi bi-clock me-2 text-accent-primary"></i>
+                                    <div class="event-detail-item">
+                                        <i class="bi bi-clock me-2"></i>
                                         <span>@item.Date.ToString("HH:mm")</span>
                                     </div>
-                                    <div class="mb-2">
-                                        <i class="bi bi-geo-alt me-2 text-accent-primary"></i>
+                                    <div class="event-detail-item">
+                                        <i class="bi bi-geo-alt me-2"></i>
                                         <span>@(item.Venue?.Name ?? "TBA")</span>
                                     </div>
-                                </div>
-                                <div class="event-card-cta">
-                                    <span class="hero-carousel-price mb-3 d-inline-block">From @minPrice.ToString("N0") Ar</span>
-                                    <button class="btn-primary-custom w-100">
-                                        <i class="bi bi-ticket-perforated me-2"></i>Book Ticket
-                                    </button>
+                                    <div class="event-detail-item event-price">
+                                        <i class="bi bi-currency-exchange me-2"></i>
+                                        <span class="fw-bold">Dès @minPrice.ToString("N0") MGA</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -97,13 +100,270 @@
 </div>
 
 <style>
-    .event-card {
-        height: 500px;
+    /* Events Search Container */
+    .events-search-container {
+        background: #FFFFFF;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 1px solid #E5E7EB;
     }
-    
+
+    .events-search-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .events-search-row {
+        display: flex;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .events-search-field-wrapper,
+    .events-date-field-wrapper {
+        position: relative;
+        flex: 1;
+    }
+
+    .events-search-field-wrapper {
+        flex: 2;
+    }
+
+    .events-search-field-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6B7280;
+        font-size: 1.1rem;
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    .events-search-field {
+        width: 100%;
+        padding: 0.875rem 1rem 0.875rem 3rem;
+        background-color: #F9FAFB;
+        border: 1px solid #E5E7EB;
+        border-radius: 10px;
+        color: var(--text-primary);
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+    }
+
+    .events-search-field::placeholder {
+        color: #9CA3AF;
+    }
+
+    .events-search-field:focus {
+        outline: none;
+        background-color: #FFFFFF;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .events-date-field-wrapper {
+        position: relative;
+    }
+
+    .events-date-field {
+        width: 100%;
+        padding: 0.875rem 3rem 0.875rem 1rem;
+        background-color: #F9FAFB;
+        border: 1px solid #E5E7EB;
+        border-radius: 10px;
+        color: var(--text-primary);
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+    }
+
+    .events-date-field:focus {
+        outline: none;
+        background-color: #FFFFFF;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .events-date-field::-webkit-calendar-picker-indicator {
+        opacity: 0;
+        position: absolute;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .events-date-field-icon {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6B7280;
+        font-size: 1.1rem;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .events-search-actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+    }
+
+    .events-search-btn {
+        background: linear-gradient(135deg, var(--accent-primary) 0%, #1E40AF 100%);
+        color: #FFFFFF;
+        border: none;
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    }
+
+    .events-search-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+    }
+
+    .events-clear-btn {
+        background: #FFFFFF;
+        color: var(--text-primary);
+        border: 1px solid #E5E7EB;
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .events-clear-btn:hover {
+        background: #F9FAFB;
+        border-color: #D1D5DB;
+        color: var(--text-primary);
+    }
+
+    /* Event Cards */
+    .event-card-modern {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .event-card-modern:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .event-card-image-wrapper {
+        position: relative;
+        width: 100%;
+        padding-top: 75%; /* 4:3 aspect ratio */
+        overflow: hidden;
+        background: #f5f5f5;
+    }
+
+    .event-card-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .event-category-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #333;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .event-card-content {
+        padding: 1.25rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .event-card-title-modern {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .event-card-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: auto;
+    }
+
+    .event-detail-item {
+        display: flex;
+        align-items: center;
+        font-size: 0.875rem;
+        color: #666;
+    }
+
+    .event-detail-item i {
+        color: #999;
+        width: 18px;
+    }
+
+    .event-price {
+        margin-top: 0.5rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #e5e5e5;
+        color: #1a1a1a;
+    }
+
+    .event-price span {
+        color: #1a1a1a;
+    }
+
+    /* Responsive */
     @@media (max-width: 768px) {
-        .event-card {
-            height: 400px;
+        .events-search-row {
+            flex-direction: column;
+        }
+
+        .events-search-actions {
+            flex-direction: column;
+        }
+
+        .events-search-btn,
+        .events-clear-btn {
+            width: 100%;
+            justify-content: center;
         }
     }
 </style>

@@ -10,7 +10,7 @@
             <!-- Page Header -->
             <div class="text-center mb-5">
                 <h1 class="display-5 fw-bold mb-2">Complete Your Purchase</h1>
-                <p class="text-secondary">Secure payment - Your tickets will be sent to your email</p>
+                <p class="text-secondary">Official Papi Gateway - Pay securely via Mobile Money or Card</p>
             </div>
 
             <!-- Total Amount Display -->
@@ -38,13 +38,22 @@
                         <span asp-validation-for="FullName" class="text-danger"></span>
                     </div>
 
-                    <div class="mb-5">
+                    <div class="mb-4">
                         <label asp-for="Email" class="form-label fw-bold text-secondary">
                             Email Address <span class="text-danger">*</span>
                         </label>
                         <input asp-for="Email" type="email" class="form-control form-control-lg bg-card border-secondary text-white" placeholder="john@example.com" />
                         <span asp-validation-for="Email" class="text-danger"></span>
                         <small class="text-muted">Your tickets will be sent to this email</small>
+                    </div>
+
+                    <div class="mb-5">
+                        <label asp-for="PhoneNumber" class="form-label fw-bold text-secondary">
+                            Phone Number <small class="text-muted">(Optional)</small>
+                        </label>
+                        <input asp-for="PhoneNumber" type="tel" class="form-control form-control-lg bg-card border-secondary text-white" placeholder="+261340000000" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        <small class="text-muted">For mobile money payments (Mvola, Orange Money, Airtel Money)</small>
                     </div>
                     
                     <hr class="my-5" style="border-color: var(--border-color);">
@@ -55,97 +64,45 @@
 
                     <div class="mb-5">
                         <label asp-for="PaymentMethod" class="form-label fw-bold text-secondary">
-                            Choose Payment Method <span class="text-danger">*</span>
+                            Preferred Provider <small class="text-muted">(Optional preview)</small>
                         </label>
                         <select asp-for="PaymentMethod" class="form-select form-select-lg bg-card border-secondary text-white">
-                            <option value="Credit Card">Credit Card</option>
-                            <option value="Orange Money">Orange Money</option>
-                            <option value="Mvola">Mvola</option>
-                            <option value="Airtel Money">Airtel Money</option>
-                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="Credit Card">Credit Card / VISA</option>
+                            <option value="MVOLA">Mvola</option>
+                            <option value="ORANGE_MONEY">Orange Money</option>
+                            <option value="AIRTEL_MONEY">Airtel Money</option>
                         </select>
                         <span asp-validation-for="PaymentMethod" class="text-danger"></span>
                     </div>
 
-                    <h5 class="fw-bold mb-4 border-bottom pb-3" style="border-color: var(--border-color) !important;">
-                        <i class="bi bi-credit-card me-2 text-accent-primary"></i>Payment Details
-                    </h5>
-
-                    <div class="mb-4">
-                        <label asp-for="CardNumber" class="form-label fw-bold text-secondary">
-                            Card Number <span class="text-danger">*</span>
-                        </label>
-                        <input asp-for="CardNumber" class="form-control form-control-lg bg-card border-secondary text-white" placeholder="0000 0000 0000 0000" maxlength="19" />
-                        <span asp-validation-for="CardNumber" class="text-danger"></span>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-4">
-                            <label asp-for="ExpiryDate" class="form-label fw-bold text-secondary">
-                                Expiry Date <span class="text-danger">*</span>
-                            </label>
-                            <input asp-for="ExpiryDate" class="form-control form-control-lg bg-card border-secondary text-white" placeholder="MM/YY" maxlength="5" />
-                            <span asp-validation-for="ExpiryDate" class="text-danger"></span>
+                    <div class="alert alert-info bg-card border-secondary mb-5">
+                        <div class="d-flex">
+                            <i class="bi bi-info-circle-fill me-3 fs-4 text-accent-primary"></i>
+                            <div>
+                                <p class="mb-0">You will be redirected to the secure <strong>Papi Payment Gateway</strong> to complete your transaction.</p>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-4">
-                            <label asp-for="CVV" class="form-label fw-bold text-secondary">
-                                CVV <span class="text-danger">*</span>
-                            </label>
-                            <input asp-for="CVV" class="form-control form-control-lg bg-card border-secondary text-white" placeholder="123" maxlength="4" />
-                            <span asp-validation-for="CVV" class="text-danger"></span>
-                        </div>
-                    </div>
-
-                    <div class="alert alert-info bg-card border-secondary mb-4">
-                        <i class="bi bi-shield-check me-2 text-accent-primary"></i>
-                        <small>This is a demo payment. No actual charges will be made.</small>
                     </div>
 
                     <div class="d-grid">
                         <button type="submit" class="btn-primary-custom w-100 py-3 fs-5">
-                            <i class="bi bi-lock-fill me-2"></i>Pay Now - @Model.TotalAmount.ToString("N0") Ar
+                            <i class="bi bi-shield-lock-fill me-2"></i>Proceed to Secure Payment
                         </button>
                     </div>
                 </form>
             </div>
 
             <!-- Security Badge -->
-            <div class="text-center mt-4">
-                <div class="d-flex justify-content-center gap-4 flex-wrap">
+            <div class="text-center mt-5">
+                <div class="d-flex justify-content-center gap-4 flex-wrap opacity-75">
+                    <img src="https://app.papi.mg/images/logo-papi.png" alt="Papi Madagascar" style="height: 30px; filter: grayscale(1) brightness(2);">
+                    <div class="vr"></div>
                     <div class="d-flex align-items-center text-secondary">
-                        <i class="bi bi-shield-check me-2 text-accent-primary"></i>
-                        <small>Secure Payment</small>
-                    </div>
-                    <div class="d-flex align-items-center text-secondary">
-                        <i class="bi bi-envelope-check me-2 text-accent-primary"></i>
-                        <small>Instant Confirmation</small>
-                    </div>
-                    <div class="d-flex align-items-center text-secondary">
-                        <i class="bi bi-headset me-2 text-accent-primary"></i>
-                        <small>24/7 Support</small>
+                        <i class="bi bi-shield-lock me-2"></i>
+                        <small>SSL Encrypted</small>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        // Format card number
-        document.querySelector('input[name="CardNumber"]')?.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\s/g, '');
-            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
-            e.target.value = formattedValue;
-        });
-
-        // Format expiry date
-        document.querySelector('input[name="ExpiryDate"]')?.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length >= 2) {
-                value = value.substring(0, 2) + '/' + value.substring(2, 4);
-            }
-            e.target.value = value;
-        });
-    </script>
-}
