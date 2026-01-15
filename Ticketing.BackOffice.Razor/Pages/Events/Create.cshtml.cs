@@ -23,8 +23,8 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
         [BindProperty]
         public Event Event { get; set; } = default!;
 
-        public SelectList VenueSelectList { get; set; }
-        public SelectList CategorySelectList { get; set; }
+        public SelectList VenueSelectList { get; set; } = null!;
+        public SelectList CategorySelectList { get; set; } = null!;
 
         public async Task<IActionResult> OnGetAsync()
         {
