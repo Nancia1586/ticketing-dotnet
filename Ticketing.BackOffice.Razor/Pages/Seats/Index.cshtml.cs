@@ -35,11 +35,19 @@ namespace Ticketing.BackOffice.Razor.Pages.Seats
         public int TakenSeats { get; set; }
         public int HeldSeats { get; set; }
 
-        public async Task OnGetAsync(int? eventId = null, SeatStatus? status = null, string? searchTerm = null)
+        // Pagination properties
+        public int CurrentPage { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+        public int TotalPages { get; set; }
+        public bool HasPreviousPage { get; set; }
+        public bool HasNextPage { get; set; }
+
+        public async Task OnGetAsync(int? eventId = null, SeatStatus? status = null, string? searchTerm = null, int page = 1)
         {
             SelectedEventId = eventId;
             SelectedStatus = status;
             SearchTerm = searchTerm;
+            CurrentPage = page < 1 ? 1 : page;
 
             int? organizerId = null;
             if (User.IsInRole("Organizer"))
@@ -50,10 +58,12 @@ namespace Ticketing.BackOffice.Razor.Pages.Seats
 
             Events = (await _eventService.GetAllEventsAsync(organizerId)).ToList();
 
+            // Build base query with filters (SERVER-SIDE)
             var query = _context.Seats
                 .Include(s => s.TicketType)
                     .ThenInclude(tt => tt.Event)
                 .Include(s => s.Reservation)
+                .AsNoTracking()
                 .AsQueryable();
 
             if (organizerId.HasValue)
@@ -81,9 +91,31 @@ namespace Ticketing.BackOffice.Razor.Pages.Seats
                 );
             }
 
+            // SERVER-SIDE: Calculate statistics in SQL before pagination
+            TotalSeats = await query.CountAsync();
+            FreeSeats = await query.CountAsync(s => s.Status == SeatStatus.Free);
+            ReservedSeats = await query.CountAsync(s => s.Status == SeatStatus.Reserved);
+            TakenSeats = await query.CountAsync(s => s.Status == SeatStatus.Taken);
+            HeldSeats = await query.CountAsync(s => s.Status == SeatStatus.Held);
+
+            // Calculate pagination info
+            TotalPages = (int)Math.Ceiling(TotalSeats / (double)PageSize);
+            
+            // Validate page number doesn't exceed total pages
+            if (TotalPages > 0 && CurrentPage > TotalPages)
+            {
+                CurrentPage = TotalPages;
+            }
+
+            HasPreviousPage = CurrentPage > 1;
+            HasNextPage = CurrentPage < TotalPages;
+
+            // SERVER-SIDE PAGINATION: Only fetch the requested page from database
             var seats = await query
                 .OrderBy(s => s.TicketType.Event.Name)
                 .ThenBy(s => s.Code)
+                .Skip((CurrentPage - 1) * PageSize)
+                .Take(PageSize)
                 .ToListAsync();
 
             Seats = seats.Select(s => new SeatViewModel
@@ -101,12 +133,6 @@ namespace Ticketing.BackOffice.Razor.Pages.Seats
                 ReservationReference = s.Reservation?.Reference,
                 ReservationDate = s.Reservation?.ReservationDate
             }).ToList();
-
-            TotalSeats = Seats.Count;
-            FreeSeats = Seats.Count(s => s.Status == SeatStatus.Free);
-            ReservedSeats = Seats.Count(s => s.Status == SeatStatus.Reserved);
-            TakenSeats = Seats.Count(s => s.Status == SeatStatus.Taken);
-            HeldSeats = Seats.Count(s => s.Status == SeatStatus.Held);
         }
 
         public class SeatViewModel

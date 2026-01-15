@@ -18,10 +18,17 @@ namespace Ticketing.BackOffice.Razor.Pages.Reservations
 
         public IEnumerable<Reservation> Reservations { get; set; } = new List<Reservation>();
         public string? SearchTerm { get; set; }
+        public int ReservationCount { get; set; }
+        public int CurrentPage { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+        public int TotalPages { get; set; }
+        public bool HasPreviousPage { get; set; }
+        public bool HasNextPage { get; set; }
 
-        public async Task OnGetAsync(string? searchTerm = null)
+        public async Task OnGetAsync(string? searchTerm = null, int page = 1)
         {
             SearchTerm = searchTerm;
+            CurrentPage = page < 1 ? 1 : page;
             
             int? organizerId = null;
             if (User.IsInRole("Organizer"))
@@ -30,8 +37,23 @@ namespace Ticketing.BackOffice.Razor.Pages.Reservations
                 organizerId = user?.OrganizationId;
             }
 
-
-            Reservations = await _reservationRepository.GetAllReservationsAsync(organizerId, searchTerm);
+            // SERVER-SIDE PAGINATION: Request only the current page from database
+            // The repository executes Skip() and Take() in SQL, not in memory
+            var result = await _reservationRepository.GetAllReservationsAsync(organizerId, searchTerm, CurrentPage, PageSize);
+            
+            // Validate page number doesn't exceed total pages
+            if (result.TotalPages > 0 && CurrentPage > result.TotalPages)
+            {
+                CurrentPage = result.TotalPages;
+                // Re-fetch with corrected page number
+                result = await _reservationRepository.GetAllReservationsAsync(organizerId, searchTerm, CurrentPage, PageSize);
+            }
+            
+            Reservations = result.Items;
+            ReservationCount = result.TotalCount;
+            TotalPages = result.TotalPages;
+            HasPreviousPage = result.HasPreviousPage;
+            HasNextPage = result.HasNextPage;
         }
     }
 }

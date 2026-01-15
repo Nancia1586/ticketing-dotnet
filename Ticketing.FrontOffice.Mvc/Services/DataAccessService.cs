@@ -95,9 +95,122 @@ namespace Ticketing.FrontOffice.Mvc.Services
 
             reader.Close();
 
-            foreach (var evt in events)
+            // Load all ticket types for all events in one query (fix N+1)
+            if (events.Any())
             {
-                evt.TicketTypes = await GetTicketTypesByEventIdAsync(evt.Id, connection);
+                var eventIds = events.Select(e => e.Id).ToList();
+                var ticketTypesQuery = @"
+                    SELECT Id, Name, Price, TotalCapacity, Color, EventId
+                    FROM TicketTypes
+                    WHERE EventId IN ({0})";
+
+                var eventIdParams = string.Join(",", eventIds.Select((_, i) => $"@EventId{i}"));
+                ticketTypesQuery = string.Format(ticketTypesQuery, eventIdParams);
+
+                using var ticketTypesCommand = new SqlCommand(ticketTypesQuery, connection);
+                for (int i = 0; i < eventIds.Count; i++)
+                {
+                    ticketTypesCommand.Parameters.Add(new SqlParameter($"@EventId{i}", eventIds[i]));
+                }
+
+                var ticketTypesByEventId = new Dictionary<int, List<TicketType>>();
+                foreach (var evt in events)
+                {
+                    ticketTypesByEventId[evt.Id] = new List<TicketType>();
+                }
+
+                using var ticketTypesReader = await ticketTypesCommand.ExecuteReaderAsync();
+                while (await ticketTypesReader.ReadAsync())
+                {
+                    var eventId = ticketTypesReader.GetInt32("EventId");
+                    var ticketType = new TicketType
+                    {
+                        Id = ticketTypesReader.GetInt32("Id"),
+                        Name = ticketTypesReader.GetString("Name"),
+                        Price = ticketTypesReader.GetDecimal("Price"),
+                        TotalCapacity = ticketTypesReader.GetInt32("TotalCapacity"),
+                        Color = ticketTypesReader.GetString("Color"),
+                        EventId = eventId
+                    };
+
+                    if (ticketTypesByEventId.ContainsKey(eventId))
+                    {
+                        ticketTypesByEventId[eventId].Add(ticketType);
+                    }
+                }
+                ticketTypesReader.Close();
+
+                // Load seats for all ticket types in one query
+                var ticketTypeIds = ticketTypesByEventId.Values.SelectMany(tt => tt).Select(tt => tt.Id).ToList();
+                if (ticketTypeIds.Any())
+                {
+                    var seatsQuery = @"
+                        SELECT Id, Code, PosX, PosY, Status, TicketTypeId, ReservationId
+                        FROM Seats
+                        WHERE TicketTypeId IN ({0})";
+
+                    var ticketTypeIdParams = string.Join(",", ticketTypeIds.Select((_, i) => $"@TicketTypeId{i}"));
+                    seatsQuery = string.Format(seatsQuery, ticketTypeIdParams);
+
+                    using var seatsCommand = new SqlCommand(seatsQuery, connection);
+                    for (int i = 0; i < ticketTypeIds.Count; i++)
+                    {
+                        seatsCommand.Parameters.Add(new SqlParameter($"@TicketTypeId{i}", ticketTypeIds[i]));
+                    }
+
+                    var seatsByTicketTypeId = new Dictionary<int, List<Seat>>();
+                    foreach (var ticketTypeId in ticketTypeIds)
+                    {
+                        seatsByTicketTypeId[ticketTypeId] = new List<Seat>();
+                    }
+
+                    using var seatsReader = await seatsCommand.ExecuteReaderAsync();
+                    while (await seatsReader.ReadAsync())
+                    {
+                        var ticketTypeId = seatsReader.GetInt32("TicketTypeId");
+                        var seat = new Seat
+                        {
+                            Id = seatsReader.GetInt32("Id"),
+                            Code = seatsReader.GetString("Code"),
+                            PosX = seatsReader.GetInt32("PosX"),
+                            PosY = seatsReader.GetInt32("PosY"),
+                            Status = (SeatStatus)seatsReader.GetInt32("Status"),
+                            TicketTypeId = ticketTypeId,
+                            ReservationId = seatsReader.IsDBNull("ReservationId") ? null : seatsReader.GetInt32("ReservationId")
+                        };
+
+                        if (seatsByTicketTypeId.ContainsKey(ticketTypeId))
+                        {
+                            seatsByTicketTypeId[ticketTypeId].Add(seat);
+                        }
+                    }
+                    seatsReader.Close();
+
+                    // Assign seats to ticket types
+                    foreach (var kvp in ticketTypesByEventId)
+                    {
+                        foreach (var ticketType in kvp.Value)
+                        {
+                            if (seatsByTicketTypeId.ContainsKey(ticketType.Id))
+                            {
+                                ticketType.Seats = seatsByTicketTypeId[ticketType.Id];
+                            }
+                        }
+                    }
+                }
+
+                // Assign ticket types to events
+                foreach (var evt in events)
+                {
+                    if (ticketTypesByEventId.ContainsKey(evt.Id))
+                    {
+                        evt.TicketTypes = ticketTypesByEventId[evt.Id];
+                    }
+                    else
+                    {
+                        evt.TicketTypes = new List<TicketType>();
+                    }
+                }
             }
 
             return events;
@@ -246,16 +359,72 @@ namespace Ticketing.FrontOffice.Mvc.Services
 
                 ticketTypes.Add(ticketType);
             }
+            reader.Close();
 
-            foreach (var ticketType in ticketTypes)
+            // Load all seats for all ticket types in one query (fix N+1)
+            if (ticketTypes.Any())
             {
-                ticketType.Seats = await GetSeatsByTicketTypeIdAsync(ticketType.Id, connection);
+                var ticketTypeIds = ticketTypes.Select(tt => tt.Id).ToList();
+                var seatsQuery = @"
+                    SELECT Id, Code, PosX, PosY, Status, TicketTypeId, ReservationId
+                    FROM Seats
+                    WHERE TicketTypeId IN ({0})";
+
+                var ticketTypeIdParams = string.Join(",", ticketTypeIds.Select((_, i) => $"@TicketTypeId{i}"));
+                seatsQuery = string.Format(seatsQuery, ticketTypeIdParams);
+
+                using var seatsCommand = new SqlCommand(seatsQuery, connection);
+                for (int i = 0; i < ticketTypeIds.Count; i++)
+                {
+                    seatsCommand.Parameters.Add(new SqlParameter($"@TicketTypeId{i}", ticketTypeIds[i]));
+                }
+
+                var seatsByTicketTypeId = new Dictionary<int, List<Seat>>();
+                foreach (var ticketTypeId in ticketTypeIds)
+                {
+                    seatsByTicketTypeId[ticketTypeId] = new List<Seat>();
+                }
+
+                using var seatsReader = await seatsCommand.ExecuteReaderAsync();
+                while (await seatsReader.ReadAsync())
+                {
+                    var ticketTypeId = seatsReader.GetInt32("TicketTypeId");
+                    var seat = new Seat
+                    {
+                        Id = seatsReader.GetInt32("Id"),
+                        Code = seatsReader.GetString("Code"),
+                        PosX = seatsReader.GetInt32("PosX"),
+                        PosY = seatsReader.GetInt32("PosY"),
+                        Status = (SeatStatus)seatsReader.GetInt32("Status"),
+                        TicketTypeId = ticketTypeId,
+                        ReservationId = seatsReader.IsDBNull("ReservationId") ? null : seatsReader.GetInt32("ReservationId")
+                    };
+
+                    if (seatsByTicketTypeId.ContainsKey(ticketTypeId))
+                    {
+                        seatsByTicketTypeId[ticketTypeId].Add(seat);
+                    }
+                }
+                seatsReader.Close();
+
+                // Assign seats to ticket types
+                foreach (var ticketType in ticketTypes)
+                {
+                    if (seatsByTicketTypeId.ContainsKey(ticketType.Id))
+                    {
+                        ticketType.Seats = seatsByTicketTypeId[ticketType.Id];
+                    }
+                    else
+                    {
+                        ticketType.Seats = new List<Seat>();
+                    }
+                }
             }
 
             return ticketTypes;
         }
 
-        // Seats
+        // Seats - This method is now only used for single ticket type queries
         private async Task<List<Seat>> GetSeatsByTicketTypeIdAsync(int ticketTypeId, SqlConnection connection)
         {
             var seats = new List<Seat>();
@@ -281,6 +450,7 @@ namespace Ticketing.FrontOffice.Mvc.Services
                     ReservationId = reader.IsDBNull("ReservationId") ? null : reader.GetInt32("ReservationId")
                 });
             }
+            reader.Close();
 
             return seats;
         }

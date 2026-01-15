@@ -38,6 +38,48 @@ namespace Ticketing.Core.Data
                 .Property(r => r.TotalAmount)
                 .HasPrecision(18, 2);
 
+            // Configure max lengths for searchable columns to allow indexing
+            modelBuilder.Entity<Reservation>()
+                .Property(r => r.Reference)
+                .HasMaxLength(100);
+
+            modelBuilder.Entity<Reservation>()
+                .Property(r => r.CustomerName)
+                .HasMaxLength(200);
+
+            modelBuilder.Entity<Reservation>()
+                .Property(r => r.Email)
+                .HasMaxLength(255);
+
+            modelBuilder.Entity<Reservation>()
+                .Property(r => r.PaymentReference)
+                .HasMaxLength(100);
+
+            // Create indexes for better search performance
+            modelBuilder.Entity<Reservation>()
+                .HasIndex(r => r.Reference)
+                .HasDatabaseName("IX_Reservations_Reference");
+
+            modelBuilder.Entity<Reservation>()
+                .HasIndex(r => r.CustomerName)
+                .HasDatabaseName("IX_Reservations_CustomerName");
+
+            modelBuilder.Entity<Reservation>()
+                .HasIndex(r => r.Email)
+                .HasDatabaseName("IX_Reservations_Email");
+
+            modelBuilder.Entity<Reservation>()
+                .HasIndex(r => r.PaymentReference)
+                .HasDatabaseName("IX_Reservations_PaymentReference");
+
+            modelBuilder.Entity<Reservation>()
+                .HasIndex(r => r.Status)
+                .HasDatabaseName("IX_Reservations_Status");
+
+            modelBuilder.Entity<Reservation>()
+                .HasIndex(r => new { r.EventId, r.Status })
+                .HasDatabaseName("IX_Reservations_EventId_Status");
+
             modelBuilder.Entity<ReservationDetail>()
                 .Property(rd => rd.Subtotal)
                 .HasPrecision(18, 2);

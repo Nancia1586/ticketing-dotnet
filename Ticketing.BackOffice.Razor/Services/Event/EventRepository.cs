@@ -19,6 +19,7 @@ namespace Ticketing.BackOffice.Razor.Services
             var query = _context.Events
                                  .Include(e => e.Venue)
                                  .Include(e => e.Category)
+                                 .AsNoTracking()
                                  .AsQueryable();
 
             if (organizerId.HasValue)
@@ -26,7 +27,7 @@ namespace Ticketing.BackOffice.Razor.Services
                 query = query.Where(e => e.OrganizerId == organizerId);
             }
 
-            return await query.ToListAsync();
+            return await query.OrderByDescending(e => e.Date).ToListAsync();
         }
 
         public async Task<Event?> GetEventByIdAsync(int id)
@@ -75,8 +76,8 @@ namespace Ticketing.BackOffice.Razor.Services
                 .Include(e => e.Category)
                 .Include(e => e.TicketTypes)
                     .ThenInclude(tt => tt.Seats)
-                .Include(e => e.Reservations)
                 .AsSplitQuery()
+                .AsNoTracking()
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 

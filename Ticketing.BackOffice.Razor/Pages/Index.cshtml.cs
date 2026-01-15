@@ -65,17 +65,19 @@ public class IndexModel : PageModel
         }
 
         var events = (await _eventService.GetAllEventsAsync(organizerId)).ToList();
-        var reservations = (await _reservationRepository.GetAllReservationsAsync(organizerId, null)).ToList();
         var categories = (await _categoryService.GetAllCategoriesAsync()).ToList();
     
+        // OPTIMIZED: Use SQL aggregation instead of loading all reservations
+        var dashboardStats = await _reservationRepository.GetDashboardStatsAsync(organizerId);
+        
         EventsSellingCount = events.Count(e => e.IsActive && e.IsSubmitted && e.Date > DateTime.Now);
         EventsPendingCount = events.Count(e => !e.IsSubmitted);
         EventsFinishedCount = events.Count(e => e.Date <= DateTime.Now);
 
-        var confirmedReservations = reservations.Where(r => r.Status == Ticketing.Core.Models.ReservationStatus.Confirmed).ToList();
-        TotalTicketsSold = confirmedReservations.Sum(r => r.SeatCount);
-        TotalRevenue = confirmedReservations.Sum(r => r.TotalAmount);
-        TotalReservations = reservations.Count;
+        // Use optimized stats from database
+        TotalTicketsSold = dashboardStats.TotalTicketsSold;
+        TotalRevenue = dashboardStats.TotalRevenue;
+        TotalReservations = dashboardStats.TotalReservations;
 
         CategoryStatsList = categories.Select(c => new CategoryStats
         {
@@ -83,16 +85,12 @@ public class IndexModel : PageModel
             Count = events.Count(e => e.CategoryId == c.Id)
         }).Where(s => s.Count > 0).ToList();
 
-        TopEvents = events.Select(e => {
-            var eventReservations = confirmedReservations.Where(r => r.EventId == e.Id).ToList();
-            return new EventStats
-            {
-                Name = e.Name,
-                TicketsSold = eventReservations.Sum(r => r.SeatCount),
-                Revenue = eventReservations.Sum(r => r.TotalAmount)
-            };
-        }).OrderByDescending(e => e.TicketsSold)
-          .Take(5)
-          .ToList();
+        // Use optimized top events from database
+        TopEvents = dashboardStats.TopEvents.Select(e => new EventStats
+        {
+            Name = e.EventName,
+            TicketsSold = e.TicketsSold,
+            Revenue = e.Revenue
+        }).ToList();
     }
 }
