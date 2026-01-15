@@ -12,5 +12,8 @@ namespace Ticketing.FrontOffice.Mvc.Models
         
         // Cart items for this event (to show which seats are in cart)
         public List<CartItem> CartItems { get; set; } = new List<CartItem>();
+        
+        // Similar events for recommendations
+        public List<Event> SimilarEvents { get; set; } = new List<Event>();
     }
 }
