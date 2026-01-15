@@ -51,7 +51,7 @@
                                         @foreach (var group in seatsByType)
                                         {
                                             var ticketType = ticketTypeCache.ContainsKey(group.Key) ? ticketTypeCache[group.Key] : null;
-                                            var ticketTypeName = ticketType?.Name ?? "Unknown";
+                                            var ticketTypeName = ticketType?.Name ?? "Inconnu";
                                             var seatCodes = group.OrderBy(s => s.Code).Select(s => s.Code).ToList();
                                             
                                             <div class="mb-2">

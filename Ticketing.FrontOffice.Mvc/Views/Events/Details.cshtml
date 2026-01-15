@@ -351,21 +351,21 @@
                         {
                             <div class="alert alert-light border mb-4 text-center bg-card" id="emptyStateInfo" style="border-color: var(--border-color) !important;">
                                 <i class="bi bi-info-circle me-2 text-accent-primary"></i>
-                                Select your seats on the map above.<br>
-                                <strong id="seatSelectionStatus" class="text-accent-primary">0 seats selected</strong>
+                                Sélectionnez vos places sur la carte ci-dessus.<br>
+                                <strong id="seatSelectionStatus" class="text-accent-primary">0 place(s) sélectionnée(s)</strong>
                             </div>
                         }
                         else
                         {
                             <div class="mb-4">
-                                <label class="form-label fw-bold small text-uppercase text-secondary">Quantity</label>
+                                <label class="form-label fw-bold small text-uppercase text-secondary">Quantité</label>
                                 <input type="number" name="quantity" class="form-control bg-card border-secondary text-white" value="1" min="1" max="10" />
                             </div>
                         }
 
                         <div class="d-grid">
                             <button type="submit" class="btn-primary-custom w-100 py-3" id="addToCartBtn" @(hasSeating && allSeats.Any() ? "disabled" : "")>
-                                <i class="bi bi-cart-plus me-2"></i>Add to Cart
+                                <i class="bi bi-cart-plus me-2"></i>Ajouter au Panier
                             </button>
                         </div>
                     </form>
@@ -965,12 +965,12 @@
                 if (selected.length > 0) {
                     if (emptyState) emptyState.style.display = 'none';
                     if(statusDiv) {
-                        statusDiv.textContent = selected.length + " seat(s) selected";
+                        statusDiv.textContent = selected.length + " place(s) sélectionnée(s)";
                     }
                     if(addToCartBtn) addToCartBtn.disabled = false;
                 } else {
                     if (emptyState) emptyState.style.display = 'block';
-                    if(statusDiv) statusDiv.textContent = "0 seats selected";
+                    if(statusDiv) statusDiv.textContent = "0 place(s) sélectionnée(s)";
                     if(hasSeating && addToCartBtn) addToCartBtn.disabled = true;
                     if(ticketInput) ticketInput.value = '';
                 }

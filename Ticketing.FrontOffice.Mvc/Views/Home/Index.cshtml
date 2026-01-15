@@ -153,7 +153,7 @@ else
                                 <div class="event-card-details">
                                     <div class="event-detail-item">
                                         <i class="bi bi-calendar-event"></i>
-                                        <span>@evt.Date.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("fr-FR"))</span>
+                                        <span>@evt.Date.ToFrenchDateString("dd MMMM yyyy")</span>
                                     </div>
                                     <div class="event-detail-item">
                                         <i class="bi bi-clock"></i>
@@ -161,7 +161,7 @@ else
                                     </div>
                                     <div class="event-detail-item">
                                         <i class="bi bi-geo-alt"></i>
-                                        <span>@(evt.Venue?.Name ?? "TBA")</span>
+                                        <span>@(evt.Venue?.Name ?? "À confirmer")</span>
                                     </div>
                                     <div class="event-detail-item event-price">
                                         <i class="bi bi-currency-exchange"></i>
