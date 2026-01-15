@@ -1,0 +1,55 @@
+@model List<Ticketing.Core.Models.Reservation>
+
+@{
+    ViewData["Title"] = "Payment Successful";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card-custom p-5 text-center">
+                <div class="mb-4">
+                    <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="bi bi-check-lg display-4"></i>
+                    </div>
+                </div>
+                
+                <h1 class="display-5 fw-bold mb-3">Payment Successful!</h1>
+                <p class="text-secondary mb-5">Thank you for your purchase. Your tickets are being processed and will be sent to <strong>@Model.FirstOrDefault()?.Email</strong> shortly.</p>
+
+                <div class="text-start mb-5">
+                    <h5 class="fw-bold mb-4 border-bottom pb-3" style="border-color: var(--border-color) !important;">
+                        Order Summary
+                    </h5>
+                    
+                    @foreach (var res in Model)
+                    {
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-card rounded border border-secondary border-opacity-25">
+                            <div>
+                                <h6 class="fw-bold mb-1">@res.Event.Name</h6>
+                                <p class="text-secondary small mb-0">@res.SeatCount tickets • @res.ReservationDate.ToString("f")</p>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-success mb-2">Confirmed</span>
+                                <div class="fw-bold text-accent-primary">@res.TotalAmount.ToString("N0") Ar</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
+                    <a href="@Url.Action("Index", "Home")" class="btn-primary-custom px-5 py-3">
+                        <i class="bi bi-house-door me-2"></i>Back to Home
+                    </a>
+                    <a href="#" class="btn btn-outline-secondary px-5 py-3 fw-bold">
+                        <i class="bi bi-download me-2"></i>Download All Tickets
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-4 text-center opacity-75">
+                <small class="text-secondary">Order Reference: @Model.FirstOrDefault()?.PaymentReference</small>
+            </div>
+        </div>
+    </div>
+</div>

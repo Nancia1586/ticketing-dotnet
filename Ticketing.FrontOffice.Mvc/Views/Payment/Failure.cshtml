@@ -1,0 +1,43 @@
+@{
+    ViewData["Title"] = "Payment Failed";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card-custom p-5 text-center">
+                <div class="mb-4">
+                    <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="bi bi-x-lg display-4"></i>
+                    </div>
+                </div>
+                
+                <h1 class="display-5 fw-bold mb-3">Payment Failed</h1>
+                <p class="text-secondary mb-5">We're sorry, but your payment could not be processed at this time. No funds have been deducted from your account.</p>
+
+                <div class="alert alert-warning bg-card border-warning border-opacity-25 mb-5">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill me-3 fs-4 text-warning"></i>
+                        <div class="text-start">
+                            <h6 class="fw-bold mb-1">Possible Reasons:</h6>
+                            <ul class="small mb-0 opacity-75">
+                                <li>Insufficient balance in your account</li>
+                                <li>Transaction cancelled by user</li>
+                                <li>Authentication failed</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-3">
+                    <a href="@Url.Action("Index", "Cart")" class="btn-primary-custom py-3 fs-5">
+                        <i class="bi bi-arrow-repeat me-2"></i>Try Again
+                    </a>
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-link text-secondary text-decoration-none fw-bold">
+                        Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
