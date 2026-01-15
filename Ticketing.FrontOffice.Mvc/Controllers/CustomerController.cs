@@ -34,7 +34,6 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
             }
             catch (Exception ex)
             {
-                // Log error and return empty list
                 ModelState.AddModelError("", "Unable to retrieve reservations. Please try again later.");
                 ViewBag.Email = email;
                 return View(new List<Ticketing.Core.Models.Reservation>());

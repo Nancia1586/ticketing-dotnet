@@ -5,13 +5,11 @@
 }
 
 <div class="container my-5">
-    <!-- Page Header -->
     <div class="text-center mb-5">
         <h1 class="display-4 fw-bold mb-3">Événements à venir</h1>
         <p class="text-secondary fs-5">Découvrez tous les événements à venir et réservez vos places dès maintenant !</p>
     </div>
 
-    <!-- Search & Filter -->
     <div class="row justify-content-center mb-5">
         <div class="col-lg-10 col-xl-8">
             <div class="events-search-container">
@@ -39,7 +37,6 @@
         </div>
     </div>
 
-    <!-- Events Grid -->
     <div class="row g-4">
         @if (!Model.Events.Any())
         {
@@ -100,7 +97,6 @@
 </div>
 
 <style>
-    /* Events Search Container */
     .events-search-container {
         background: #FFFFFF;
         border-radius: 16px;
@@ -252,7 +248,6 @@
         color: var(--text-primary);
     }
 
-    /* Event Cards */
     .event-card-modern {
         background: white;
         border-radius: 12px;
@@ -272,7 +267,7 @@
     .event-card-image-wrapper {
         position: relative;
         width: 100%;
-        padding-top: 75%; /* 4:3 aspect ratio */
+        padding-top: 75%;
         overflow: hidden;
         background: #f5f5f5;
     }
@@ -350,7 +345,6 @@
         color: #1a1a1a;
     }
 
-    /* Responsive */
     @@media (max-width: 768px) {
         .events-search-row {
             flex-direction: column;

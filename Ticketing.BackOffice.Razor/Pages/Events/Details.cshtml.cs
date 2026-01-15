@@ -31,7 +31,6 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
 
             Event = evt;
 
-            // Calculate sales summary
             SalesSummary = Event.TicketTypes.Select(tt => new SalesSummaryDto
             {
                 Name = tt.Name,

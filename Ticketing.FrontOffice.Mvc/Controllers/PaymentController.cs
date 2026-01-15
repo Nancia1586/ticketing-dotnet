@@ -35,7 +35,6 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            // Group by ReservationId for display
             return View(reservations);
         }
 
@@ -57,15 +56,12 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
             _logger.LogInformation("Received Papi Notification - Status: {Status}, Reference: {Reference}, Amount: {Amount}", 
                 payload.PaymentStatus, payload.PaymentReference, payload.Amount);
 
-            // According to Papi documentation: Verify paymentReference and notificationToken
-            // Step 1: Verify paymentReference matches what we sent
             if (string.IsNullOrEmpty(payload.PaymentReference))
             {
                 _logger.LogWarning("Payment reference is missing in notification");
                 return BadRequest(new { message = "Payment reference is required" });
             }
 
-            // Step 2: Find reservations with this reference
             var reservations = await _context.Reservations
                 .Where(r => r.PaymentReference == payload.PaymentReference)
                 .ToListAsync();
@@ -76,8 +72,6 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                 return NotFound(new { message = "No reservations found for this reference" });
             }
 
-            // Step 3: Verify notificationToken matches what we received when creating the payment link
-            // This is critical for security - both must match for the notification to be genuine
             foreach (var reservation in reservations)
             {
                 if (string.IsNullOrEmpty(reservation.NotificationToken) || 
@@ -91,7 +85,6 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
 
             _logger.LogInformation("Notification verified successfully - paymentReference and notificationToken match");
 
-            // 4. Update Status based on payment status
             var newStatus = payload.PaymentStatus.ToUpper() switch
             {
                 "SUCCESS" => ReservationStatus.Confirmed,
@@ -108,7 +101,6 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                 _logger.LogInformation("Updating Reservation {Id} from {OldStatus} to {NewStatus}", 
                     reservation.Id, oldStatus, newStatus);
                 
-                // If SUCCESS, ensure seats are marked as TAKEN if they were RESERVED
                 if (newStatus == ReservationStatus.Confirmed)
                 {
                     var seats = await _context.Seats
@@ -125,14 +117,12 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                         }
                     }
 
-                    // Load event details for email (after saving changes)
                     var eventDetails = await _context.Events
                         .Include(e => e.Venue)
                         .FirstOrDefaultAsync(e => e.Id == reservation.EventId);
-
+                    
                     if (eventDetails != null)
                     {
-                        // Create a copy of reservation with seats for email
                         var reservationForEmail = new Reservation
                         {
                             Id = reservation.Id,
@@ -147,7 +137,6 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                             Seats = seats
                         };
                         
-                        // Send confirmation email asynchronously (don't block the response)
                         _ = Task.Run(async () =>
                         {
                             try
@@ -161,7 +150,6 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                         });
                     }
                 }
-                // If FAILED, release the seats back to FREE
                 else if (newStatus == ReservationStatus.Cancelled)
                 {
                     var seats = await _context.Seats

@@ -19,7 +19,6 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AuthorizeFolder("/Venues", "SysAdmin");
     options.Conventions.AuthorizeFolder("/Events", "SysAdminOrOrganizer");
     options.Conventions.AuthorizeFolder("/Reservations", "SysAdminOrOrganizer");
-    // Require authentication for all pages by default
     options.Conventions.AuthorizePage("/Index");
     options.Conventions.AuthorizeFolder("/"); 
 });
@@ -46,19 +45,15 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Account/AccessDenied";
 });
 
-// Register Repository for Data Access (Used by API Controller)
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 builder.Services.AddHttpContextAccessor();
 
-// Register API Controllers with JSON Options for handling cycles
 builder.Services.AddControllers()
     .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
 
-// Register HTTP Client for IEventService (Used by Razor Pages to call API)
 builder.Services.AddHttpClient<IEventService, EventApiService>(client =>
 {
-    // The base address will be set dynamically in EventApiService to match the current running port
 });
 
 
@@ -69,7 +64,6 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 var defaultCulture = new System.Globalization.CultureInfo("en-US");
 var localizationOptions = new RequestLocalizationOptions
 {
@@ -82,7 +76,6 @@ app.UseRequestLocalization(localizationOptions);
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -97,7 +90,6 @@ app.UseAuthorization();
 app.MapRazorPages();
 app.MapControllers();
 
-// Seed Database
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -105,7 +97,7 @@ using (var scope = app.Services.CreateScope())
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     
-    context.Database.Migrate(); // Auto-migrate
+    context.Database.Migrate();
     await DbInitializer.Initialize(context, userManager, roleManager);
 }
 

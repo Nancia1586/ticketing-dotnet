@@ -32,8 +32,6 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
             }
             catch (Exception ex)
             {
-                // Log error but don't crash the application
-                // Return empty list if database connection fails
                 var viewModel = new EventListViewModel
                 {
                     Events = new List<Ticketing.Core.Models.Event>(),
@@ -60,11 +58,9 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                     return NotFound();
                 }
 
-                // Get cart items for this event to show which seats are already in cart
                 var cart = _cartService.GetCart();
                 var cartItemsForEvent = cart.Items.Where(i => i.EventId == id).ToList();
 
-                // Get similar events (same category, excluding current event)
                 var similarEvents = await _dataAccess.GetActiveEventsAsync();
                 similarEvents = similarEvents
                     .Where(e => e.Id != id && (e.CategoryId == evt.CategoryId || e.CategoryId == 0))
@@ -82,7 +78,6 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
             }
             catch (Exception ex)
             {
-                // Log error and return not found
                 return NotFound();
             }
         }

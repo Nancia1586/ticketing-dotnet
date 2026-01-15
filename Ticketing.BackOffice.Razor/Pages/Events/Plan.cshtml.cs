@@ -83,7 +83,6 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
 
             if (loadedEvent.IsSubmitted)
             {
-                 // Prevent modification if already submitted
                  return RedirectToPage("./Plan", new { id = eventId });
             }
 

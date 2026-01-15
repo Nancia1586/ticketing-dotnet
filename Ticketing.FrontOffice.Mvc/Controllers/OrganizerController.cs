@@ -35,7 +35,6 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
             {
                 try
                 {
-                    // Check if email already exists
                     var existingUser = await _userManager.FindByEmailAsync(organizer.Email);
                     if (existingUser != null)
                     {
@@ -43,10 +42,8 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                         return View(organizer);
                     }
 
-                    // Create the Organizer record
                     var organizerId = await _dataAccess.CreateOrganizerAsync(organizer);
 
-                    // Create the ApplicationUser account for sign-in
                     var user = new ApplicationUser
                     {
                         UserName = organizer.Email,
@@ -59,13 +56,11 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                     var result = await _userManager.CreateAsync(user, organizer.Password);
                     if (result.Succeeded)
                     {
-                        // Add user to Organizer role
                         await _userManager.AddToRoleAsync(user, "Organizer");
                         return RedirectToAction("Success");
                     }
                     else
                     {
-                        // If user creation failed, remove the organizer record
                         var createdOrganizer = await _context.Organizers.FindAsync(organizerId);
                         if (createdOrganizer != null)
                         {
@@ -82,7 +77,6 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                 }
                 catch (Exception ex)
                 {
-                    // Log error and show message
                     ModelState.AddModelError("", "Unable to create organizer account. Please try again later.");
                     return View(organizer);
                 }

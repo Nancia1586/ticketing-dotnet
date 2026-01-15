@@ -29,7 +29,6 @@ namespace Ticketing.BackOffice.Razor.Pages.Seats
         public SeatStatus? SelectedStatus { get; set; }
         public string? SearchTerm { get; set; }
 
-        // Statistics
         public int TotalSeats { get; set; }
         public int FreeSeats { get; set; }
         public int ReservedSeats { get; set; }
@@ -49,35 +48,29 @@ namespace Ticketing.BackOffice.Razor.Pages.Seats
                 organizerId = user?.OrganizationId;
             }
 
-            // Get events for filter dropdown
             Events = (await _eventService.GetAllEventsAsync(organizerId)).ToList();
 
-            // Build query for seats
             var query = _context.Seats
                 .Include(s => s.TicketType)
                     .ThenInclude(tt => tt.Event)
                 .Include(s => s.Reservation)
                 .AsQueryable();
 
-            // Filter by organizer if needed
             if (organizerId.HasValue)
             {
                 query = query.Where(s => s.TicketType.Event.OrganizerId == organizerId);
             }
 
-            // Filter by event
             if (eventId.HasValue)
             {
                 query = query.Where(s => s.TicketType.EventId == eventId.Value);
             }
 
-            // Filter by status
             if (status.HasValue)
             {
                 query = query.Where(s => s.Status == status.Value);
             }
 
-            // Search by seat code or customer name
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 searchTerm = searchTerm.Trim();
@@ -93,7 +86,6 @@ namespace Ticketing.BackOffice.Razor.Pages.Seats
                 .ThenBy(s => s.Code)
                 .ToListAsync();
 
-            // Convert to view model
             Seats = seats.Select(s => new SeatViewModel
             {
                 Id = s.Id,
@@ -110,7 +102,6 @@ namespace Ticketing.BackOffice.Razor.Pages.Seats
                 ReservationDate = s.Reservation?.ReservationDate
             }).ToList();
 
-            // Calculate statistics
             TotalSeats = Seats.Count;
             FreeSeats = Seats.Count(s => s.Status == SeatStatus.Free);
             ReservedSeats = Seats.Count(s => s.Status == SeatStatus.Reserved);

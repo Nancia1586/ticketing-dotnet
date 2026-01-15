@@ -29,12 +29,10 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                 var evt = await _dataAccess.GetEventByIdAsync(eventId);
                 if (evt == null) return NotFound();
                 
-                // Normalize seats list (remove null entries)
                 var validSeats = seats?.Where(s => s != null && s.Row > 0 && s.Col > 0).ToList() ?? new List<SeatSelection>();
 
                 if (validSeats.Any())
                 {
-                    // Group seats by Ticket Type
                     var seatsByTicketType = validSeats.GroupBy(s => s.TicketTypeId);
 
                     foreach (var group in seatsByTicketType)
@@ -42,9 +40,8 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                         var groupTicketTypeId = group.Key;
                         var groupSeats = group.ToList();
                         
-                        // We might need to fetch the specific ticket type for price/name
                         var groupTicketType = await _dataAccess.GetTicketTypeByIdAsync(groupTicketTypeId);
-                        if (groupTicketType == null) continue; // Skip invalid ticket types
+                        if (groupTicketType == null) continue;
 
                         var item = new CartItem
                         {
@@ -61,7 +58,6 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                 }
                 else
                 {
-                    // General Admission (No seats selected) 
                     var ticketType = await _dataAccess.GetTicketTypeByIdAsync(ticketTypeId);
                     
                     if (ticketType == null) return NotFound();
@@ -85,7 +81,6 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
             }
             catch
             {
-                // Log error and redirect to events page
                 TempData["Error"] = "Unable to add item to cart. Please try again.";
                 return RedirectToAction("Index", "Events");
             }

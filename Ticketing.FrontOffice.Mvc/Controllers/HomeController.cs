@@ -22,13 +22,12 @@ public class HomeController : Controller
         try
         {
             var events = await _dataAccess.GetActiveEventsAsync();
-            var featuredEvents = events.Take(5).ToList(); // Get top 5 for carousel
+            var featuredEvents = events.Take(5).ToList();
             return View(featuredEvents);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading events");
-            // Return empty list if database connection fails
             return View(new List<Event>());
         }
     }

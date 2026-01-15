@@ -1,49 +1,26 @@
-/* ============================================
-   TIKTEK THEME
-   Modern, Clean, Light Design
-   ============================================ */
-
-/* Color Palette - Light Theme */
 :root {
-    /* Background Colors */
     --bg-primary: #F5F7FA;
     --bg-secondary: #FFFFFF;
     --bg-light: #F9FAFB;
     --bg-card: #FFFFFF;
-    
-    /* Accent Colors */
-    --accent-primary: #2563EB; /* Blue */
-    --accent-secondary: #10B981; /* Green */
-    --accent-warning: #F59E0B; /* Orange/Yellow */
-    --accent-danger: #EF4444; /* Red */
-    
-    /* Text Colors */
+    --accent-primary: #2563EB;
+    --accent-secondary: #10B981;
+    --accent-warning: #F59E0B;
+    --accent-danger: #EF4444;
     --text-primary: #1F2937;
     --text-secondary: #6B7280;
     --text-muted: #9CA3AF;
     --text-light: #FFFFFF;
-    
-    /* Border Colors */
     --border-color: #E5E7EB;
     --border-light: #F3F4F6;
-    
-    /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
-
-/* Typography */
 * {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
-
-/* ============================================
-   GLOBAL COLOR RULES - FrontOffice MVC
-   ============================================ */
-
-/* FONDS CLAIRS = TEXTE SOMBRE */
 .bg-white,
 .bg-light,
 .bg-secondary,
@@ -70,8 +47,6 @@ select,
 .bg-body-tertiary {
     color: var(--text-primary) !important;
 }
-
-/* Forcer texte sombre même si .text-white est utilisé sur fond clair */
 .bg-white .text-white,
 .bg-light .text-white,
 .bg-secondary .text-white,
@@ -87,8 +62,6 @@ select,
 .alert-light .text-white {
     color: var(--text-primary) !important;
 }
-
-/* FONDS SOMBRES = TEXTE CLAIR */
 .fixed-header,
 .fixed-header .navbar,
 .fixed-header .navbar-nav .nav-link,
@@ -114,8 +87,6 @@ select,
 [style*="background: linear-gradient"][style*="#1E40AF"] {
     color: var(--text-light) !important;
 }
-
-/* Forcer texte clair même si .text-dark est utilisé sur fond sombre */
 .fixed-header .text-dark,
 .fixed-header .navbar .text-dark,
 .bg-dark .text-dark,
@@ -126,8 +97,6 @@ select,
 [style*="background-color: #1E40AF"] .text-dark {
     color: var(--text-light) !important;
 }
-
-/* Headers et titres dans les fonds sombres */
 .fixed-header h1,
 .fixed-header h2,
 .fixed-header h3,
@@ -148,8 +117,6 @@ select,
 .hero-carousel-overlay h6 {
     color: var(--text-light) !important;
 }
-
-/* Headers et titres dans les fonds clairs */
 .bg-white h1,
 .bg-white h2,
 .bg-white h3,
@@ -191,7 +158,6 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-primary);
 }
 
-/* Header - Blue Background */
 .fixed-header {
     position: fixed;
     top: 0;
@@ -226,8 +192,6 @@ h1, h2, h3, h4, h5, h6 {
     transform: scale(1.05);
     opacity: 0.9;
 }
-
-/* Navigation Links */
 .navbar-nav .nav-link {
     color: var(--text-light) !important;
     font-weight: 500;
@@ -267,7 +231,6 @@ h1, h2, h3, h4, h5, h6 {
     color: #1E40AF !important;
 }
 
-/* Search Bar - Old Style (kept for backward compatibility) */
 .search-form {
     flex: 1;
     max-width: 600px;
@@ -312,7 +275,6 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
 }
 
-/* Eventbrite Style Search Form */
 .eventbrite-search-form {
     display: flex;
     align-items: center;
@@ -387,9 +349,8 @@ h1, h2, h3, h4, h5, h6 {
 
 .eventbrite-search-btn:active {
     transform: scale(0.95);
-}   
+}
 
-/* Buttons */
 .btn-primary-custom {
     background: linear-gradient(135deg, var(--accent-primary) 0%, #1E40AF 100%);
     color: var(--text-light);
@@ -430,8 +391,6 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-primary);
     border-color: var(--accent-primary);
 }
-
-/* Cards */
 .card-custom {
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -439,8 +398,6 @@ h1, h2, h3, h4, h5, h6 {
     padding: 2rem;
     box-shadow: var(--shadow-sm);
 }
-
-/* Event Cards */
 .event-card-modern {
     background: var(--bg-card);
     border-radius: 12px;
@@ -550,7 +507,6 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 1.1rem;
 }
 
-/* Statistics Cards */
 .stats-card {
     background: var(--bg-card);
     border-radius: 12px;
@@ -582,7 +538,6 @@ h1, h2, h3, h4, h5, h6 {
     letter-spacing: 0.5px;
 }
 
-/* Filter Tabs */
 .filter-tabs {
     display: flex;
     gap: 1rem;
@@ -617,13 +572,10 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: var(--shadow-md);
 }
 
-/* Main Content */
 .main-content {
     padding-top: 80px;
     min-height: calc(100vh - 200px);
 }
-
-/* Footer */
 .site-footer {
     background-color: var(--bg-secondary);
     border-top: 1px solid var(--border-color);
@@ -669,7 +621,6 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--accent-primary);
 }
 
-/* Cart Badge */
 .cart-badge {
     position: absolute;
     top: -8px;
@@ -689,8 +640,6 @@ h1, h2, h3, h4, h5, h6 {
 .cart-link {
     position: relative;
 }
-
-/* Hero Carousel */
 .hero-carousel {
     position: relative;
     width: 100%;
@@ -797,7 +746,6 @@ h1, h2, h3, h4, h5, h6 {
     right: 2rem;
 }
 
-/* Responsive */
 @media (max-width: 992px) {
     .eventbrite-search-form {
         flex-direction: column;
@@ -867,12 +815,6 @@ h1, h2, h3, h4, h5, h6 {
         right: 1rem;
     }
 }
-
-/* ============================================
-   ADDITIONAL COLOR FIXES - Formulaires et Alertes
-   ============================================ */
-
-/* Formulaires sur fond clair */
 .form-control,
 .form-select,
 .form-control-lg,
@@ -890,13 +832,10 @@ textarea.form-control {
     color: var(--text-muted) !important;
 }
 
-/* Labels sur fond clair */
 .form-label,
 label {
     color: var(--text-primary) !important;
 }
-
-/* Alertes Bootstrap sur fond clair */
 .alert {
     color: var(--text-primary) !important;
 }
@@ -915,8 +854,6 @@ label {
     border-color: var(--accent-danger) !important;
     color: #991B1B !important;
 }
-
-/* Textes secondaires et muted sur fond clair */
 .bg-white .text-secondary,
 .bg-light .text-secondary,
 .bg-card .text-secondary,
@@ -932,8 +869,6 @@ label {
 .card-custom .text-muted {
     color: var(--text-muted) !important;
 }
-
-/* Textes secondaires et muted sur fond sombre */
 .fixed-header .text-secondary,
 .bg-dark .text-secondary,
 .hero-carousel-overlay .text-secondary {
@@ -945,8 +880,6 @@ label {
 .hero-carousel-overlay .text-muted {
     color: rgba(255, 255, 255, 0.6) !important;
 }
-
-/* Small text sur fond clair */
 .bg-white small,
 .bg-light small,
 .bg-card small,
@@ -955,7 +888,6 @@ label {
     color: var(--text-secondary) !important;
 }
 
-/* Small text sur fond sombre */
 .fixed-header small,
 .bg-dark small,
 .hero-carousel-overlay small {

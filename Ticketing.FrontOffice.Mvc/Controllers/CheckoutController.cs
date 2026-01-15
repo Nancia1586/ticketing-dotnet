@@ -63,20 +63,17 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
 
             try
             {
-                // Step 1: Create reference BEFORE creating reservations
                 var mainReference = $"ORD-{DateTime.Now.Ticks}";
                 _logger.LogInformation("Created payment reference: {Reference}", mainReference);
 
                 var reservations = new List<Reservation>();
 
-                // Step 2: Group cart items by EventId and TicketTypeId to create one reservation per group
                 var groupedItems = cart.Items
                     .GroupBy(item => new { item.EventId, item.TicketTypeId })
                     .ToList();
 
                 _logger.LogInformation("Creating {Count} reservation(s) for reference: {Reference}", groupedItems.Count, mainReference);
 
-                // Step 3: Create reservations BEFORE calling Papi API
                 foreach (var group in groupedItems)
                 {
                     var itemsInGroup = group.ToList();
@@ -93,7 +90,7 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                         EventId = firstItem.EventId,
                         ReservationDate = DateTime.UtcNow,
                         SeatCount = allSeats.Any() ? allSeats.Count : totalQuantity,
-                        Status = ReservationStatus.Pending, // Initial status - will be updated after payment
+                        Status = ReservationStatus.Pending,
                         TotalAmount = totalAmount,
                         PhoneNumber = model.PhoneNumber ?? "N/A",
                         PaymentMethod = model.PaymentMethod,
@@ -119,23 +116,16 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                     _logger.LogInformation("Created reservation {ReservationId} for reference: {Reference}", reservationId, mainReference);
                 }
 
-                // Step 4: Save all reservations to database BEFORE calling Papi
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("All {Count} reservations saved to database for reference: {Reference}", reservations.Count, mainReference);
 
-                // Step 5: Check if payment simulation is enabled
-                // When SimulatePayment = true: No Papi API call, payment is marked as paid immediately
-                // No callback needed, no localhost issues - just mark as paid and redirect to success
                 var simulatePayment = _configuration.GetValue<bool>("PapiSettings:SimulatePayment", false);
                 _logger.LogInformation("Payment simulation mode: {SimulatePayment}", simulatePayment);
                 
                 if (simulatePayment)
                 {
-                    // SIMULATION MODE: Automatically mark as paid WITHOUT calling Papi API
-                    // This bypasses all Papi integration - perfect for testing without real payment
                     _logger.LogInformation("SIMULATION MODE: Automatically marking reservations as paid for reference: {Reference} (NO PAPI CALL)", mainReference);
                     
-                    // Update all reservations to Confirmed status
                     foreach (var res in reservations)
                     {
                         await _dataAccess.UpdateReservationPaymentAsync(
@@ -144,7 +134,6 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                             mainReference, 
                             $"SIM-{DateTime.Now.Ticks}");
                         
-                        // Mark seats as Taken
                         var seats = await _context.Seats
                             .Where(s => s.ReservationId == res.Id)
                             .Include(s => s.TicketType)
@@ -158,14 +147,12 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                             }
                         }
                         
-                        // Load event details for email
                         var eventDetails = await _context.Events
                             .Include(e => e.Venue)
                             .FirstOrDefaultAsync(e => e.Id == res.EventId);
                         
                         if (eventDetails != null)
                         {
-                            // Create reservation copy with seats for email
                             var reservationForEmail = new Reservation
                             {
                                 Id = res.Id,
@@ -180,7 +167,6 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                                 Seats = seats
                             };
                             
-                            // Send confirmation email asynchronously
                             _ = Task.Run(async () =>
                             {
                                 try
@@ -200,22 +186,19 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                     
                     _logger.LogInformation("SIMULATION MODE: Payment completed successfully. Redirecting to success page.");
                     
-                    // Redirect to success page with the reference
                     return RedirectToAction("Success", "Payment", new { reference = mainReference });
                 }
                 else
                 {
-                    // REAL PAYMENT MODE: Call Papi API to get payment link
                     _logger.LogInformation("REAL PAYMENT MODE: Calling Papi API for reference: {Reference}", mainReference);
                     
-                    // Map PaymentMethod to Papi provider format
                     string? provider = model.PaymentMethod switch
                     {
                         "MVOLA" => "MVOLA",
                         "ORANGE_MONEY" => "ORANGE_MONEY",
                         "AIRTEL_MONEY" => "AIRTEL_MONEY",
                         "BRED" => "BRED",
-                        _ => null // Credit Card or other - let Papi choose
+                        _ => null
                     };
 
                     _logger.LogInformation("Preparing Papi payment request - Amount: {Amount}, Provider: {Provider}, Reference: {Reference}", 
@@ -244,8 +227,6 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                         _logger.LogInformation("PaymentReference: {PaymentReference}", paymentResponse.PaymentReference ?? mainReference);
                         _logger.LogInformation("NotificationToken: {Token}", paymentResponse.NotificationToken);
 
-                        // Update all reservations with the notification token from Papi
-                        // Status remains Pending - will be updated to Confirmed by the webhook when payment is confirmed
                         foreach (var res in reservations)
                         {
                             await _dataAccess.UpdateReservationPaymentAsync(
@@ -262,7 +243,6 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                         _cartService.Clear();
                         _logger.LogInformation("Cart cleared. All reservations updated in database.");
                         
-                        // Validate payment link URL
                         if (!Uri.IsWellFormedUriString(paymentResponse.PaymentLink, UriKind.Absolute))
                         {
                             _logger.LogError("❌ Invalid payment link URL: {PaymentLink}", paymentResponse.PaymentLink);
@@ -271,8 +251,6 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
 
                         _logger.LogInformation("🚀 REDIRECTING user to Papi payment gateway: {PaymentLink}", paymentResponse.PaymentLink);
                         
-                        // CRITICAL: Redirect to the Papi payment link - this is where the customer will complete payment
-                        // After payment, Papi will redirect to /Payment/Success?reference=ORD-xxxx
                         return Redirect(paymentResponse.PaymentLink);
                     }
                     else

@@ -14,7 +14,6 @@ namespace Ticketing.FrontOffice.Mvc.Services
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
         }
 
-        // Events
         public async Task<List<Event>> GetActiveEventsAsync(string? searchTerm = null, DateTime? filterDate = null)
         {
             var events = new List<Event>();
@@ -94,10 +93,8 @@ namespace Ticketing.FrontOffice.Mvc.Services
                 events.Add(evt);
             }
 
-            // Close the reader before loading TicketTypes
             reader.Close();
 
-            // Load TicketTypes for all events
             foreach (var evt in events)
             {
                 evt.TicketTypes = await GetTicketTypesByEventIdAsync(evt.Id, connection);
@@ -164,7 +161,6 @@ namespace Ticketing.FrontOffice.Mvc.Services
                     };
                 }
 
-                // Load Organizer if exists
                 if (evt.OrganizerId.HasValue)
                 {
                     var organizerQuery = "SELECT Id, Name, Email, OrganizationName FROM Organizers WHERE Id = @OrganizerId";
@@ -184,10 +180,7 @@ namespace Ticketing.FrontOffice.Mvc.Services
                     organizerReader.Close();
                 }
 
-                // Load TicketTypes
                 evt.TicketTypes = await GetTicketTypesByEventIdAsync(id, connection);
-
-                // Load Reservations with Seats
                 evt.Reservations = await GetReservationsByEventIdAsync(id, connection);
 
                 return evt;
@@ -254,7 +247,6 @@ namespace Ticketing.FrontOffice.Mvc.Services
                 ticketTypes.Add(ticketType);
             }
 
-            // Load Seats for all ticket types after closing the reader
             foreach (var ticketType in ticketTypes)
             {
                 ticketType.Seats = await GetSeatsByTicketTypeIdAsync(ticketType.Id, connection);
@@ -293,7 +285,6 @@ namespace Ticketing.FrontOffice.Mvc.Services
             return seats;
         }
 
-        // Reservations
         public async Task<List<Reservation>> GetReservationsByEmailAsync(string email)
         {
             var reservations = new List<Reservation>();
@@ -345,7 +336,6 @@ namespace Ticketing.FrontOffice.Mvc.Services
                     };
                 }
 
-                // Load Seats for this reservation
                 reservation.Seats = await GetSeatsByReservationIdAsync(reservation.Id, connection);
                 reservations.Add(reservation);
             }
@@ -383,7 +373,6 @@ namespace Ticketing.FrontOffice.Mvc.Services
                     Reference = reader.IsDBNull("Reference") ? string.Empty : reader.GetString("Reference")
                 };
 
-                // Load Seats for this reservation
                 reservation.Seats = await GetSeatsByReservationIdAsync(reservation.Id, connection);
                 reservations.Add(reservation);
             }
@@ -452,10 +441,8 @@ namespace Ticketing.FrontOffice.Mvc.Services
                 throw new InvalidOperationException("Failed to create reservation.");
             var reservationId = (int)result;
             
-            // Update reservation object with generated reference
             reservation.Reference = reservationReference;
 
-            // Insert Seats
             if (reservation.Seats.Any())
             {
                 await InsertSeatsAsync(reservation.Seats, reservationId, connection);
@@ -466,7 +453,6 @@ namespace Ticketing.FrontOffice.Mvc.Services
 
         private async Task<string> GenerateReservationReferenceAsync(int eventId)
         {
-            // Get event code
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
@@ -477,10 +463,9 @@ namespace Ticketing.FrontOffice.Mvc.Services
             var eventCode = await eventCommand.ExecuteScalarAsync() as string;
             if (string.IsNullOrEmpty(eventCode))
             {
-                eventCode = "EVT"; // Default code if event has no code
+                eventCode = "EVT";
             }
 
-            // Get the last reservation number for this event
             var countQuery = @"
                 SELECT COUNT(*) 
                 FROM Reservations 
@@ -493,7 +478,6 @@ namespace Ticketing.FrontOffice.Mvc.Services
             var count = (int)await countCommand.ExecuteScalarAsync();
             var sequence = count + 1;
 
-            // Generate reference: EVENTCODE-001, EVENTCODE-002, etc.
             return $"{eventCode}-{sequence:D3}";
         }
 
@@ -567,7 +551,6 @@ namespace Ticketing.FrontOffice.Mvc.Services
                     };
                 }
 
-                // Load Seats
                 reservation.Seats = await GetSeatsByReservationIdAsync(reservation.Id, connection);
 
                 return reservation;
@@ -595,7 +578,6 @@ namespace Ticketing.FrontOffice.Mvc.Services
             await command.ExecuteNonQueryAsync();
         }
 
-        // Organizers
         public async Task<int> CreateOrganizerAsync(Organizer organizer)
         {
             var query = @"

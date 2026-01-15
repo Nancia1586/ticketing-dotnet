@@ -281,11 +281,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
 
     <script>
-        // Set active states for sidebar and tabs based on current page
         document.addEventListener('DOMContentLoaded', function() {
             const currentPath = window.location.pathname.toLowerCase();
             
-            // Handle sidebar links
             document.querySelectorAll('.sidebar-link').forEach(link => {
                 const pagePath = link.getAttribute('data-page').toLowerCase();
                 if (currentPath === pagePath || 
@@ -302,7 +300,6 @@
                 }
             });
             
-            // Handle tab links
             document.querySelectorAll('.tab-link').forEach(link => {
                 const pagePath = link.getAttribute('data-page').toLowerCase();
                 if (currentPath === pagePath || 
@@ -314,7 +311,6 @@
                 }
             });
 
-            // Logout Modal Logic
             const logoutTrigger = document.getElementById('logout-trigger');
             const logoutModal = document.getElementById('logout-modal');
             const logoutCancel = document.getElementById('logout-cancel');

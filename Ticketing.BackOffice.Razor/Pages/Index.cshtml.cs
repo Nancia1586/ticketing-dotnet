@@ -68,25 +68,21 @@ public class IndexModel : PageModel
         var reservations = (await _reservationRepository.GetAllReservationsAsync(organizerId, null)).ToList();
         var categories = (await _categoryService.GetAllCategoriesAsync()).ToList();
     
-        // Event status counts
         EventsSellingCount = events.Count(e => e.IsActive && e.IsSubmitted && e.Date > DateTime.Now);
         EventsPendingCount = events.Count(e => !e.IsSubmitted);
         EventsFinishedCount = events.Count(e => e.Date <= DateTime.Now);
 
-        // Reservations stats
         var confirmedReservations = reservations.Where(r => r.Status == Ticketing.Core.Models.ReservationStatus.Confirmed).ToList();
         TotalTicketsSold = confirmedReservations.Sum(r => r.SeatCount);
         TotalRevenue = confirmedReservations.Sum(r => r.TotalAmount);
         TotalReservations = reservations.Count;
 
-        // Category distribution
         CategoryStatsList = categories.Select(c => new CategoryStats
         {
             Name = c.Name,
             Count = events.Count(e => e.CategoryId == c.Id)
         }).Where(s => s.Count > 0).ToList();
 
-        // Top events
         TopEvents = events.Select(e => {
             var eventReservations = confirmedReservations.Where(r => r.EventId == e.Id).ToList();
             return new EventStats
