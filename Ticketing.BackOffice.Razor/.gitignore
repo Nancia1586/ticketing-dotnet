@@ -1,0 +1,30 @@
+# Build results
+bin/
+obj/
+
+# Visual Studio / Rider
+.idea/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build logs
+errors.json
+build_errors.txt
+build_out.txt
+*.log
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+
+# Test results
+TestResults/
+[Tt]est[Rr]esult*/
+
+# Rider
+.idea/
+

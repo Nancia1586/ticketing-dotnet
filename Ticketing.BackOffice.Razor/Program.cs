@@ -52,13 +52,15 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers()
     .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
 
-builder.Services.AddHttpClient<IEventService, EventApiService>(client =>
+builder.Services.AddScoped<IEventService, EventDirectService>();
+
+builder.Services.AddHttpClient<EventApiService>(client =>
 {
 });
 
-
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IVenueService, VenueService>();
+builder.Services.AddScoped<SeatPlanPdfService>();
 
 builder.Services.AddRazorPages();
 

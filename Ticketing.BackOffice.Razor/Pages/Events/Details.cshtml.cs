@@ -8,10 +8,12 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
     public class DetailsModel : PageModel
     {
         private readonly IEventService _eventService;
+        private readonly SeatPlanPdfService _pdfService;
 
-        public DetailsModel(IEventService eventService)
+        public DetailsModel(IEventService eventService, SeatPlanPdfService pdfService)
         {
             _eventService = eventService;
+            _pdfService = pdfService;
         }
 
         public Event Event { get; set; } = default!;
@@ -41,6 +43,20 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
             }).ToList();
 
             return Page();
+        }
+
+        public async Task<IActionResult> OnGetExportPdfAsync(int id)
+        {
+            var evt = await _eventService.GetEventWithDetailsByIdAsync(id);
+            if (evt == null)
+            {
+                return NotFound();
+            }
+
+            var pdfBytes = _pdfService.GenerateSeatPlanPdf(evt);
+            var fileName = $"Plan_{evt.Name.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.pdf";
+
+            return File(pdfBytes, "application/pdf", fileName);
         }
     }
 

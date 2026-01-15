@@ -17,7 +17,6 @@ namespace Ticketing.BackOffice.Razor.Services
         public async Task<IEnumerable<Event>> GetAllEventsAsync(int? organizerId = null)
         {
             var query = _context.Events
-                                 .Include(e => e.TicketTypes)
                                  .Include(e => e.Venue)
                                  .Include(e => e.Category)
                                  .AsQueryable();
@@ -75,9 +74,9 @@ namespace Ticketing.BackOffice.Razor.Services
                 .Include(e => e.Venue)
                 .Include(e => e.Category)
                 .Include(e => e.TicketTypes)
-                .ThenInclude(tt => tt.Seats)
+                    .ThenInclude(tt => tt.Seats)
                 .Include(e => e.Reservations)
-                .ThenInclude(r => r.Seats)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 

@@ -41,7 +41,7 @@ namespace Ticketing.BackOffice.Razor.Pages.Account
             public bool RememberMe { get; set; }
         }
 
-        public async Task OnGetAsync(string? returnUrl = null)
+        public Task OnGetAsync(string? returnUrl = null)
         {
             if (!string.IsNullOrEmpty(ErrorMessage))
             {
@@ -53,9 +53,8 @@ namespace Ticketing.BackOffice.Razor.Pages.Account
             Input.Email = "admin@ticketing.com";
             Input.Password = "Admin123!";
 
-            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
-
             ReturnUrl = returnUrl;
+            return Task.CompletedTask;
         }
 
         public async Task<IActionResult> OnPostAsync(string? returnUrl = null)

@@ -22,11 +22,9 @@ namespace Ticketing.BackOffice.Razor.Controllers
             try 
             {
                 var events = await _eventRepository.GetAllEventsAsync(organizerId);
-                // Manual serialization to catch cycles here
                 var options = new JsonSerializerOptions
                 {
-                    ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles,
-                    WriteIndented = true
+                    ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles
                 };
                 var json = JsonSerializer.Serialize(events, options);
                 return Content(json, "application/json");
@@ -96,8 +94,7 @@ namespace Ticketing.BackOffice.Razor.Controllers
 
                 var options = new JsonSerializerOptions
                 {
-                    ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles,
-                    WriteIndented = true
+                    ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles
                 };
                 var json = JsonSerializer.Serialize(evt, options);
                 return Content(json, "application/json");
@@ -123,8 +120,7 @@ namespace Ticketing.BackOffice.Razor.Controllers
 
                 var options = new JsonSerializerOptions
                 {
-                    ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles,
-                    WriteIndented = true
+                    ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles
                 };
                 var json = JsonSerializer.Serialize(evt, options);
                 return Content(json, "application/json");

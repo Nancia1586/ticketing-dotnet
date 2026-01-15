@@ -14,3 +14,6 @@
 *.dll
 *.pdb
 *.log
+errors.json
+build_errors.txt
+build_out.txt
