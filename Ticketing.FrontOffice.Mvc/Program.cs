@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Ticketing.Core.Data;
 using Ticketing.Core.Models;
+using Ticketing.FrontOffice.Mvc.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,8 +42,11 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<Ticketing.FrontOffice.Mvc.Services.CartService>();
-builder.Services.AddScoped<Ticketing.FrontOffice.Mvc.Services.DataAccessService>();
+builder.Services.AddScoped<CartService>();
+builder.Services.AddScoped<DataAccessService>();
+builder.Services.AddHttpClient<PapiPaymentService>();
+builder.Services.AddScoped<PapiPaymentService>();
+builder.Services.AddScoped<EmailService>();
 
 var app = builder.Build();
 
@@ -66,5 +70,17 @@ app.UseSession();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// Initialize database and seed default users
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<TicketingDbContext>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    
+    context.Database.Migrate(); // Auto-migrate
+    await DbInitializer.Initialize(context, userManager, roleManager);
+}
 
 app.Run();

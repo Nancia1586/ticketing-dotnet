@@ -26,7 +26,7 @@ namespace Ticketing.FrontOffice.Mvc.Services
                 FROM Events e
                 LEFT JOIN Venues v ON e.VenueId = v.Id
                 LEFT JOIN Categories c ON e.CategoryId = c.Id
-                WHERE e.IsActive = 1 AND e.IsSubmitted = 1";
+                WHERE e.IsActive = 1";
 
             var parameters = new List<SqlParameter>();
 
@@ -133,6 +133,7 @@ namespace Ticketing.FrontOffice.Mvc.Services
                     Name = reader.GetString("Name"),
                     Description = reader.GetString("Description"),
                     VenueId = reader.GetInt32("VenueId"),
+                    CategoryId = reader.GetInt32("CategoryId"),
                     Date = reader.GetDateTime("Date"),
                     IsActive = reader.GetBoolean("IsActive"),
                     PosterUrl = reader.IsDBNull("PosterUrl") ? null : reader.GetString("PosterUrl"),
@@ -150,6 +151,37 @@ namespace Ticketing.FrontOffice.Mvc.Services
                         TotalColumns = reader.GetInt32("Venue_TotalColumns"),
                         LayoutJson = reader.IsDBNull("Venue_LayoutJson") ? "[]" : reader.GetString("Venue_LayoutJson")
                     };
+                }
+
+                if (!reader.IsDBNull("Category_Id"))
+                {
+                    evt.Category = new Category
+                    {
+                        Id = reader.GetInt32("Category_Id"),
+                        Name = reader.GetString("Category_Name"),
+                        Description = reader.IsDBNull("Category_Description") ? null : reader.GetString("Category_Description"),
+                        IsActive = reader.GetBoolean("Category_IsActive")
+                    };
+                }
+
+                // Load Organizer if exists
+                if (evt.OrganizerId.HasValue)
+                {
+                    var organizerQuery = "SELECT Id, Name, Email, OrganizationName FROM Organizers WHERE Id = @OrganizerId";
+                    using var organizerCommand = new SqlCommand(organizerQuery, connection);
+                    organizerCommand.Parameters.Add(new SqlParameter("@OrganizerId", evt.OrganizerId.Value));
+                    using var organizerReader = await organizerCommand.ExecuteReaderAsync();
+                    if (await organizerReader.ReadAsync())
+                    {
+                        evt.Organizer = new Organizer
+                        {
+                            Id = organizerReader.GetInt32("Id"),
+                            Name = organizerReader.GetString("Name"),
+                            Email = organizerReader.GetString("Email"),
+                            OrganizationName = organizerReader.IsDBNull("OrganizationName") ? null : organizerReader.GetString("OrganizationName")
+                        };
+                    }
+                    organizerReader.Close();
                 }
 
                 // Load TicketTypes
@@ -267,7 +299,7 @@ namespace Ticketing.FrontOffice.Mvc.Services
             var reservations = new List<Reservation>();
             var query = @"
                 SELECT r.Id, r.CustomerName, r.PhoneNumber, r.Email, r.SeatCount, r.Status, 
-                       r.ReservationDate, r.TotalAmount, r.EventId,
+                       r.ReservationDate, r.TotalAmount, r.EventId, r.PaymentReference, r.NotificationToken, r.Reference,
                        e.Id as Event_Id, e.Name as Event_Name, e.Description as Event_Description,
                        e.VenueId as Event_VenueId, e.Date as Event_Date, e.PosterUrl as Event_PosterUrl, e.IsActive as Event_IsActive
                 FROM Reservations r
@@ -294,7 +326,9 @@ namespace Ticketing.FrontOffice.Mvc.Services
                     Status = (ReservationStatus)reader.GetInt32("Status"),
                     ReservationDate = reader.GetDateTime("ReservationDate"),
                     TotalAmount = reader.GetDecimal("TotalAmount"),
-                    EventId = reader.GetInt32("EventId")
+                    EventId = reader.GetInt32("EventId"),
+                    PaymentReference = reader.IsDBNull("PaymentReference") ? null : reader.GetString("PaymentReference"),
+                    NotificationToken = reader.IsDBNull("NotificationToken") ? null : reader.GetString("NotificationToken")
                 };
 
                 if (!reader.IsDBNull("Event_Id"))
@@ -323,7 +357,7 @@ namespace Ticketing.FrontOffice.Mvc.Services
         {
             var reservations = new List<Reservation>();
             var query = @"
-                SELECT Id, CustomerName, PhoneNumber, Email, SeatCount, Status, ReservationDate, TotalAmount, EventId
+                SELECT Id, CustomerName, PhoneNumber, Email, SeatCount, Status, ReservationDate, TotalAmount, EventId, PaymentReference, NotificationToken, Reference
                 FROM Reservations
                 WHERE EventId = @EventId";
 
@@ -343,7 +377,10 @@ namespace Ticketing.FrontOffice.Mvc.Services
                     Status = (ReservationStatus)reader.GetInt32("Status"),
                     ReservationDate = reader.GetDateTime("ReservationDate"),
                     TotalAmount = reader.GetDecimal("TotalAmount"),
-                    EventId = reader.GetInt32("EventId")
+                    EventId = reader.GetInt32("EventId"),
+                    PaymentReference = reader.IsDBNull("PaymentReference") ? null : reader.GetString("PaymentReference"),
+                    NotificationToken = reader.IsDBNull("NotificationToken") ? null : reader.GetString("NotificationToken"),
+                    Reference = reader.IsDBNull("Reference") ? string.Empty : reader.GetString("Reference")
                 };
 
                 // Load Seats for this reservation
@@ -385,10 +422,13 @@ namespace Ticketing.FrontOffice.Mvc.Services
 
         public async Task<int> CreateReservationAsync(Reservation reservation)
         {
+            // Generate reservation reference based on event code + sequence
+            string reservationReference = await GenerateReservationReferenceAsync(reservation.EventId);
+
             var query = @"
-                INSERT INTO Reservations (CustomerName, PhoneNumber, Email, SeatCount, Status, ReservationDate, TotalAmount, EventId)
+                INSERT INTO Reservations (CustomerName, PhoneNumber, Email, SeatCount, Status, ReservationDate, TotalAmount, EventId, PaymentMethod, PaymentReference, NotificationToken, Reference)
                 OUTPUT INSERTED.Id
-                VALUES (@CustomerName, @PhoneNumber, @Email, @SeatCount, @Status, @ReservationDate, @TotalAmount, @EventId)";
+                VALUES (@CustomerName, @PhoneNumber, @Email, @SeatCount, @Status, @ReservationDate, @TotalAmount, @EventId, @PaymentMethod, @PaymentReference, @NotificationToken, @Reference)";
 
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
@@ -402,11 +442,18 @@ namespace Ticketing.FrontOffice.Mvc.Services
             command.Parameters.Add(new SqlParameter("@ReservationDate", reservation.ReservationDate));
             command.Parameters.Add(new SqlParameter("@TotalAmount", reservation.TotalAmount));
             command.Parameters.Add(new SqlParameter("@EventId", reservation.EventId));
+            command.Parameters.Add(new SqlParameter("@PaymentMethod", reservation.PaymentMethod));
+            command.Parameters.Add(new SqlParameter("@PaymentReference", (object?)reservation.PaymentReference ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@NotificationToken", (object?)reservation.NotificationToken ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@Reference", reservationReference));
 
             var result = await command.ExecuteScalarAsync();
             if (result == null)
                 throw new InvalidOperationException("Failed to create reservation.");
             var reservationId = (int)result;
+            
+            // Update reservation object with generated reference
+            reservation.Reference = reservationReference;
 
             // Insert Seats
             if (reservation.Seats.Any())
@@ -415,6 +462,39 @@ namespace Ticketing.FrontOffice.Mvc.Services
             }
 
             return reservationId;
+        }
+
+        private async Task<string> GenerateReservationReferenceAsync(int eventId)
+        {
+            // Get event code
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            var eventQuery = "SELECT Code FROM Events WHERE Id = @EventId";
+            using var eventCommand = new SqlCommand(eventQuery, connection);
+            eventCommand.Parameters.Add(new SqlParameter("@EventId", eventId));
+            
+            var eventCode = await eventCommand.ExecuteScalarAsync() as string;
+            if (string.IsNullOrEmpty(eventCode))
+            {
+                eventCode = "EVT"; // Default code if event has no code
+            }
+
+            // Get the last reservation number for this event
+            var countQuery = @"
+                SELECT COUNT(*) 
+                FROM Reservations 
+                WHERE EventId = @EventId AND Reference LIKE @Pattern";
+            
+            using var countCommand = new SqlCommand(countQuery, connection);
+            countCommand.Parameters.Add(new SqlParameter("@EventId", eventId));
+            countCommand.Parameters.Add(new SqlParameter("@Pattern", $"{eventCode}-%"));
+            
+            var count = (int)await countCommand.ExecuteScalarAsync();
+            var sequence = count + 1;
+
+            // Generate reference: EVENTCODE-001, EVENTCODE-002, etc.
+            return $"{eventCode}-{sequence:D3}";
         }
 
         private async Task InsertSeatsAsync(ICollection<Seat> seats, int reservationId, SqlConnection connection)
@@ -441,7 +521,7 @@ namespace Ticketing.FrontOffice.Mvc.Services
         {
             var query = @"
                 SELECT r.Id, r.CustomerName, r.PhoneNumber, r.Email, r.SeatCount, r.Status, 
-                       r.ReservationDate, r.TotalAmount, r.EventId,
+                       r.ReservationDate, r.TotalAmount, r.EventId, r.PaymentReference, r.NotificationToken, r.Reference,
                        e.Id as Event_Id, e.Name as Event_Name, e.Description as Event_Description,
                        e.VenueId as Event_VenueId, e.Date as Event_Date, e.PosterUrl as Event_PosterUrl, e.IsActive as Event_IsActive
                 FROM Reservations r
@@ -467,7 +547,10 @@ namespace Ticketing.FrontOffice.Mvc.Services
                     Status = (ReservationStatus)reader.GetInt32("Status"),
                     ReservationDate = reader.GetDateTime("ReservationDate"),
                     TotalAmount = reader.GetDecimal("TotalAmount"),
-                    EventId = reader.GetInt32("EventId")
+                    EventId = reader.GetInt32("EventId"),
+                    PaymentReference = reader.IsDBNull("PaymentReference") ? null : reader.GetString("PaymentReference"),
+                    NotificationToken = reader.IsDBNull("NotificationToken") ? null : reader.GetString("NotificationToken"),
+                    Reference = reader.IsDBNull("Reference") ? string.Empty : reader.GetString("Reference")
                 };
 
                 if (!reader.IsDBNull("Event_Id"))
@@ -491,6 +574,25 @@ namespace Ticketing.FrontOffice.Mvc.Services
             }
 
             return null;
+        }
+
+        public async Task UpdateReservationPaymentAsync(int reservationId, ReservationStatus status, string paymentReference, string? notificationToken)
+        {
+            var query = @"
+                UPDATE Reservations 
+                SET Status = @Status, PaymentReference = @PaymentReference, NotificationToken = @NotificationToken
+                WHERE Id = @Id";
+
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.Add(new SqlParameter("@Id", reservationId));
+            command.Parameters.Add(new SqlParameter("@Status", (int)status));
+            command.Parameters.Add(new SqlParameter("@PaymentReference", paymentReference));
+            command.Parameters.Add(new SqlParameter("@NotificationToken", (object?)notificationToken ?? DBNull.Value));
+
+            await command.ExecuteNonQueryAsync();
         }
 
         // Organizers
