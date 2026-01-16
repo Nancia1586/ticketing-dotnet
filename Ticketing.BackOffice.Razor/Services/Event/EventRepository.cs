@@ -14,8 +14,11 @@ namespace Ticketing.BackOffice.Razor.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<Event>> GetAllEventsAsync(int? organizerId = null)
+        public async Task<PagedResult<Event>> GetAllEventsAsync(int? organizerId = null, string? searchTerm = null, int pageNumber = 1, int pageSize = 10)
         {
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+
             var query = _context.Events
                                  .Include(e => e.Venue)
                                  .Include(e => e.Category)
@@ -27,7 +30,30 @@ namespace Ticketing.BackOffice.Razor.Services
                 query = query.Where(e => e.OrganizerId == organizerId);
             }
 
-            return await query.OrderByDescending(e => e.Date).ToListAsync();
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                searchTerm = searchTerm.Trim();
+                query = query.Where(e => 
+                    e.Name.Contains(searchTerm) || 
+                    e.Venue.Name.Contains(searchTerm) || 
+                    e.Category.Name.Contains(searchTerm));
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(e => e.Date)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<Event>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
 
         public async Task<Event?> GetEventByIdAsync(int id)
@@ -198,6 +224,28 @@ namespace Ticketing.BackOffice.Razor.Services
                 eventToUpdate.IsSubmitted = true;
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task<(int Selling, int Pending, int Finished)> GetEventStatsAsync(int? organizerId = null)
+        {
+            var query = _context.Events.AsNoTracking().AsQueryable();
+            if (organizerId.HasValue)
+            {
+                query = query.Where(e => e.OrganizerId == organizerId);
+            }
+
+            var now = DateTime.Now;
+            var stats = await query
+                .GroupBy(e => 1)
+                .Select(g => new
+                {
+                    Selling = g.Count(e => e.IsActive && e.IsSubmitted && e.Date > now),
+                    Pending = g.Count(e => !e.IsSubmitted),
+                    Finished = g.Count(e => e.Date <= now)
+                })
+                .FirstOrDefaultAsync();
+
+            return stats != null ? (stats.Selling, stats.Pending, stats.Finished) : (0, 0, 0);
         }
     }
 }

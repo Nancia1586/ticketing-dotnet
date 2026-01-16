@@ -58,34 +58,39 @@ public class IndexModel : PageModel
     public async Task OnGetAsync()
     {
         int? organizerId = null;
+        ApplicationUser? currentUser = null;
         if (User.IsInRole("Organizer"))
         {
-            var user = await _userManager.GetUserAsync(User);
-            organizerId = user?.OrganizationId;
+            currentUser = await _userManager.GetUserAsync(User);
+            organizerId = currentUser?.OrganizationId;
+        }
+        else if (User.Identity?.IsAuthenticated == true)
+        {
+            currentUser = await _userManager.GetUserAsync(User);
         }
 
-        var events = (await _eventService.GetAllEventsAsync(organizerId)).ToList();
-        var categories = (await _categoryService.GetAllCategoriesAsync()).ToList();
-    
-        // OPTIMIZED: Use SQL aggregation instead of loading all reservations
+        // Store user in ViewData to avoid second DB call in _Layout.cshtml
+        ViewData["CurrentUser"] = currentUser;
+
+        // OPTIMIZED: Use SQL aggregation instead of loading all events and all categories
+        var eventStats = await _eventService.GetEventStatsAsync(organizerId);
+        var categoryCounts = await _categoryService.GetCategoryCountsAsync(organizerId);
         var dashboardStats = await _reservationRepository.GetDashboardStatsAsync(organizerId);
         
-        EventsSellingCount = events.Count(e => e.IsActive && e.IsSubmitted && e.Date > DateTime.Now);
-        EventsPendingCount = events.Count(e => !e.IsSubmitted);
-        EventsFinishedCount = events.Count(e => e.Date <= DateTime.Now);
+        EventsSellingCount = eventStats.Selling;
+        EventsPendingCount = eventStats.Pending;
+        EventsFinishedCount = eventStats.Finished;
 
-        // Use optimized stats from database
         TotalTicketsSold = dashboardStats.TotalTicketsSold;
         TotalRevenue = dashboardStats.TotalRevenue;
         TotalReservations = dashboardStats.TotalReservations;
 
-        CategoryStatsList = categories.Select(c => new CategoryStats
+        CategoryStatsList = categoryCounts.Select(c => new CategoryStats
         {
             Name = c.Name,
-            Count = events.Count(e => e.CategoryId == c.Id)
-        }).Where(s => s.Count > 0).ToList();
+            Count = c.Count
+        }).ToList();
 
-        // Use optimized top events from database
         TopEvents = dashboardStats.TopEvents.Select(e => new EventStats
         {
             Name = e.EventName,

@@ -7,6 +7,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Tiktek Admin</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -160,7 +165,8 @@
                     <div class="flex items-center space-x-4 ml-4">
                         @if (User.Identity.IsAuthenticated)
                         {
-                            var currentUser = await UserManager.GetUserAsync(User);
+                            var currentUser = ViewData["CurrentUser"] as ApplicationUser 
+                                              ?? await UserManager.GetUserAsync(User);
                             var displayName = currentUser?.FullName ?? User.Identity.Name;
                             <!-- User Profile -->
                             <div class="flex items-center space-x-6">
@@ -278,7 +284,7 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js" defer></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

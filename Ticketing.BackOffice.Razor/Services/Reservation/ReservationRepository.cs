@@ -21,62 +21,83 @@ namespace Ticketing.BackOffice.Razor.Services
             if (pageSize < 1) pageSize = 10;
             if (pageSize > 100) pageSize = 100; // Limit max page size for performance
 
-            // Build the base query with Event only (lightweight - no seats yet)
-            // This query is executed SERVER-SIDE in SQL
-            var query = _context.Reservations
-                .Include(r => r.Event)
-                .AsNoTracking()
-                .AsQueryable();
+            // OPTIMIZED: Use join with projection instead of Include for better performance
+            var query = from reservation in _context.Reservations
+                       join evt in _context.Events on reservation.EventId equals evt.Id
+                       select new
+                       {
+                           Reservation = reservation,
+                           Event = evt
+                       };
 
+            // Apply filters
             if (organizerId.HasValue)
             {
-                query = query.Where(r => r.Event.OrganizerId == organizerId);
+                query = query.Where(x => x.Event.OrganizerId == organizerId);
             }
 
             // Search functionality (executed SERVER-SIDE)
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 searchTerm = searchTerm.Trim();
-                query = query.Where(r => 
-                    r.Reference.Contains(searchTerm) ||
-                    r.CustomerName.Contains(searchTerm) ||
-                    r.Email.Contains(searchTerm) ||
-                    r.Event.Name.Contains(searchTerm) ||
-                    (r.PaymentReference != null && r.PaymentReference.Contains(searchTerm))
+                query = query.Where(x => 
+                    x.Reservation.Reference.Contains(searchTerm) ||
+                    x.Reservation.CustomerName.Contains(searchTerm) ||
+                    x.Reservation.Email.Contains(searchTerm) ||
+                    x.Event.Name.Contains(searchTerm) ||
+                    (x.Reservation.PaymentReference != null && x.Reservation.PaymentReference.Contains(searchTerm))
                 );
             }
 
             // SERVER-SIDE: Get total count before pagination (executed in SQL)
-            // This counts all matching records without loading them into memory
             var totalCount = await query.CountAsync();
 
-            // SERVER-SIDE PAGINATION: Only fetch the requested page from database
-            // Skip() and Take() are translated to SQL OFFSET and FETCH NEXT
-            // Only the records for the current page are loaded into memory
-            var reservations = await query
-                .OrderByDescending(r => r.ReservationDate)
-                .Skip((pageNumber - 1) * pageSize)  // SQL: OFFSET
-                .Take(pageSize)                      // SQL: FETCH NEXT
+            // OPTIMIZED: Project directly to Reservation with Event data in a single query
+            var reservationData = await query
+                .OrderByDescending(x => x.Reservation.ReservationDate)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new
+                {
+                    Reservation = x.Reservation,
+                    EventId = x.Event.Id,
+                    EventName = x.Event.Name
+                })
+                .AsNoTracking()
                 .ToListAsync();
 
-            // Load only first 3 seats per reservation - optimized approach
-            if (reservations.Any())
-            {
-                var reservationIds = reservations.Select(r => r.Id).ToList();
-                
-                // OPTIMIZED: Load seats ordered by ReservationId and Id, then group in memory
-                // This is more efficient than loading all seats when we only need 3 per reservation
-                // The query is still filtered by reservationIds, so we only load relevant seats
-                var allSeats = await _context.Seats
+            // Get reservation IDs before processing
+            var reservationIds = reservationData.Select(x => x.Reservation.Id).ToList();
+
+            // OPTIMIZED: Load seats in parallel with reservation processing
+            var seatsTask = reservationIds.Any() 
+                ? _context.Seats
                     .Where(s => s.ReservationId.HasValue && reservationIds.Contains(s.ReservationId.Value))
                     .OrderBy(s => s.ReservationId)
-                    .ThenBy(s => s.Id) // Consistent ordering per reservation
+                    .ThenBy(s => s.Id)
                     .AsNoTracking()
-                    .ToListAsync();
+                    .ToListAsync()
+                : Task.FromResult(new List<Seat>());
 
-                // Group by reservation and take only first 3 seats per reservation
-                // This is done in memory but is efficient since we've already filtered by reservationIds
-                // and the number of reservations per page is limited (max 100)
+            // Extract reservations and assign Event navigation property
+            var reservations = reservationData.Select(x => 
+            {
+                var res = x.Reservation;
+                // Set Event navigation property with minimal data (only what's needed for display)
+                res.Event = new Event 
+                { 
+                    Id = x.EventId, 
+                    Name = x.EventName
+                };
+                return res;
+            }).ToList();
+
+            // Wait for seats to load
+            var allSeats = await seatsTask;
+
+            // Group seats by reservation and take only first 3 seats per reservation
+            if (allSeats.Any())
+            {
                 var seatsByReservationId = allSeats
                     .GroupBy(s => s.ReservationId!.Value)
                     .ToDictionary(
@@ -84,7 +105,7 @@ namespace Ticketing.BackOffice.Razor.Services
                         g => g.Take(3).ToList()
                     );
 
-                // Assign seats to reservations (initialize empty list if no seats found)
+                // Assign seats to reservations
                 foreach (var reservation in reservations)
                 {
                     reservation.Seats = seatsByReservationId.TryGetValue(reservation.Id, out var reservationSeats)
@@ -92,10 +113,23 @@ namespace Ticketing.BackOffice.Razor.Services
                         : new List<Seat>();
                 }
             }
+            else
+            {
+                // Initialize empty seats list for all reservations
+                foreach (var reservation in reservations)
+                {
+                    reservation.Seats = new List<Seat>();
+                }
+            }
+
+            // Order reservations to match the original query order
+            var orderedReservations = reservationIds
+                .Select(id => reservations.First(r => r.Id == id))
+                .ToList();
 
             return new PagedResult<Reservation>
             {
-                Items = reservations,
+                Items = orderedReservations,
                 TotalCount = totalCount,
                 PageNumber = pageNumber,
                 PageSize = pageSize
@@ -124,41 +158,44 @@ namespace Ticketing.BackOffice.Razor.Services
 
         public async Task<DashboardStats> GetDashboardStatsAsync(int? organizerId = null)
         {
-            // Build base query with Event included for organizer filter and event name
-            var baseQuery = _context.Reservations
-                .Include(r => r.Event)
-                .AsNoTracking()
-                .AsQueryable();
+            // OPTIMIZED: Use join instead of Include for better performance
+            var baseQuery = from reservation in _context.Reservations
+                           join evt in _context.Events on reservation.EventId equals evt.Id
+                           select new
+                           {
+                               Reservation = reservation,
+                               Event = evt
+                           };
             
             if (organizerId.HasValue)
             {
-                baseQuery = baseQuery.Where(r => r.Event.OrganizerId == organizerId);
+                baseQuery = baseQuery.Where(x => x.Event.OrganizerId == organizerId);
             }
 
             // Get total reservations count (executed in SQL)
             var totalReservations = await baseQuery.CountAsync();
 
             // Get confirmed reservations stats using SQL aggregation (much faster than loading all data)
-            var confirmedQuery = baseQuery.Where(r => r.Status == ReservationStatus.Confirmed);
+            var confirmedQuery = baseQuery.Where(x => x.Reservation.Status == ReservationStatus.Confirmed);
             
             var confirmedStats = await confirmedQuery
-                .GroupBy(r => 1) // Group all records together for aggregation
+                .GroupBy(x => 1) // Group all records together for aggregation
                 .Select(g => new
                 {
-                    TotalTicketsSold = g.Sum(r => r.SeatCount),
-                    TotalRevenue = g.Sum(r => r.TotalAmount)
+                    TotalTicketsSold = g.Sum(x => x.Reservation.SeatCount),
+                    TotalRevenue = g.Sum(x => x.Reservation.TotalAmount)
                 })
                 .FirstOrDefaultAsync();
 
             // Get top 5 events by tickets sold using SQL aggregation
             var topEventsQuery = confirmedQuery
-                .GroupBy(r => new { r.EventId, r.Event.Name })
+                .GroupBy(x => new { x.Event.Id, x.Event.Name })
                 .Select(g => new TopEventStats
                 {
-                    EventId = g.Key.EventId,
+                    EventId = g.Key.Id,
                     EventName = g.Key.Name,
-                    TicketsSold = g.Sum(r => r.SeatCount),
-                    Revenue = g.Sum(r => r.TotalAmount)
+                    TicketsSold = g.Sum(x => x.Reservation.SeatCount),
+                    Revenue = g.Sum(x => x.Reservation.TotalAmount)
                 })
                 .OrderByDescending(e => e.TicketsSold)
                 .Take(5);

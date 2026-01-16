@@ -50,53 +50,96 @@ namespace Ticketing.BackOffice.Razor.Pages.Seats
             CurrentPage = page < 1 ? 1 : page;
 
             int? organizerId = null;
-            if (User.IsInRole("Organizer"))
+            ApplicationUser? currentUser = null;
+            if (User.Identity?.IsAuthenticated == true)
             {
-                var user = await _userManager.GetUserAsync(User);
-                organizerId = user?.OrganizationId;
+                currentUser = await _userManager.GetUserAsync(User);
+                organizerId = currentUser?.OrganizationId;
             }
+            ViewData["CurrentUser"] = currentUser;
 
-            Events = (await _eventService.GetAllEventsAsync(organizerId)).ToList();
-
-            // Build base query with filters (SERVER-SIDE)
-            var query = _context.Seats
-                .Include(s => s.TicketType)
-                    .ThenInclude(tt => tt.Event)
-                .Include(s => s.Reservation)
+            // OPTIMIZED: Load only active and recent events (max 50) for dropdown instead of 1000
+            var eventsTask = _context.Events
+                .Where(e => organizerId == null || e.OrganizerId == organizerId)
+                .Where(e => e.IsActive || e.Date >= DateTime.Now.AddMonths(-3)) // Active or recent (last 3 months)
+                .OrderByDescending(e => e.Date)
+                .Take(50)
+                .Select(e => new Event { Id = e.Id, Name = e.Name })
                 .AsNoTracking()
-                .AsQueryable();
+                .ToListAsync();
 
+            // OPTIMIZED: Build query with joins using Select projection (more efficient than Include)
+            var query = from seat in _context.Seats
+                       join ticketType in _context.TicketTypes on seat.TicketTypeId equals ticketType.Id
+                       join evt in _context.Events on ticketType.EventId equals evt.Id
+                       join reservation in _context.Reservations on seat.ReservationId equals reservation.Id into reservationGroup
+                       from reservation in reservationGroup.DefaultIfEmpty()
+                       select new
+                       {
+                           Seat = seat,
+                           TicketType = ticketType,
+                           Event = evt,
+                           Reservation = reservation
+                       };
+
+            // Apply filters
             if (organizerId.HasValue)
             {
-                query = query.Where(s => s.TicketType.Event.OrganizerId == organizerId);
+                query = query.Where(x => x.Event.OrganizerId == organizerId);
             }
 
             if (eventId.HasValue)
             {
-                query = query.Where(s => s.TicketType.EventId == eventId.Value);
+                query = query.Where(x => x.Event.Id == eventId.Value);
             }
 
             if (status.HasValue)
             {
-                query = query.Where(s => s.Status == status.Value);
+                query = query.Where(x => x.Seat.Status == status.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 searchTerm = searchTerm.Trim();
-                query = query.Where(s => 
-                    s.Code.Contains(searchTerm) ||
-                    (s.Reservation != null && s.Reservation.CustomerName.Contains(searchTerm)) ||
-                    (s.Reservation != null && s.Reservation.Email.Contains(searchTerm))
-                );
+                query = query.Where(x => 
+                    x.Seat.Code.Contains(searchTerm) ||
+                    (x.Reservation != null && x.Reservation.CustomerName.Contains(searchTerm)) ||
+                    (x.Reservation != null && x.Reservation.Email.Contains(searchTerm)));
             }
 
-            // SERVER-SIDE: Calculate statistics in SQL before pagination
-            TotalSeats = await query.CountAsync();
-            FreeSeats = await query.CountAsync(s => s.Status == SeatStatus.Free);
-            ReservedSeats = await query.CountAsync(s => s.Status == SeatStatus.Reserved);
-            TakenSeats = await query.CountAsync(s => s.Status == SeatStatus.Taken);
-            HeldSeats = await query.CountAsync(s => s.Status == SeatStatus.Held);
+            // OPTIMIZED: Calculate statistics and fetch events in parallel
+            var statsQuery = query
+                .GroupBy(x => 1)
+                .Select(g => new
+                {
+                    Total = g.Count(),
+                    Free = g.Count(x => x.Seat.Status == SeatStatus.Free),
+                    Reserved = g.Count(x => x.Seat.Status == SeatStatus.Reserved),
+                    Taken = g.Count(x => x.Seat.Status == SeatStatus.Taken),
+                    Held = g.Count(x => x.Seat.Status == SeatStatus.Held)
+                });
+
+            var statsTask = statsQuery.FirstOrDefaultAsync();
+
+            // Execute parallel queries
+            await Task.WhenAll(eventsTask, statsTask);
+
+            Events = await eventsTask;
+            var stats = await statsTask;
+
+            // Set statistics
+            if (stats != null)
+            {
+                TotalSeats = stats.Total;
+                FreeSeats = stats.Free;
+                ReservedSeats = stats.Reserved;
+                TakenSeats = stats.Taken;
+                HeldSeats = stats.Held;
+            }
+            else
+            {
+                TotalSeats = FreeSeats = ReservedSeats = TakenSeats = HeldSeats = 0;
+            }
 
             // Calculate pagination info
             TotalPages = (int)Math.Ceiling(TotalSeats / (double)PageSize);
@@ -110,29 +153,29 @@ namespace Ticketing.BackOffice.Razor.Pages.Seats
             HasPreviousPage = CurrentPage > 1;
             HasNextPage = CurrentPage < TotalPages;
 
-            // SERVER-SIDE PAGINATION: Only fetch the requested page from database
-            var seats = await query
-                .OrderBy(s => s.TicketType.Event.Name)
+            // OPTIMIZED: Project to SeatViewModel directly in query (single SQL query)
+            var seatsQuery = query
+                .Select(x => new SeatViewModel
+                {
+                    Id = x.Seat.Id,
+                    Code = x.Seat.Code,
+                    Status = x.Seat.Status,
+                    EventName = x.Event.Name,
+                    EventId = x.Event.Id,
+                    TicketTypeName = x.TicketType.Name,
+                    Price = x.TicketType.Price,
+                    ReservationId = x.Seat.ReservationId,
+                    CustomerName = x.Reservation != null ? x.Reservation.CustomerName : null,
+                    ReservationStatus = x.Reservation != null ? (ReservationStatus?)x.Reservation.Status : null,
+                    ReservationReference = x.Reservation != null ? x.Reservation.Reference : null,
+                    ReservationDate = x.Reservation != null ? (DateTime?)x.Reservation.ReservationDate : null
+                })
+                .OrderBy(s => s.EventName)
                 .ThenBy(s => s.Code)
                 .Skip((CurrentPage - 1) * PageSize)
-                .Take(PageSize)
-                .ToListAsync();
+                .Take(PageSize);
 
-            Seats = seats.Select(s => new SeatViewModel
-            {
-                Id = s.Id,
-                Code = s.Code,
-                Status = s.Status,
-                EventName = s.TicketType.Event.Name,
-                EventId = s.TicketType.EventId,
-                TicketTypeName = s.TicketType.Name,
-                Price = s.TicketType.Price,
-                ReservationId = s.ReservationId,
-                CustomerName = s.Reservation?.CustomerName,
-                ReservationStatus = s.Reservation?.Status,
-                ReservationReference = s.Reservation?.Reference,
-                ReservationDate = s.Reservation?.ReservationDate
-            }).ToList();
+            Seats = await seatsQuery.AsNoTracking().ToListAsync();
         }
 
         public class SeatViewModel

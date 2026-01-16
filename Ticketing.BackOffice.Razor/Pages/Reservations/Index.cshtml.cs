@@ -31,11 +31,18 @@ namespace Ticketing.BackOffice.Razor.Pages.Reservations
             CurrentPage = page < 1 ? 1 : page;
             
             int? organizerId = null;
-            if (User.IsInRole("Organizer"))
+            ApplicationUser? currentUser = null;
+            if (User.Identity?.IsAuthenticated == true)
             {
-                var user = await _userManager.GetUserAsync(User);
-                organizerId = user?.OrganizationId;
+                currentUser = await _userManager.GetUserAsync(User);
+                if (User.IsInRole("Organizer"))
+                {
+                    organizerId = currentUser?.OrganizationId;
+                }
             }
+
+            // Pass user to layout
+            ViewData["CurrentUser"] = currentUser;
 
             // SERVER-SIDE PAGINATION: Request only the current page from database
             // The repository executes Skip() and Take() in SQL, not in memory

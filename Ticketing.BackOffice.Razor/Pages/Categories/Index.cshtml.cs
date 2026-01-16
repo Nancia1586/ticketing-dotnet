@@ -1,23 +1,31 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Identity;
 using Ticketing.BackOffice.Razor.Services;
+using Ticketing.Core.Models;
 
 namespace Ticketing.BackOffice.Razor.Pages.Categories
 {
     public class IndexModel : PageModel
     {
         private readonly ICategoryService _categoryService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public IndexModel(ICategoryService categoryService)
+        public IndexModel(ICategoryService categoryService, UserManager<ApplicationUser> userManager)
         {
             _categoryService = categoryService;
+            _userManager = userManager;
         }
 
-        public IEnumerable<Ticketing.Core.Models.Category> Categories { get; set; } = new List<Ticketing.Core.Models.Category>();
+        public IList<Category> Categories { get;set; } = default!;
 
         public async Task OnGetAsync()
         {
-            Categories = await _categoryService.GetAllCategoriesAsync();
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                ViewData["CurrentUser"] = await _userManager.GetUserAsync(User);
+            }
+            Categories = (await _categoryService.GetAllCategoriesAsync()).ToList();
         }
 
         public async Task<IActionResult> OnPostToggleStatusAsync(int id, bool isActive)

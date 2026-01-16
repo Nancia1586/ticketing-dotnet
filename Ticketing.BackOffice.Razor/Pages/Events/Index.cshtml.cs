@@ -17,18 +17,40 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
             _userManager = userManager;
         }
 
-        public IList<Event> Events { get; set; } = default!;
+        public IEnumerable<Event> Events { get; set; } = new List<Event>();
+        public string? SearchTerm { get; set; }
+        public int CurrentPage { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+        public int TotalPages { get; set; }
+        public int TotalCount { get; set; }
+        public bool HasPreviousPage { get; set; }
+        public bool HasNextPage { get; set; }
 
-        public async Task OnGetAsync()
+        public async Task OnGetAsync(string? searchTerm = null, int page = 1)
         {
+            SearchTerm = searchTerm;
+            CurrentPage = page < 1 ? 1 : page;
+
             int? organizerId = null;
-            if (User.IsInRole("Organizer"))
+            ApplicationUser? currentUser = null;
+            if (User.Identity?.IsAuthenticated == true)
             {
-                var user = await _userManager.GetUserAsync(User);
-                organizerId = user?.OrganizationId;
+                currentUser = await _userManager.GetUserAsync(User);
+                if (User.IsInRole("Organizer"))
+                {
+                    organizerId = currentUser?.OrganizationId;
+                }
             }
 
-            Events = (await _eventService.GetAllEventsAsync(organizerId)).ToList();
+            ViewData["CurrentUser"] = currentUser;
+
+            var result = await _eventService.GetAllEventsAsync(organizerId, searchTerm, CurrentPage, PageSize);
+            
+            Events = result.Items;
+            TotalCount = result.TotalCount;
+            TotalPages = result.TotalPages;
+            HasPreviousPage = result.HasPreviousPage;
+            HasNextPage = result.HasNextPage;
         }
 
         public async Task<IActionResult> OnPostDeleteAsync(int id)

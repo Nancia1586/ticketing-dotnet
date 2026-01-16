@@ -95,6 +95,33 @@ namespace Ticketing.Core.Data
                 .WithMany(c => c.Events)
                 .HasForeignKey(e => e.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure Seat Code with max length for indexing
+            modelBuilder.Entity<Seat>()
+                .Property(s => s.Code)
+                .HasMaxLength(50);
+
+            // Configure Seat indexes for better performance on large datasets
+            modelBuilder.Entity<Seat>()
+                .HasIndex(s => s.Status)
+                .HasDatabaseName("IX_Seats_Status");
+
+            modelBuilder.Entity<Seat>()
+                .HasIndex(s => s.ReservationId)
+                .HasDatabaseName("IX_Seats_ReservationId");
+
+            modelBuilder.Entity<Seat>()
+                .HasIndex(s => s.TicketTypeId)
+                .HasDatabaseName("IX_Seats_TicketTypeId");
+
+            modelBuilder.Entity<Seat>()
+                .HasIndex(s => new { s.TicketTypeId, s.Status })
+                .HasDatabaseName("IX_Seats_TicketTypeId_Status");
+
+            // Index on Code for search performance
+            modelBuilder.Entity<Seat>()
+                .HasIndex(s => s.Code)
+                .HasDatabaseName("IX_Seats_Code");
         }
     }
 }
