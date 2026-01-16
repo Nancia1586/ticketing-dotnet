@@ -210,5 +210,64 @@ namespace Ticketing.BackOffice.Razor.Services
                 TopEvents = topEvents
             };
         }
+
+        public async Task<List<Reservation>> GetAllReservationsForExportAsync(int? organizerId = null, string? searchTerm = null)
+        {
+            var query = from reservation in _context.Reservations
+                       join evt in _context.Events on reservation.EventId equals evt.Id
+                       select new
+                       {
+                           Reservation = reservation,
+                           Event = evt
+                       };
+
+            // Apply filters
+            if (organizerId.HasValue)
+            {
+                query = query.Where(x => x.Event.OrganizerId == organizerId);
+            }
+
+            // Search functionality
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                searchTerm = searchTerm.Trim();
+                query = query.Where(x => 
+                    x.Reservation.Reference.Contains(searchTerm) ||
+                    x.Reservation.CustomerName.Contains(searchTerm) ||
+                    x.Reservation.Email.Contains(searchTerm) ||
+                    x.Event.Name.Contains(searchTerm) ||
+                    (x.Reservation.PaymentReference != null && x.Reservation.PaymentReference.Contains(searchTerm))
+                );
+            }
+
+            // Get all reservations ordered by event, then by reservation date
+            var reservationData = await query
+                .OrderBy(x => x.Event.Name)
+                .ThenByDescending(x => x.Reservation.ReservationDate)
+                .Select(x => new
+                {
+                    Reservation = x.Reservation,
+                    EventId = x.Event.Id,
+                    EventName = x.Event.Name,
+                    EventDate = x.Event.Date
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            // Assign Event navigation property
+            var reservations = reservationData.Select(x => 
+            {
+                var res = x.Reservation;
+                res.Event = new Event 
+                { 
+                    Id = x.EventId, 
+                    Name = x.EventName,
+                    Date = x.EventDate
+                };
+                return res;
+            }).ToList();
+
+            return reservations;
+        }
     }
 }

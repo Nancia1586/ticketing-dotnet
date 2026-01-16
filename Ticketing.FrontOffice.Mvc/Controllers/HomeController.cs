@@ -17,17 +17,30 @@ public class HomeController : Controller
         _dataAccess = dataAccess;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int? categoryId = null)
     {
         try
         {
-            var events = await _dataAccess.GetActiveEventsAsync();
-            var featuredEvents = events.Take(5).ToList();
+            // Get all events for display (filtered by category if selected)
+            var allEvents = await _dataAccess.GetActiveEventsAsync(categoryId: categoryId);
+            var categories = await _dataAccess.GetAllCategoriesAsync();
+            
+            // Featured events for carousel (first 5, regardless of category filter)
+            var featuredEvents = categoryId.HasValue 
+                ? allEvents.Take(5).ToList()
+                : (await _dataAccess.GetActiveEventsAsync()).Take(5).ToList();
+            
+            ViewData["Categories"] = categories;
+            ViewData["SelectedCategoryId"] = categoryId;
+            ViewData["AllEvents"] = allEvents; // All events for the events section
+            
             return View(featuredEvents);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading events");
+            ViewData["Categories"] = new List<Category>();
+            ViewData["AllEvents"] = new List<Event>();
             return View(new List<Event>());
         }
     }

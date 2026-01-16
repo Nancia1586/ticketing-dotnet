@@ -1,6 +1,55 @@
 @model List<Ticketing.Core.Models.Event>
+@using Ticketing.Core.Models
 @{
     ViewData["Title"] = "Accueil";
+    
+    string GetCategoryIcon(string categoryName)
+    {
+        if (string.IsNullOrWhiteSpace(categoryName))
+            return "bi bi-calendar-event";
+            
+        var nameLower = categoryName.ToLower().Trim();
+        
+        // Mapping exact pour les catégories existantes dans la base de données
+        // Catégories par défaut: "Cultures", "Spectacles et concerts", "Foires et séminaires", "Autre"
+        if (nameLower == "cultures")
+            return "bi bi-palette";
+        if (nameLower == "spectacles et concerts")
+            return "bi bi-music-note-beamed";
+        if (nameLower == "foires et séminaires")
+            return "bi bi-graph-up";
+        if (nameLower == "autre")
+            return "bi bi-three-dots";
+        
+        // Correspondances génériques pour d'autres catégories possibles
+        if (nameLower.Contains("music") || nameLower.Contains("musique") || nameLower.Contains("concert") || nameLower.Contains("spectacle"))
+            return "bi bi-music-note-beamed";
+        if (nameLower.Contains("nightlife") || nameLower.Contains("nuit"))
+            return "bi bi-stars";
+        if (nameLower.Contains("performing") || nameLower.Contains("visual") || nameLower.Contains("arts") || nameLower.Contains("culture"))
+            return "bi bi-palette";
+        if (nameLower.Contains("holiday") || nameLower.Contains("vacance") || nameLower.Contains("fête"))
+            return "bi bi-calendar-event";
+        if (nameLower.Contains("dating") || nameLower.Contains("rencontre"))
+            return "bi bi-heart";
+        if (nameLower.Contains("hobby") || nameLower.Contains("loisir"))
+            return "bi bi-controller";
+        if (nameLower.Contains("business") || nameLower.Contains("séminaire") || nameLower.Contains("foire") || nameLower.Contains("conférence"))
+            return "bi bi-graph-up";
+        if (nameLower.Contains("food") || nameLower.Contains("drink") || nameLower.Contains("boisson") || nameLower.Contains("restaurant"))
+            return "bi bi-cup-straw";
+        if (nameLower.Contains("sport") || nameLower.Contains("fitness"))
+            return "bi bi-trophy";
+        if (nameLower.Contains("théâtre") || nameLower.Contains("theatre") || nameLower.Contains("dance") || nameLower.Contains("danse"))
+            return "bi bi-mask";
+        if (nameLower.Contains("exposition") || nameLower.Contains("exhibition") || nameLower.Contains("art"))
+            return "bi bi-image";
+        if (nameLower.Contains("festival"))
+            return "bi bi-calendar-heart";
+        
+        // Icône par défaut
+        return "bi bi-calendar-event";
+    }
 }
 
 <!-- Hero Carousel Section -->
@@ -97,6 +146,45 @@ else
     </div>
 </div>
 
+<!-- Categories Section -->
+@{
+    var categories = ViewData["Categories"] as List<Ticketing.Core.Models.Category> ?? new List<Ticketing.Core.Models.Category>();
+    var selectedCategoryId = ViewData["SelectedCategoryId"] as int?;
+}
+@if (categories.Any())
+{
+    <div class="container my-5">
+        <div class="categories-section">
+            <div class="categories-row">
+                @{
+                    var isAllSelected = !selectedCategoryId.HasValue;
+                }
+                <a href="@Url.Action("Index", "Home")" 
+                   class="category-icon @(isAllSelected ? "active" : "")" 
+                   title="Tous les événements">
+                    <div class="category-icon-circle @(isAllSelected ? "active" : "")">
+                        <i class="bi bi-grid"></i>
+                    </div>
+                    <span class="category-label">Tous</span>
+                </a>
+                @foreach (var category in categories)
+                {
+                    var isSelected = selectedCategoryId.HasValue && selectedCategoryId.Value == category.Id;
+                    var categoryIcon = GetCategoryIcon(category.Name);
+                    <a href="@Url.Action("Index", "Home", new { categoryId = category.Id })" 
+                       class="category-icon @(isSelected ? "active" : "")" 
+                       title="@category.Name">
+                        <div class="category-icon-circle @(isSelected ? "active" : "")">
+                            <i class="@categoryIcon"></i>
+                        </div>
+                        <span class="category-label">@category.Name</span>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+}
+
 <!-- Upcoming Events Section -->
 <div class="container my-5">
     <div class="text-center mb-5">
@@ -104,32 +192,13 @@ else
         <p class="fs-5" style="color: var(--text-secondary);">Découvrez tous les événements à venir et réservez vos places dès maintenant !</p>
     </div>
     
-    <!-- Filter Tabs -->
-    @if (Model != null && Model.Any())
-    {
-        var categories = Model.Select(e => e.Category).Where(c => c != null).Distinct().ToList();
-        <div class="filter-tabs mb-4">
-            <a href="#" class="filter-tab active" data-category="all">
-                <i class="bi bi-grid"></i>
-                <span>Tous</span>
-                <span class="badge bg-secondary ms-2">@Model.Count</span>
-            </a>
-            @foreach (var category in categories)
-            {
-                var count = Model.Count(e => e.Category?.Id == category.Id);
-                <a href="#" class="filter-tab" data-category="@category.Id">
-                    <i class="bi bi-calendar-event"></i>
-                    <span>@category.Name</span>
-                    <span class="badge bg-secondary ms-2">@count</span>
-                </a>
-            }
-        </div>
-    }
-    
     <div class="row g-4" id="eventsContainer">
-        @if (Model != null && Model.Any())
+        @{
+            var allEvents = ViewData["AllEvents"] as List<Ticketing.Core.Models.Event> ?? Model ?? new List<Ticketing.Core.Models.Event>();
+        }
+        @if (allEvents.Any())
         {
-            @foreach (var evt in Model)
+            @foreach (var evt in allEvents)
             {
                 var bgImage = !string.IsNullOrEmpty(evt.PosterUrl) 
                     ? evt.PosterUrl 
@@ -372,41 +441,111 @@ else
     .event-item.hidden {
         display: none;
     }
+
+    /* Categories Section Styles */
+    .categories-section {
+        padding: 2rem 0;
+    }
+
+    .categories-row {
+        display: flex;
+        gap: 2rem;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        padding: 1rem 0;
+    }
+
+    .category-icon {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: #333;
+        transition: transform 0.2s ease;
+        cursor: pointer;
+        min-width: 80px;
+    }
+
+    .category-icon:hover {
+        transform: translateY(-2px);
+        text-decoration: none;
+        color: #333;
+    }
+
+    .category-icon.active .category-label {
+        color: #2563eb;
+        font-weight: 600;
+    }
+
+    .category-icon-circle {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background-color: #f3f4f6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .category-icon-circle i {
+        font-size: 1.5rem;
+        color: #6b7280;
+        transition: color 0.3s ease;
+    }
+
+    .category-icon:hover .category-icon-circle {
+        background-color: #e5e7eb;
+        transform: scale(1.05);
+    }
+
+    .category-icon.active .category-icon-circle {
+        background-color: #dbeafe;
+        border-color: #2563eb;
+    }
+
+    .category-icon.active .category-icon-circle i {
+        color: #2563eb;
+    }
+
+    .category-label {
+        font-size: 0.875rem;
+        text-align: center;
+        color: #4b5563;
+        transition: color 0.3s ease;
+        font-weight: 500;
+        margin-top: 0.25rem;
+    }
+
+    @@media (max-width: 768px) {
+        .categories-row {
+            gap: 1rem;
+            justify-content: flex-start;
+            overflow-x: auto;
+            padding: 1rem 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .category-icon {
+            min-width: 70px;
+            flex-shrink: 0;
+        }
+
+        .category-icon-circle {
+            width: 56px;
+            height: 56px;
+        }
+
+        .category-icon-circle i {
+            font-size: 1.25rem;
+        }
+
+        .category-label {
+            font-size: 0.75rem;
+        }
+    }
 </style>
 
-<script>
-    // Filter functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        const filterTabs = document.querySelectorAll('.filter-tab');
-        const eventItems = document.querySelectorAll('.event-item');
-        
-        filterTabs.forEach(tab => {
-            tab.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // Remove active class from all tabs
-                filterTabs.forEach(t => t.classList.remove('active'));
-                
-                // Add active class to clicked tab
-                this.classList.add('active');
-                
-                // Get category filter
-                const categoryId = this.getAttribute('data-category');
-                
-                // Filter events
-                eventItems.forEach(item => {
-                    if (categoryId === 'all') {
-                        item.classList.remove('hidden');
-                    } else {
-                        const itemCategory = item.getAttribute('data-category');
-                        if (itemCategory === categoryId) {
-                            item.classList.remove('hidden');
-                        } else {
-                            item.classList.add('hidden');
-                        }
-                    }
-                });
-            });
-        });
-    });
-</script>

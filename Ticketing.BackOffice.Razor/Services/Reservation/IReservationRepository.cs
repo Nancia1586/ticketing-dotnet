@@ -35,5 +35,6 @@ namespace Ticketing.BackOffice.Razor.Services
         Task<Reservation?> GetReservationByIdAsync(int id);
         Task UpdateReservationStatusAsync(int id, ReservationStatus status);
         Task<DashboardStats> GetDashboardStatsAsync(int? organizerId = null);
+        Task<List<Reservation>> GetAllReservationsForExportAsync(int? organizerId = null, string? searchTerm = null);
     }
 }

@@ -14,7 +14,36 @@ namespace Ticketing.FrontOffice.Mvc.Services
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
         }
 
-        public async Task<List<Event>> GetActiveEventsAsync(string? searchTerm = null, DateTime? filterDate = null)
+        public async Task<List<Category>> GetAllCategoriesAsync()
+        {
+            var categories = new List<Category>();
+            var query = @"
+                SELECT Id, Name, Description, IsActive
+                FROM Categories
+                WHERE IsActive = 1
+                ORDER BY Name";
+
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            using var command = new SqlCommand(query, connection);
+            using var reader = await command.ExecuteReaderAsync();
+            
+            while (await reader.ReadAsync())
+            {
+                categories.Add(new Category
+                {
+                    Id = reader.GetInt32("Id"),
+                    Name = reader.GetString("Name"),
+                    Description = reader.IsDBNull("Description") ? string.Empty : reader.GetString("Description"),
+                    IsActive = reader.GetBoolean("IsActive")
+                });
+            }
+
+            return categories;
+        }
+
+        public async Task<List<Event>> GetActiveEventsAsync(string? searchTerm = null, DateTime? filterDate = null, int? categoryId = null)
         {
             var events = new List<Event>();
             var query = @"
@@ -39,6 +68,12 @@ namespace Ticketing.FrontOffice.Mvc.Services
             {
                 query += " AND CAST(e.Date AS DATE) = @FilterDate";
                 parameters.Add(new SqlParameter("@FilterDate", filterDate.Value.Date));
+            }
+
+            if (categoryId.HasValue && categoryId.Value > 0)
+            {
+                query += " AND e.CategoryId = @CategoryId";
+                parameters.Add(new SqlParameter("@CategoryId", categoryId.Value));
             }
 
             query += " ORDER BY e.Date";
