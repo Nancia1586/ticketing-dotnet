@@ -25,12 +25,16 @@ namespace Ticketing.BackOffice.Razor.Services
             }
         }
 
-        public async Task<IEnumerable<Event>> GetAllEventsAsync(int? organizerId = null)
+        public async Task<PagedResult<Event>> GetAllEventsAsync(int? organizerId = null, string? searchTerm = null, int pageNumber = 1, int pageSize = 10)
         {
-            var url = "api/events";
+            var url = $"api/events?pageNumber={pageNumber}&pageSize={pageSize}";
             if (organizerId.HasValue)
             {
-                url += $"?organizerId={organizerId}";
+                url += $"&organizerId={organizerId}";
+            }
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                url += $"&searchTerm={Uri.EscapeDataString(searchTerm)}";
             }
             
             var response = await _httpClient.GetAsync(url);
@@ -40,7 +44,7 @@ namespace Ticketing.BackOffice.Razor.Services
                 throw new HttpRequestException($"Server returned {response.StatusCode}: {errorContent}");
             }
 
-            return await response.Content.ReadFromJsonAsync<IEnumerable<Event>>() ?? new List<Event>();
+            return await response.Content.ReadFromJsonAsync<PagedResult<Event>>() ?? new PagedResult<Event>();
         }
 
         public async Task<Event?> GetEventByIdAsync(int id)
@@ -128,6 +132,16 @@ namespace Ticketing.BackOffice.Razor.Services
         public async Task<IEnumerable<Venue>> GetAllVenuesAsync()
         {
              return await _httpClient.GetFromJsonAsync<IEnumerable<Venue>>("api/venues") ?? new List<Venue>();
+        }
+
+        public async Task<(int Selling, int Pending, int Finished)> GetEventStatsAsync(int? organizerId = null)
+        {
+            var url = "api/events/stats";
+            if (organizerId.HasValue)
+            {
+                url += $"?organizerId={organizerId}";
+            }
+            return await _httpClient.GetFromJsonAsync<(int, int, int)>(url);
         }
     }
 }

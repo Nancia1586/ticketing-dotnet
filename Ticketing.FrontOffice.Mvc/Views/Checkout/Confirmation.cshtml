@@ -1,19 +1,19 @@
 @model List<Ticketing.Core.Models.Reservation>
 
 @{
-    ViewData["Title"] = "Order Confirmed";
+    ViewData["Title"] = "Commande Confirmée";
     var totalPaid = Model.Sum(r => r.TotalAmount);
 }
 
 <div class="container my-5 no-print">
     <div class="text-center mb-5">
         <div class="display-1 text-success mb-3"><i class="bi bi-check-circle-fill"></i></div>
-        <h1 class="display-4 fw-bold">Payment Successful!</h1>
-        <p class="lead">Your reservations have been confirmed. A confirmation email has been sent to <strong>@Model.First().Email</strong>.</p>
+        <h1 class="display-4 fw-bold">Paiement Réussi !</h1>
+        <p class="lead">Vos réservations ont été confirmées. Un email de confirmation a été envoyé à <strong>@Model.First().Email</strong>.</p>
         <button onclick="window.print()" class="btn btn-outline-primary btn-lg mt-3">
-            <i class="bi bi-printer me-2"></i> Print Tickets
+            <i class="bi bi-printer me-2"></i> Imprimer les Billets
         </button>
-         <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg mt-3 ms-2">Return Home</a>
+         <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg mt-3 ms-2">Retour à l'Accueil</a>
     </div>
 </div>
 
@@ -26,10 +26,10 @@
                     <div class="card-body p-0">
                         <div class="row g-0">
                             <div class="col-8 p-4">
-                                <h6 class="text-uppercase text-muted ls-1 mb-2">EVENT TICKET</h6>
+                                <h6 class="text-uppercase text-muted ls-1 mb-2">BILLET D'ÉVÉNEMENT</h6>
                                 <h3 class="fw-bold mb-3">@res.Event.Name</h3>
                                 <div class="mb-3">
-                                    <i class="bi bi-calendar-event me-2"></i> @res.Event.Date.ToString("F")
+                                    <i class="bi bi-calendar-event me-2"></i> @res.Event.Date.ToFrenchDateString("dd MMMM yyyy 'à' HH:mm")
                                 </div>
                                 <div class="mb-3">
                                     <i class="bi bi-person me-2"></i> @res.CustomerName
@@ -51,7 +51,7 @@
                                         @foreach (var group in seatsByType)
                                         {
                                             var ticketType = ticketTypeCache.ContainsKey(group.Key) ? ticketTypeCache[group.Key] : null;
-                                            var ticketTypeName = ticketType?.Name ?? "Unknown";
+                                            var ticketTypeName = ticketType?.Name ?? "Inconnu";
                                             var seatCodes = group.OrderBy(s => s.Code).Select(s => s.Code).ToList();
                                             
                                             <div class="mb-2">
@@ -63,8 +63,8 @@
                                     else 
                                     {
                                         <div>
-                                            <strong>General Admission:</strong>
-                                            <span>@res.SeatCount tickets</span>
+                                            <strong>Entrée Générale :</strong>
+                                            <span>@res.SeatCount billet(s)</span>
                                         </div>
                                     }
                                 </div>
@@ -74,7 +74,7 @@
                                     <!-- Mock QR Code -->
                                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=@res.Id" alt="QR" width="100%" /> 
                                 </div>
-                                <small>Order #@res.Id</small>
+                                <small>Commande #@res.Id</small>
                             </div>
                         </div>
                     </div>

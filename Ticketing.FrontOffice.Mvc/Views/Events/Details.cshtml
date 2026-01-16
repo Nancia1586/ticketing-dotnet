@@ -13,9 +13,9 @@
     {
         <div class="container my-5">
             <div class="alert alert-danger">
-                <h4>Event Not Found</h4>
-                <p>The event you are looking for does not exist or has been removed.</p>
-                <a asp-controller="Events" asp-action="Index" class="btn btn-primary">Back to Events</a>
+                <h4>Événement Introuvable</h4>
+                <p>L'événement que vous recherchez n'existe pas ou a été supprimé.</p>
+                <a asp-controller="Events" asp-action="Index" class="btn btn-primary">Retour aux Événements</a>
             </div>
         </div>
         return;
@@ -147,7 +147,7 @@
                                     <i class="bi bi-calendar event-detail-icon"></i>
                                     <div>
                                         <span class="event-detail-label">DATE :</span>
-                                        <span class="event-detail-value">@Model.Event.Date.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("fr-FR"))</span>
+                                        <span class="event-detail-value">@Model.Event.Date.ToFrenchDateString("dd MMMM yyyy")</span>
                                     </div>
                                 </div>
 
@@ -174,7 +174,7 @@
                                     <i class="bi bi-geo-alt event-detail-icon"></i>
                                     <div>
                                         <span class="event-detail-label">LIEU :</span>
-                                        <span class="event-detail-value">@(venue?.Name ?? "TBA")@(venue != null && !string.IsNullOrEmpty(venue.Address) ? $", {venue.Address}" : "")</span>
+                                        <span class="event-detail-value">@(venue?.Name ?? "À confirmer")@(venue != null && !string.IsNullOrEmpty(venue.Address) ? $", {venue.Address}" : "")</span>
                                     </div>
                                 </div>
                             </div>
@@ -223,7 +223,7 @@
         <!-- Seat Selection Section -->
         <div class="col-lg-9 order-2 order-lg-1">
             <h3 class="fw-bold mb-4 text-uppercase border-start border-4 border-accent-primary ps-3" style="border-color: var(--accent-primary) !important;">
-                @(hasSeating && allSeats.Any() ? $"Seat Map - {venue?.Name}" : "General Admission")
+                @(hasSeating && allSeats.Any() ? $"Plan des Places - {venue?.Name}" : "Entrée Générale")
             </h3>
             
             <div class="seat-map-container" style="overflow-x: auto;">
@@ -300,8 +300,8 @@
                 {
                     <div class="text-center py-5">
                         <i class="bi bi-person-standing display-1 text-secondary mb-3"></i>
-                        <h4 class="text-secondary">General Admission</h4>
-                        <p class="text-muted">No assigned seating - first come, first served</p>
+                        <h4 class="text-secondary">Entrée Générale</h4>
+                        <p class="text-muted">Pas de places assignées - premier arrivé, premier servi</p>
                     </div>
                 }
             </div>
@@ -311,7 +311,7 @@
         <div class="col-lg-3 order-1 order-lg-2">
             <div class="sticky-top" style="top: 100px; z-index: 100;">
                 <h3 class="fw-bold mb-4 text-uppercase border-start border-4 border-accent-primary ps-3" style="border-color: var(--accent-primary) !important;">
-                    Select Tickets
+                    Sélectionner les Billets
                 </h3>
                 
                 <div class="card-custom p-4">
@@ -351,21 +351,21 @@
                         {
                             <div class="alert alert-light border mb-4 text-center bg-card" id="emptyStateInfo" style="border-color: var(--border-color) !important;">
                                 <i class="bi bi-info-circle me-2 text-accent-primary"></i>
-                                Select your seats on the map above.<br>
-                                <strong id="seatSelectionStatus" class="text-accent-primary">0 seats selected</strong>
+                                Sélectionnez vos places sur la carte ci-dessus.<br>
+                                <strong id="seatSelectionStatus" class="text-accent-primary">0 place(s) sélectionnée(s)</strong>
                             </div>
                         }
                         else
                         {
                             <div class="mb-4">
-                                <label class="form-label fw-bold small text-uppercase text-secondary">Quantity</label>
+                                <label class="form-label fw-bold small text-uppercase text-secondary">Quantité</label>
                                 <input type="number" name="quantity" class="form-control bg-card border-secondary text-white" value="1" min="1" max="10" />
                             </div>
                         }
 
                         <div class="d-grid">
                             <button type="submit" class="btn-primary-custom w-100 py-3" id="addToCartBtn" @(hasSeating && allSeats.Any() ? "disabled" : "")>
-                                <i class="bi bi-cart-plus me-2"></i>Add to Cart
+                                <i class="bi bi-cart-plus me-2"></i>Ajouter au Panier
                             </button>
                         </div>
                     </form>
@@ -409,7 +409,7 @@
                                 <div class="event-card-details">
                                     <div class="event-detail-item">
                                         <i class="bi bi-calendar-event me-2"></i>
-                                        <span>@similarEvent.Date.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("fr-FR"))</span>
+                                        <span>@similarEvent.Date.ToFrenchDateString("dd MMMM yyyy")</span>
                                     </div>
                                     <div class="event-detail-item">
                                         <i class="bi bi-clock me-2"></i>
@@ -965,12 +965,12 @@
                 if (selected.length > 0) {
                     if (emptyState) emptyState.style.display = 'none';
                     if(statusDiv) {
-                        statusDiv.textContent = selected.length + " seat(s) selected";
+                        statusDiv.textContent = selected.length + " place(s) sélectionnée(s)";
                     }
                     if(addToCartBtn) addToCartBtn.disabled = false;
                 } else {
                     if (emptyState) emptyState.style.display = 'block';
-                    if(statusDiv) statusDiv.textContent = "0 seats selected";
+                    if(statusDiv) statusDiv.textContent = "0 place(s) sélectionnée(s)";
                     if(hasSeating && addToCartBtn) addToCartBtn.disabled = true;
                     if(ticketInput) ticketInput.value = '';
                 }
@@ -1019,7 +1019,7 @@
                 // Render Visual List
                 let html = '';
                 if(selected.length > 0 && visualContainer) {
-                     html += '<h6 class="text-secondary text-uppercase small fw-bold mb-3">Selected Seats</h6>';
+                     html += '<h6 class="text-secondary text-uppercase small fw-bold mb-3">Places Sélectionnées</h6>';
                      
                      for (const tId in groups) {
                         const g = groups[tId];

@@ -11,8 +11,19 @@
             <p class="text-gray-500 mt-1">Gérer les achats de billets et le statut des places.</p>
         </div>
         <div class="flex items-center gap-3">
+            <a 
+                asp-page="./Index" 
+                asp-page-handler="ExportCsv" 
+                asp-route-searchTerm="@Model.SearchTerm"
+                class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold text-sm shadow-sm"
+            >
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Exporter CSV
+            </a>
             <span class="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-semibold border border-blue-100">
-                @Model.Reservations.Count() Total Réservations
+                @Model.ReservationCount Réservations au Total
             </span>
         </div>
     </div>
@@ -66,7 +77,7 @@
                 {
                     <tr class="hover:bg-blue-50/30 transition-colors group">
                         <td class="px-6 py-4">
-                            <span class="font-bold text-blue-700">@(res.Reference ?? "N/A")</span>
+                            <span class="font-bold text-blue-700">@(res.Reference ?? "Non disponible")</span>
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex flex-col">
@@ -77,7 +88,7 @@
                         <td class="px-6 py-4">
                             <div class="flex flex-col">
                                 <span class="text-sm font-semibold text-gray-800">@res.Event.Name</span>
-                                <span class="text-xs text-gray-500">@res.ReservationDate.ToString("dd MMM yyyy, HH:mm")</span>
+                                <span class="text-xs text-gray-500">@res.ReservationDate.ToFrenchDateString("dd MMMM yyyy 'à' HH:mm")</span>
                             </div>
                         </td>
                         <td class="px-6 py-4">
@@ -86,13 +97,13 @@
                                     @res.SeatCount
                                 </span>
                                 <div class="flex -space-x-1 overflow-hidden">
-                                    @foreach (var seat in res.Seats.Take(3))
+                                    @foreach (var seat in res.Seats)
                                     {
                                         <span class="inline-block px-1 bg-blue-100 text-blue-600 border border-blue-200 text-[10px] rounded uppercase font-bold">@seat.Code</span>
                                     }
-                                    @if(res.Seats.Count > 3)
+                                    @if(res.SeatCount > res.Seats.Count)
                                     {
-                                        <span class="text-xs text-gray-400 font-bold ml-2">...@res.Seats.Count</span>
+                                        <span class="text-xs text-gray-400 font-bold ml-2">+@(res.SeatCount - res.Seats.Count)</span>
                                     }
                                 </div>
                             </div>
@@ -115,7 +126,7 @@
                                 };
                             }
                             <span class="px-3 py-1 @statusClass text-xs font-bold rounded-full border uppercase tracking-wider">
-                                @res.Status
+                                @res.Status.ToFrenchString()
                             </span>
                         </td>
                         <td class="px-6 py-4 text-right">
@@ -145,4 +156,82 @@
             </tbody>
         </table>
     </div>
+    
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-600">
+                    Affichage de <span class="font-semibold">@((Model.CurrentPage - 1) * Model.PageSize + 1)</span> 
+                    à <span class="font-semibold">@(Math.Min(Model.CurrentPage * Model.PageSize, Model.ReservationCount))</span> 
+                    sur <span class="font-semibold">@Model.ReservationCount</span> réservations
+                </div>
+                <div class="flex items-center gap-2">
+                    @if (Model.HasPreviousPage)
+                    {
+                        <a asp-page="./Index" 
+                           asp-route-page="@(Model.CurrentPage - 1)" 
+                           asp-route-searchTerm="@Model.SearchTerm"
+                           class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold text-sm">
+                            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                            Précédent
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="px-4 py-2 bg-gray-100 border border-gray-300 text-gray-400 rounded-lg font-semibold text-sm cursor-not-allowed">
+                            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                            Précédent
+                        </span>
+                    }
+
+                    @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                    {
+                        if (i == Model.CurrentPage)
+                        {
+                            <span class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold text-sm">
+                                @i
+                            </span>
+                        }
+                        else
+                        {
+                            <a asp-page="./Index" 
+                               asp-route-page="@i" 
+                               asp-route-searchTerm="@Model.SearchTerm"
+                               class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold text-sm">
+                                @i
+                            </a>
+                        }
+                    }
+
+                    @if (Model.HasNextPage)
+                    {
+                        <a asp-page="./Index" 
+                           asp-route-page="@(Model.CurrentPage + 1)" 
+                           asp-route-searchTerm="@Model.SearchTerm"
+                           class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold text-sm">
+                            Suivant
+                            <svg class="w-4 h-4 inline-block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="px-4 py-2 bg-gray-100 border border-gray-300 text-gray-400 rounded-lg font-semibold text-sm cursor-not-allowed">
+                            Suivant
+                            <svg class="w-4 h-4 inline-block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+    }
 </div>

@@ -1,21 +1,21 @@
 @model List<Ticketing.Core.Models.Reservation>
 
 @{
-    ViewData["Title"] = "My Reservations";
+    ViewData["Title"] = "Mes Réservations";
 }
 
 <div class="container my-5">
-    <h1 class="mb-4">My Reservations</h1>
+    <h1 class="mb-4">Mes Réservations</h1>
 
     <div class="card mb-4">
         <div class="card-body">
             <form method="post" class="row g-3 align-items-end">
                 <div class="col-md-6">
-                    <label for="email" class="form-label">Enter your email address to find your bookings:</label>
+                    <label for="email" class="form-label">Entrez votre adresse email pour trouver vos réservations :</label>
                     <input type="email" name="email" id="email" class="form-control" placeholder="name@example.com" value="@ViewBag.Email" required />
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100">Find</button>
+                    <button type="submit" class="btn btn-primary w-100">Rechercher</button>
                 </div>
             </form>
         </div>
@@ -31,21 +31,21 @@
                     <div class="list-group-item list-group-item-action flex-column align-items-start p-4 mb-3 shadow-sm border rounded">
                         <div class="d-flex w-100 justify-content-between">
                             <h4 class="mb-1 text-primary">@res.Event?.Name</h4>
-                            <small class="text-muted">@res.ReservationDate.ToShortDateString()</small>
+                            <small class="text-muted">@res.ReservationDate.ToFrenchDateString("dd/MM/yyyy")</small>
                         </div>
                         <p class="mb-1">
-                            <strong>Date:</strong> @res.Event?.Date.ToString("f")<br>
-                            <strong>Seats:</strong> @res.SeatCount (@(res.Seats.Any() ? string.Join(", ", res.Seats.Select(s => s.Code)) : "General"))<br>
-                            <strong>Total:</strong> @res.TotalAmount.ToString("C")
+                            <strong>Date :</strong> @res.Event?.Date.ToFrenchDateString("dd MMMM yyyy 'à' HH:mm")<br>
+                            <strong>Places :</strong> @res.SeatCount (@(res.Seats.Any() ? string.Join(", ", res.Seats.Select(s => s.Code)) : "Entrée Générale"))<br>
+                            <strong>Total :</strong> @res.TotalAmount.ToString("N0") Ar
                         </p>
-                        <small class="text-muted">Order ID: @res.Id</small>
+                        <small class="text-muted">ID de Commande : @res.Id</small>
                     </div>
                 }
             </div>
         }
         else
         {
-             <div class="alert alert-warning">No reservations found for this email.</div>
+             <div class="alert alert-warning">Aucune réservation trouvée pour cet email.</div>
         }
     }
 </div>

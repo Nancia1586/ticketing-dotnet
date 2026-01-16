@@ -13,9 +13,9 @@ namespace Ticketing.BackOffice.Razor.Services
             _venueService = venueService;
         }
 
-        public async Task<IEnumerable<Event>> GetAllEventsAsync(int? organizerId = null)
+        public async Task<PagedResult<Event>> GetAllEventsAsync(int? organizerId = null, string? searchTerm = null, int pageNumber = 1, int pageSize = 10)
         {
-            return await _eventRepository.GetAllEventsAsync(organizerId);
+            return await _eventRepository.GetAllEventsAsync(organizerId, searchTerm, pageNumber, pageSize);
         }
 
         public async Task<Event?> GetEventByIdAsync(int id)
@@ -66,6 +66,11 @@ namespace Ticketing.BackOffice.Razor.Services
         public async Task<IEnumerable<Venue>> GetAllVenuesAsync()
         {
             return await _venueService.GetAllVenuesAsync();
+        }
+
+        public async Task<(int Selling, int Pending, int Finished)> GetEventStatsAsync(int? organizerId = null)
+        {
+            return await _eventRepository.GetEventStatsAsync(organizerId);
         }
     }
 }

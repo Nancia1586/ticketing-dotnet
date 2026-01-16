@@ -10,6 +10,7 @@ namespace Ticketing.BackOffice.Razor.Services
         Task UpdateCategoryAsync(Category category);
         Task DeleteCategoryAsync(int id);
         Task ToggleCategoryStatusAsync(int id, bool isActive);
+        Task<List<(string Name, int Count)>> GetCategoryCountsAsync(int? organizerId = null);
     }
 }
 

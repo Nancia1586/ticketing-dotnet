@@ -65,6 +65,27 @@ namespace Ticketing.BackOffice.Razor.Services
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<List<(string Name, int Count)>> GetCategoryCountsAsync(int? organizerId = null)
+        {
+            var query = _context.Events.AsNoTracking().AsQueryable();
+            if (organizerId.HasValue)
+            {
+                query = query.Where(e => e.OrganizerId == organizerId);
+            }
+
+            var categoryCounts = await query
+                .GroupBy(e => e.Category.Name)
+                .Select(g => new
+                {
+                    Name = g.Key,
+                    Count = g.Count()
+                })
+                .Where(x => x.Count > 0)
+                .ToListAsync();
+
+            return categoryCounts.Select(x => (x.Name, x.Count)).ToList();
+        }
     }
 }
 

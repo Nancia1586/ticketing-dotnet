@@ -1,7 +1,7 @@
 @model Ticketing.FrontOffice.Mvc.Models.CheckoutViewModel
 
 @{
-    ViewData["Title"] = "Checkout";
+    ViewData["Title"] = "Paiement";
 }
 
 <div class="container my-5">
@@ -9,14 +9,14 @@
         <div class="col-lg-8">
             <!-- Page Header -->
             <div class="text-center mb-5">
-                <h1 class="display-5 fw-bold mb-2">Complete Your Purchase</h1>
-                <p class="text-secondary">Official Papi Gateway - Pay securely via Mobile Money or Card</p>
+                <h1 class="display-5 fw-bold mb-2">Finaliser Votre Achat</h1>
+                <p class="text-secondary">Passerelle Papi Officielle - Payer en toute sécurité via Mobile Money ou Carte</p>
             </div>
 
             <!-- Total Amount Display -->
             <div class="card-custom p-4 mb-4 text-center">
                 <div class="mb-2">
-                    <span class="text-secondary">Total Amount</span>
+                    <span class="text-secondary">Montant Total</span>
                 </div>
                 <h2 class="display-4 fw-bold text-accent-primary mb-0">@Model.TotalAmount.ToString("N0") Ar</h2>
             </div>
@@ -27,12 +27,12 @@
                     <input type="hidden" asp-for="TotalAmount" />
 
                     <h5 class="fw-bold mb-4 border-bottom pb-3" style="border-color: var(--border-color) !important;">
-                        <i class="bi bi-person me-2 text-accent-primary"></i>Contact Information
+                        <i class="bi bi-person me-2 text-accent-primary"></i>Informations de Contact
                     </h5>
 
                     <div class="mb-4">
                         <label asp-for="FullName" class="form-label fw-bold text-secondary">
-                            Full Name <span class="text-danger">*</span>
+                            Nom Complet <span class="text-danger">*</span>
                         </label>
                         <input asp-for="FullName" class="form-control form-control-lg bg-card border-secondary text-white" placeholder="John Doe" />
                         <span asp-validation-for="FullName" class="text-danger"></span>
@@ -40,34 +40,34 @@
 
                     <div class="mb-4">
                         <label asp-for="Email" class="form-label fw-bold text-secondary">
-                            Email Address <span class="text-danger">*</span>
+                            Adresse Email <span class="text-danger">*</span>
                         </label>
                         <input asp-for="Email" type="email" class="form-control form-control-lg bg-card border-secondary text-white" placeholder="john@example.com" />
                         <span asp-validation-for="Email" class="text-danger"></span>
-                        <small class="text-muted">Your tickets will be sent to this email</small>
+                        <small class="text-muted">Vos billets seront envoyés à cet email</small>
                     </div>
 
                     <div class="mb-5">
                         <label asp-for="PhoneNumber" class="form-label fw-bold text-secondary">
-                            Phone Number <small class="text-muted">(Optional)</small>
+                            Numéro de Téléphone <small class="text-muted">(Optionnel)</small>
                         </label>
                         <input asp-for="PhoneNumber" type="tel" class="form-control form-control-lg bg-card border-secondary text-white" placeholder="+261340000000" />
                         <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-                        <small class="text-muted">For mobile money payments (Mvola, Orange Money, Airtel Money)</small>
+                        <small class="text-muted">Pour les paiements mobile money (Mvola, Orange Money, Airtel Money)</small>
                     </div>
                     
                     <hr class="my-5" style="border-color: var(--border-color);">
                     
                     <h5 class="fw-bold mb-4 border-bottom pb-3" style="border-color: var(--border-color) !important;">
-                        <i class="bi bi-wallet2 me-2 text-accent-primary"></i>Payment Method
+                        <i class="bi bi-wallet2 me-2 text-accent-primary"></i>Méthode de Paiement
                     </h5>
 
                     <div class="mb-5">
                         <label asp-for="PaymentMethod" class="form-label fw-bold text-secondary">
-                            Preferred Provider <small class="text-muted">(Optional preview)</small>
+                            Fournisseur Préféré <small class="text-muted">(Aperçu optionnel)</small>
                         </label>
                         <select asp-for="PaymentMethod" class="form-select form-select-lg bg-card border-secondary text-white">
-                            <option value="Credit Card">Credit Card / VISA</option>
+                            <option value="Credit Card">Carte de Crédit / VISA</option>
                             <option value="MVOLA">Mvola</option>
                             <option value="ORANGE_MONEY">Orange Money</option>
                             <option value="AIRTEL_MONEY">Airtel Money</option>
@@ -79,14 +79,14 @@
                         <div class="d-flex">
                             <i class="bi bi-info-circle-fill me-3 fs-4 text-accent-primary"></i>
                             <div>
-                                <p class="mb-0">You will be redirected to the secure <strong>Papi Payment Gateway</strong> to complete your transaction.</p>
+                                <p class="mb-0">Vous serez redirigé vers la <strong>Passerelle de Paiement Papi</strong> sécurisée pour finaliser votre transaction.</p>
                             </div>
                         </div>
                     </div>
 
                     <div class="d-grid">
                         <button type="submit" class="btn-primary-custom w-100 py-3 fs-5">
-                            <i class="bi bi-shield-lock-fill me-2"></i>Proceed to Secure Payment
+                            <i class="bi bi-shield-lock-fill me-2"></i>Procéder au Paiement Sécurisé
                         </button>
                     </div>
                 </form>
@@ -99,7 +99,7 @@
                     <div class="vr"></div>
                     <div class="d-flex align-items-center text-secondary">
                         <i class="bi bi-shield-lock me-2"></i>
-                        <small>SSL Encrypted</small>
+                        <small>Chiffré SSL</small>
                     </div>
                 </div>
             </div>

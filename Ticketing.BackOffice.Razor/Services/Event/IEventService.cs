@@ -4,7 +4,7 @@ namespace Ticketing.BackOffice.Razor.Services
 {
     public interface IEventService
     {
-        Task<IEnumerable<Event>> GetAllEventsAsync(int? organizerId = null);
+        Task<PagedResult<Event>> GetAllEventsAsync(int? organizerId = null, string? searchTerm = null, int pageNumber = 1, int pageSize = 10);
         Task<Event?> GetEventByIdAsync(int id);
         Task<Event> CreateEventAsync(Event newEvent);
         Task UpdateEventAsync(Event eventToUpdate);
@@ -17,5 +17,6 @@ namespace Ticketing.BackOffice.Razor.Services
         Task SubmitEventAsync(int id);
         
         Task<IEnumerable<Venue>> GetAllVenuesAsync();
+        Task<(int Selling, int Pending, int Finished)> GetEventStatsAsync(int? organizerId = null);
     }
 }

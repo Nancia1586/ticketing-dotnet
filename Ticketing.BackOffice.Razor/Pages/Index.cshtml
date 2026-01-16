@@ -12,7 +12,7 @@
             <p class="text-gray-500">Aperçu global de votre activité de billetterie.</p>
         </div>
         <div class="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-            @DateTime.Now.ToString("dd MMMM yyyy")
+            @DateTime.Now.ToFrenchDateString("dd MMMM yyyy")
         </div>
     </div>
 
@@ -26,7 +26,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 012-2h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5z" />
                     </svg>
                 </div>
-                <span class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-lg">Global</span>
+                <span class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-lg">Total</span>
             </div>
             <p class="text-sm font-medium text-gray-500">Billets Vendus</p>
             <h3 class="text-2xl font-bold text-gray-900">@Model.TotalTicketsSold</h3>
@@ -126,7 +126,7 @@
                             <tr>
                                 <th class="px-4 py-3">Événement</th>
                                 <th class="px-4 py-3 text-center">Billets Vendus</th>
-                                <th class="px-4 py-3 text-right">Revenu HT</th>
+                                <th class="px-4 py-3 text-right">Revenu Total</th>
                                 <th class="px-4 py-3 text-right">Performance</th>
                             </tr>
                         </thead>
