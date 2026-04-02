@@ -1,142 +1,160 @@
-@page
+@page "{id:int?}"
 @model Ticketing.BackOffice.Razor.Pages.Events.EditModel
-
 @{
-    ViewData["Title"] = "Modifier un Événement";
+    ViewData["Title"] = Model.Event?.Id > 0 ? $"Événement — {Model.Event.Name}" : "Nouvel événement";
+    bool isNew = !(Model.Event?.Id > 0);
+    int? eventId = Model.Event?.Id;
 }
 
-<div class="overflow-x-auto bg-white rounded-lg shadow-xl max-w-7xl p-10">
-    <h1 class="text-2xl font-extrabold mb-8 text-gray-900">Modifier l'Événement: @Model.Event.Name</h1>
-        
-        <form method="post">
-            <input type="hidden" asp-for="Event.Id" />
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div>
-                    <label asp-for="Event.Name" class="block text-sm font-medium text-gray-700 mb-2">Nom de l'événement</label>
-                    <input asp-for="Event.Name" class="w-full h-10 px-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
-                    <span asp-validation-for="Event.Name" class="text-xs text-red-600 mt-1 block"></span>
-                </div>
+<style>
+.pf{position:relative;margin-bottom:0}
+.pf>label{position:absolute;left:.75rem;top:.38rem;font-size:.67rem;font-weight:500;color:#9ca3af;pointer-events:none;z-index:1;font-family:inherit}
+.pf input,.pf select,.pf textarea{width:100%;border:1px solid #d1d5db;border-radius:6px;padding:1.25rem .75rem .38rem;font-size:.875rem;color:#111827;background:#fff;outline:none;transition:border-color .15s;font-family:inherit;box-sizing:border-box}
+.pf input:focus,.pf select:focus,.pf textarea:focus{border-color:#3b82f6}
+.pf input[readonly],.pf textarea[readonly]{background:#fafafa;cursor:default}
+.pf select.sel-ro{pointer-events:none;background-color:#fafafa}
+.pf select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='%239ca3af' stroke-width='2.5' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .75rem center;padding-right:2.25rem}
+.ftabs{display:flex;border-bottom:2px solid #e5e7eb;margin-bottom:0;padding:0 1rem;padding-top:.25rem}
+.ftab{padding:.55rem 1.1rem;font-size:.85rem;font-weight:500;color:#6b7280;border-bottom:2.5px solid transparent;margin-bottom:-2px;text-decoration:none;white-space:nowrap;display:inline-block}
+.ftab:hover{color:#374151}
+.ftab.on{color:#2563eb;border-bottom-color:#2563eb;font-weight:600}
+.fbar{position:sticky;bottom:0;background:#fff;border-top:1px solid #e5e7eb;padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;z-index:10;margin-top:1.5rem}
+</style>
 
-                <div></div>
-
-                <div class="col-span-2">
-                    <label asp-for="Event.Description" class="block text-sm font-medium text-gray-700 mb-2">Description de l'événement</label>
-                    <textarea asp-for="Event.Description" class="w-full h-32 p-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"></textarea>
-                    <span asp-validation-for="Event.Description" class="text-xs text-red-600 mt-1 block"></span>
-                </div>
-
-                <div>
-                    <label asp-for="Event.VenueId" class="block text-sm font-medium text-gray-700 mb-2">Lieu</label>
-                    <select asp-for="Event.VenueId" asp-items="Model.VenueSelectList" class="w-full h-10 px-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-                        <option value="">-- Sélectionner un lieu --</option>
-                    </select>
-                    <span asp-validation-for="Event.VenueId" class="text-xs text-red-600 mt-1 block"></span>
-                </div>
-
-                <div>
-                    <label asp-for="Event.Date" class="block text-sm font-medium text-gray-700 mb-2">Date et Heure</label>
-                    <input asp-for="Event.Date" value="@Model.Event.Date.ToString("yyyy-MM-ddTHH:mm")" type="datetime-local" class="w-full h-10 px-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
-                    <span asp-validation-for="Event.Date" class="text-xs text-red-600 mt-1 block"></span>
-                </div>
-
-                <div>
-                    <label asp-for="Event.CategoryId" class="block text-sm font-medium text-gray-700 mb-2">Catégorie</label>
-                    <select asp-for="Event.CategoryId" asp-items="Model.CategorySelectList" class="w-full h-10 px-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-                        <option value="">-- Sélectionner une catégorie --</option>
-                    </select>
-                    <span asp-validation-for="Event.CategoryId" class="text-xs text-red-600 mt-1 block"></span>
-                </div>
-            </div>
-
-            <h2 class="text-lg font-semibold text-gray-700 border-t pt-6 mt-6 mb-4">Affiche de l'Événement</h2>
-
-            <div class="flex gap-6 mb-8">
-                <div class="flex flex-col items-start">
-                    <div id="image-preview-container" class="w-56 h-64 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
-                        <img id="image-preview" src="@Model.Event.PosterUrl" 
-                             alt="Aperçu de l'affiche" 
-                             class="w-full h-full object-cover @(string.IsNullOrEmpty(Model.Event.PosterUrl) ? "hidden" : "")">
-                        
-                        <span id="preview-placeholder" class="text-gray-500 text-sm @(!string.IsNullOrEmpty(Model.Event.PosterUrl) ? "hidden" : "")">
-                            Aucune image sélectionnée
-                        </span>
-                    </div>
-                </div>
-
-                <div class="mt-4 md:mt-0">
-                    <input type="file" id="poster-upload" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-blue-500"/>
-                    
-                    <input type="hidden" asp-for="Event.PosterBase64" id="poster-base64-input" />
-                    
-                    <input type="hidden" asp-for="Event.PosterUrl" /> 
-
-                    <div class="flex flex-col gap-2 mt-4 text-sm text-gray-500">
-                        <p>Formats acceptés : JPG, PNG</p>
-                        <p>Taille maximale recommandée : 1MB</p>
-                        <p>Laissez vide pour conserver l'image actuelle.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mb-4 flex items-center">
-                <input asp-for="Event.IsActive" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
-                <label asp-for="Event.IsActive" class="ml-2 block text-sm font-medium text-gray-700">Actif (Visible sur l'application)</label>
-            </div>
-
-
-            <div class="flex justify-end space-x-4 pt-8 mt-8 border-t">
-                <a asp-page="./Index" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Annuler
-                </a>
-                <button type="submit" class="inline-flex justify-center items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg shadow-sm btn-primary">
-                    Sauvegarder les modifications
-                </button>
-            </div>
-        </form>
+<div class="flex items-center gap-2 text-sm text-gray-500 mb-3">
+    <a asp-page="Index" class="hover:text-blue-600 transition-colors">Événements</a>
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+    <span class="text-gray-800 font-medium">@(isNew ? "Nouveau" : Model.Event?.Name)</span>
 </div>
 
-@section Scripts {
-    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+<div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <!-- Tabs -->
+    <div class="ftabs">
+        <span class="ftab on">Général</span>
+        @if (!isNew)
+        {
+            <a asp-page="Plan" asp-route-id="@eventId" class="ftab">Configuration du plan</a>
+            <a asp-page="Details" asp-route-id="@eventId" class="ftab">Statistiques</a>
+        }
+    </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const fileInput = document.getElementById('poster-upload');
-            const previewImg = document.getElementById('image-preview');
-            const placeholderSpan = document.getElementById('preview-placeholder');
-            const base64Input = document.getElementById('poster-base64-input');
+    <form method="post" id="mainForm" enctype="multipart/form-data">
+        <input type="hidden" asp-for="Event.Id" />
 
-            fileInput.addEventListener('change', function () {
-                const file = this.files[0];
+        <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
-                if (file) {
-                    const reader = new FileReader();
+            <div class="pf lg:col-span-2">
+                <label>Nom *</label>
+                <input asp-for="Event.Name" placeholder=" " readonly id="f_name" />
+                <span asp-validation-for="Event.Name" class="text-xs text-red-500 mt-0.5 block"></span>
+            </div>
 
-                    reader.onload = function (e) {
-                        previewImg.src = e.target.result;
-                        previewImg.classList.remove('hidden');
-                        placeholderSpan.classList.add('hidden');
-                        
-                        base64Input.value = e.target.result; 
-                    };
+            <div class="pf">
+                <label>Code</label>
+                <input asp-for="Event.Code" placeholder=" " readonly id="f_code" />
+            </div>
 
-                    reader.readAsDataURL(file);
-                } else {
-                    const existingUrl = previewImg.dataset.existingUrl;
+            <div class="pf">
+                <label>Lieu *</label>
+                <select asp-for="Event.VenueId" asp-items="Model.VenueSelectList" class="sel-ro" id="f_venue">
+                    <option value="">Sélectionner…</option>
+                </select>
+                <span asp-validation-for="Event.VenueId" class="text-xs text-red-500 mt-0.5 block"></span>
+            </div>
 
-                    if (previewImg.src && previewImg.src !== window.location.href) {
-                        previewImg.classList.remove('hidden');
-                        placeholderSpan.classList.add('hidden');
-                        base64Input.value = "";
-                    } else {
-                        previewImg.src = "";
-                        previewImg.classList.add('hidden');
-                        placeholderSpan.classList.remove('hidden');
-                        base64Input.value = "";
-                    }
+            <div class="pf">
+                <label>Catégorie</label>
+                <select asp-for="Event.CategoryId" asp-items="Model.CategorySelectList" class="sel-ro" id="f_category">
+                    <option value="">Sélectionner…</option>
+                </select>
+            </div>
+
+            <div class="pf">
+                <label>Date et heure *</label>
+                <input asp-for="Event.Date" type="datetime-local" placeholder=" " readonly id="f_date" />
+                <span asp-validation-for="Event.Date" class="text-xs text-red-500 mt-0.5 block"></span>
+            </div>
+
+            <div class="pf sm:col-span-2 lg:col-span-3">
+                <label>Description</label>
+                <textarea asp-for="Event.Description" placeholder=" " rows="3" readonly id="f_desc" style="resize:none"></textarea>
+            </div>
+
+            <div class="flex items-center gap-2 pt-1">
+                <input asp-for="Event.IsActive" type="checkbox" id="f_active"
+                       style="width:16px;height:16px;accent-color:#2563eb" disabled />
+                <label asp-for="Event.IsActive" class="text-sm text-gray-700 font-medium">Actif</label>
+            </div>
+
+            @if (!isNew && !string.IsNullOrEmpty(Model.Event?.PosterUrl))
+            {
+                <div class="sm:col-span-2 lg:col-span-3">
+                    <p class="text-xs text-gray-400 mb-1">Affiche actuelle</p>
+                    <img src="@Model.Event.PosterUrl" alt="Affiche" class="h-32 rounded-lg object-cover border border-gray-200" />
+                </div>
+            }
+
+            <div class="sm:col-span-2 lg:col-span-3" id="uploadSection" style="display:none">
+                <label class="text-xs text-gray-500 font-medium block mb-1">Nouvelle affiche</label>
+                <div class="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-blue-300 transition-colors"
+                     onclick="document.getElementById('posterFile').click()">
+                    <input type="file" id="posterFile" accept="image/*" class="hidden" onchange="handlePoster(this)" />
+                    <input type="hidden" asp-for="Event.PosterBase64" id="posterBase64" />
+                    <div id="posterPreview" class="hidden">
+                        <img id="posterImg" class="h-28 mx-auto rounded-lg object-cover" />
+                    </div>
+                    <p id="posterPlaceholder" class="text-sm text-gray-400">Déposer une image ou <span class="text-blue-600 underline">sélectionner</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="fbar">
+            <span class="text-xs text-gray-400">
+                @(isNew ? "Nouvel événement" : $"ID : {Model.Event?.Id} · {Model.Event?.Date.ToString("dd/MM/yyyy")}")
+            </span>
+            <div id="barRead" class="flex gap-2">
+                <button type="button" onclick="enableEdit()"
+                        class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700">Modifier</button>
+            </div>
+            <div id="barEdit" class="flex gap-2" hidden>
+                <button type="button" onclick="cancelEdit()"
+                        class="px-4 py-2 border border-gray-300 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-50">Annuler</button>
+                @if (!isNew)
+                {
+                    <button type="submit" asp-page-handler="Delete" onclick="return confirm('Supprimer cet événement ?')"
+                            class="px-4 py-2 border border-red-200 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-50">Supprimer</button>
                 }
-            });
-        });
-    </script>
+                <button type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700">Enregistrer</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+function enableEdit(){
+    ['f_name','f_code','f_date','f_desc'].forEach(id=>document.getElementById(id)?.removeAttribute('readonly'));
+    ['f_venue','f_category'].forEach(id=>document.getElementById(id)?.classList.remove('sel-ro'));
+    document.getElementById('f_active').removeAttribute('disabled');
+    document.getElementById('uploadSection').style.display='';
+    document.getElementById('barRead').hidden=true;
+    document.getElementById('barEdit').hidden=false;
 }
+function cancelEdit(){ location.reload(); }
+
+function handlePoster(input){
+    if(!input.files||!input.files[0]) return;
+    const reader=new FileReader();
+    reader.onload=e=>{
+        document.getElementById('posterBase64').value=e.target.result;
+        document.getElementById('posterImg').src=e.target.result;
+        document.getElementById('posterPreview').classList.remove('hidden');
+        document.getElementById('posterPlaceholder').classList.add('hidden');
+    };
+    reader.readAsDataURL(input.files[0]);
+}
+
+@if(isNew){ <text>window.addEventListener('DOMContentLoaded',enableEdit);</text> }
+</script>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

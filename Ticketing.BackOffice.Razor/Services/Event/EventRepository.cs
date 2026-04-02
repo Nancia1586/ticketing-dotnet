@@ -19,40 +19,48 @@ namespace Ticketing.BackOffice.Razor.Services
             if (pageNumber < 1) pageNumber = 1;
             if (pageSize < 1) pageSize = 10;
 
-            var query = _context.Events
-                                 .Include(e => e.Venue)
-                                 .Include(e => e.Category)
-                                 .AsNoTracking()
-                                 .AsQueryable();
+            // Base query — no Include, projection handles joins
+            var baseQuery = _context.Events.AsNoTracking().AsQueryable();
 
             if (organizerId.HasValue)
-            {
-                query = query.Where(e => e.OrganizerId == organizerId);
-            }
+                baseQuery = baseQuery.Where(e => e.OrganizerId == organizerId);
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 searchTerm = searchTerm.Trim();
-                query = query.Where(e => 
-                    e.Name.Contains(searchTerm) || 
-                    e.Venue.Name.Contains(searchTerm) || 
-                    e.Category.Name.Contains(searchTerm));
+                baseQuery = baseQuery.Where(e =>
+                    e.Name.Contains(searchTerm) ||
+                    (e.Venue != null && e.Venue.Name.Contains(searchTerm)) ||
+                    (e.Category != null && e.Category.Name.Contains(searchTerm)));
             }
 
-            var totalCount = await query.CountAsync();
+            var totalCount = await baseQuery.CountAsync();
 
-            var items = await query
+            // Project only columns needed for the list — excludes PosterBase64, Description, TicketTypes, Seats, Reservations
+            var items = await baseQuery
                 .OrderByDescending(e => e.Date)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
+                .Select(e => new Event
+                {
+                    Id          = e.Id,
+                    Name        = e.Name,
+                    Date        = e.Date,
+                    IsActive    = e.IsActive,
+                    IsSubmitted = e.IsSubmitted,
+                    PosterUrl   = e.PosterUrl,
+                    OrganizerId = e.OrganizerId,
+                    Venue    = e.Venue    != null ? new Venue    { Id = e.Venue.Id,    Name = e.Venue.Name }    : null,
+                    Category = e.Category != null ? new Category { Id = e.Category.Id, Name = e.Category.Name } : null
+                })
                 .ToListAsync();
 
             return new PagedResult<Event>
             {
-                Items = items,
+                Items      = items,
                 TotalCount = totalCount,
                 PageNumber = pageNumber,
-                PageSize = pageSize
+                PageSize   = pageSize
             };
         }
 
@@ -92,6 +100,7 @@ namespace Ticketing.BackOffice.Razor.Services
                 .Include(e => e.Venue)
                 .Include(e => e.TicketTypes)
                 .ThenInclude(tt => tt.Seats)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 

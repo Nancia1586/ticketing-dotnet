@@ -1,237 +1,136 @@
 @page
 @model Ticketing.BackOffice.Razor.Pages.Reservations.IndexModel
 @{
-    ViewData["Title"] = "Réservations";
+    ViewData["Title"] = "Commandes";
 }
 
-<div class="p-6 bg-white rounded-xl shadow-sm border border-gray-100 mb-8">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Réservations</h1>
-            <p class="text-gray-500 mt-1">Gérer les achats de billets et le statut des places.</p>
-        </div>
-        <div class="flex items-center gap-3">
-            <a 
-                asp-page="./Index" 
-                asp-page-handler="ExportCsv" 
-                asp-route-searchTerm="@Model.SearchTerm"
-                class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold text-sm shadow-sm"
-            >
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                Exporter CSV
-            </a>
-            <span class="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-semibold border border-blue-100">
-                @Model.ReservationCount Réservations au Total
-            </span>
-        </div>
-    </div>
-    
-    <!-- Search Bar -->
-    <form method="get" class="mt-4">
-        <div class="flex gap-2">
-            <input 
-                type="text" 
-                name="searchTerm" 
-                value="@Model.SearchTerm" 
-                placeholder="Rechercher par référence, nom, email, événement..." 
-                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-            <button 
-                type="submit" 
-                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-            >
-                Rechercher
-            </button>
-            @if (!string.IsNullOrEmpty(Model.SearchTerm))
-            {
-                <a 
-                    asp-page="./Index" 
-                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
-                >
-                    Effacer
-                </a>
-            }
-        </div>
-    </form>
+<style>
+.ptbl{width:100%;border-collapse:collapse}
+.ptbl th{text-align:left;font-size:.75rem;font-weight:600;color:#6b7280;padding:.55rem 1rem;border-bottom:1px solid #e5e7eb;background:#f9fafb;white-space:nowrap}
+.ptbl td{font-size:.85rem;color:#111827;padding:.6rem 1rem;border-bottom:1px solid #f3f4f6}
+.ptbl tbody tr:hover td{background:#eff6ff;cursor:pointer}
+.ptbl tbody tr:last-child td{border-bottom:none}
+</style>
+
+<div class="flex items-center justify-between mb-4">
+    <h1 class="text-xl font-bold text-gray-800">Commandes</h1>
+    <a asp-page-handler="ExportCsv" asp-route-searchTerm="@Model.SearchTerm"
+       class="px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition-colors">
+        Exporter CSV
+    </a>
 </div>
 
-<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+<!-- Search -->
+<div class="bg-white border border-gray-200 rounded-lg mb-3 overflow-hidden">
+    <div class="px-4 py-2.5 text-sm font-semibold text-gray-700 flex justify-between items-center cursor-pointer" onclick="toggleSearch()">
+        <span>Recherche</span>
+        <svg id="sc" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="transition:transform .2s">
+            <path d="m18 15-6-6-6 6"/>
+        </svg>
+    </div>
+    <div id="sb" class="px-4 py-3 border-t border-gray-100">
+        <form method="get" class="flex flex-wrap gap-2 items-center">
+            <input type="text" name="searchTerm" value="@Model.SearchTerm" placeholder="Référence, nom, email, événement…"
+                   class="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 min-w-[260px]" />
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700">Rechercher</button>
+            <a asp-page="Index" class="px-4 py-2 border border-gray-300 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-50">Réinitialiser</a>
+        </form>
+    </div>
+</div>
+
+<!-- Table -->
+<div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <div class="px-4 py-2 border-b border-gray-100">
+        <span class="text-xs text-gray-400">@Model.ReservationCount résultat(s)</span>
+    </div>
     <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
+        <table class="ptbl">
             <thead>
-                <tr class="bg-gray-50 border-b border-gray-100">
-                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Référence</th>
-                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Client</th>
-                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Événement</th>
-                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Places</th>
-                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Montant</th>
-                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Paiement</th>
-                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Statut</th>
-                    <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                <tr>
+                    <th style="width:44px">#</th>
+                    <th>Référence</th>
+                    <th>Client</th>
+                    <th class="hidden md:table-cell">Événement</th>
+                    <th class="hidden sm:table-cell">Montant</th>
+                    <th class="hidden lg:table-cell">Méthode</th>
+                    <th>Statut</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-50">
-                @foreach (var res in Model.Reservations)
+            <tbody>
+                @{ int idx = (Model.CurrentPage - 1) * 10 + 1; }
+                @foreach (var r in Model.Reservations)
                 {
-                    <tr class="hover:bg-blue-50/30 transition-colors group">
-                        <td class="px-6 py-4">
-                            <span class="font-bold text-blue-700">@(res.Reference ?? "Non disponible")</span>
+                    <tr onclick="location.href='@Url.Page("Details", new { id = r.Id })'">
+                        <td class="text-gray-400 text-xs">@idx</td>
+                        <td class="font-mono text-xs font-semibold text-blue-700">@(r.Reference ?? r.PaymentReference ?? $"#{r.Id}")</td>
+                        <td>
+                            <div class="font-medium text-sm">@r.CustomerName</div>
+                            <div class="text-xs text-gray-400">@r.Email</div>
                         </td>
-                        <td class="px-6 py-4">
-                            <div class="flex flex-col">
-                                <span class="font-bold text-gray-900">@res.CustomerName</span>
-                                <span class="text-xs text-gray-500">@res.Email</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="flex flex-col">
-                                <span class="text-sm font-semibold text-gray-800">@res.Event.Name</span>
-                                <span class="text-xs text-gray-500">@res.ReservationDate.ToFrenchDateString("dd MMMM yyyy 'à' HH:mm")</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-2">
-                                <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-bold">
-                                    @res.SeatCount
-                                </span>
-                                <div class="flex -space-x-1 overflow-hidden">
-                                    @foreach (var seat in res.Seats)
-                                    {
-                                        <span class="inline-block px-1 bg-blue-100 text-blue-600 border border-blue-200 text-[10px] rounded uppercase font-bold">@seat.Code</span>
-                                    }
-                                    @if(res.SeatCount > res.Seats.Count)
-                                    {
-                                        <span class="text-xs text-gray-400 font-bold ml-2">+@(res.SeatCount - res.Seats.Count)</span>
-                                    }
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="font-bold text-blue-700">@res.TotalAmount.ToString("N0") Ar</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full border border-gray-200 uppercase tracking-wider">
-                                @res.PaymentMethod
-                            </span>
-                        </td>
-                        <td class="px-6 py-4">
-                            @{
-                                var statusClass = res.Status switch {
-                                    Ticketing.Core.Models.ReservationStatus.Confirmed => "bg-emerald-50 text-emerald-700 border-emerald-100",
-                                    Ticketing.Core.Models.ReservationStatus.Pending => "bg-amber-50 text-amber-700 border-amber-100",
-                                    Ticketing.Core.Models.ReservationStatus.Cancelled => "bg-rose-50 text-rose-700 border-rose-100",
-                                    _ => "bg-gray-50 text-gray-700 border-gray-100"
-                                };
+                        <td class="hidden md:table-cell text-gray-500 text-xs">@(r.Event?.Name ?? "—")</td>
+                        <td class="hidden sm:table-cell font-semibold text-xs">@r.TotalAmount.ToString("N0") Ar</td>
+                        <td class="hidden lg:table-cell text-gray-500 text-xs">@(r.PaymentMethod ?? "—")</td>
+                        <td>
+                            @switch (r.Status)
+                            {
+                                case Ticketing.Core.Models.ReservationStatus.Confirmed:
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>Confirmé
+                                    </span>
+                                    break;
+                                case Ticketing.Core.Models.ReservationStatus.Pending:
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block"></span>En attente
+                                    </span>
+                                    break;
+                                default:
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-400 inline-block"></span>Annulé
+                                    </span>
+                                    break;
                             }
-                            <span class="px-3 py-1 @statusClass text-xs font-bold rounded-full border uppercase tracking-wider">
-                                @res.Status.ToFrenchString()
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <a asp-page="./Details" asp-route-id="@res.Id" class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-50 transition-all shadow-sm">
-                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                </svg>
-                                Voir
-                            </a>
                         </td>
                     </tr>
+                    idx++;
                 }
                 @if (!Model.Reservations.Any())
                 {
-                    <tr>
-                        <td colspan="7" class="px-6 py-12 text-center">
-                            <div class="flex flex-col items-center">
-                                <svg class="w-12 h-12 text-gray-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                                </svg>
-                                <p class="text-gray-500 font-medium">Aucune réservation trouvée.</p>
-                            </div>
-                        </td>
-                    </tr>
+                    <tr><td colspan="7" class="text-center text-gray-400 py-10 text-sm">Aucune commande trouvée</td></tr>
                 }
             </tbody>
         </table>
     </div>
-    
-    <!-- Pagination -->
+
     @if (Model.TotalPages > 1)
     {
-        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
-            <div class="flex items-center justify-between">
-                <div class="text-sm text-gray-600">
-                    Affichage de <span class="font-semibold">@((Model.CurrentPage - 1) * Model.PageSize + 1)</span> 
-                    à <span class="font-semibold">@(Math.Min(Model.CurrentPage * Model.PageSize, Model.ReservationCount))</span> 
-                    sur <span class="font-semibold">@Model.ReservationCount</span> réservations
-                </div>
-                <div class="flex items-center gap-2">
-                    @if (Model.HasPreviousPage)
-                    {
-                        <a asp-page="./Index" 
-                           asp-route-page="@(Model.CurrentPage - 1)" 
-                           asp-route-searchTerm="@Model.SearchTerm"
-                           class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold text-sm">
-                            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                            </svg>
-                            Précédent
-                        </a>
-                    }
-                    else
-                    {
-                        <span class="px-4 py-2 bg-gray-100 border border-gray-300 text-gray-400 rounded-lg font-semibold text-sm cursor-not-allowed">
-                            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                            </svg>
-                            Précédent
-                        </span>
-                    }
-
-                    @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
-                    {
-                        if (i == Model.CurrentPage)
-                        {
-                            <span class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold text-sm">
-                                @i
-                            </span>
-                        }
-                        else
-                        {
-                            <a asp-page="./Index" 
-                               asp-route-page="@i" 
-                               asp-route-searchTerm="@Model.SearchTerm"
-                               class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold text-sm">
-                                @i
-                            </a>
-                        }
-                    }
-
-                    @if (Model.HasNextPage)
-                    {
-                        <a asp-page="./Index" 
-                           asp-route-page="@(Model.CurrentPage + 1)" 
-                           asp-route-searchTerm="@Model.SearchTerm"
-                           class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold text-sm">
-                            Suivant
-                            <svg class="w-4 h-4 inline-block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                            </svg>
-                        </a>
-                    }
-                    else
-                    {
-                        <span class="px-4 py-2 bg-gray-100 border border-gray-300 text-gray-400 rounded-lg font-semibold text-sm cursor-not-allowed">
-                            Suivant
-                            <svg class="w-4 h-4 inline-block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                            </svg>
-                        </span>
-                    }
-                </div>
+        <div class="px-4 py-2.5 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+            <span>Page @Model.CurrentPage / @Model.TotalPages</span>
+            <div class="flex gap-1">
+                @if (Model.HasPreviousPage)
+                {
+                    <a asp-page="Index" asp-route-page="@(Model.CurrentPage-1)" asp-route-searchTerm="@Model.SearchTerm"
+                       class="px-2.5 py-1 border border-gray-200 rounded hover:bg-gray-50">‹</a>
+                }
+                @for (int p = Math.Max(1, Model.CurrentPage-2); p <= Math.Min(Model.TotalPages, Model.CurrentPage+2); p++)
+                {
+                    <a asp-page="Index" asp-route-page="@p" asp-route-searchTerm="@Model.SearchTerm"
+                       class="px-2.5 py-1 border rounded @(p==Model.CurrentPage?"bg-blue-600 text-white border-blue-600":"border-gray-200 hover:bg-gray-50")">@p</a>
+                }
+                @if (Model.HasNextPage)
+                {
+                    <a asp-page="Index" asp-route-page="@(Model.CurrentPage+1)" asp-route-searchTerm="@Model.SearchTerm"
+                       class="px-2.5 py-1 border border-gray-200 rounded hover:bg-gray-50">›</a>
+                }
             </div>
         </div>
     }
 </div>
+
+<script>
+function toggleSearch(){
+    const b=document.getElementById('sb'),c=document.getElementById('sc');
+    const h=b.style.display==='none';
+    b.style.display=h?'':'none';
+    c.style.transform=h?'':'rotate(180deg)';
+}
+</script>

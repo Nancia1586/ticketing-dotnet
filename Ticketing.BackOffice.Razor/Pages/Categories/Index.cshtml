@@ -1,217 +1,96 @@
 @page
 @model Ticketing.BackOffice.Razor.Pages.Categories.IndexModel
-
 @{
-    ViewData["Title"] = "Catégories des évènements";
+    ViewData["Title"] = "Catégories";
 }
 
-<div class="overflow-x-auto bg-white rounded-lg shadow-xl max-w-7xl p-10">
-    <div class="flex justify-between items-center mb-8">
-        <h1 class="text-2xl font-extrabold text-gray-900">Catégories des évènements</h1>
-        <a asp-page="./Create" class="inline-flex justify-center items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            <i class="bi bi-plus-circle me-2"></i> Nouvelle Catégorie
-        </a>
-    </div>
+<style>
+.ptbl{width:100%;border-collapse:collapse}
+.ptbl th{text-align:left;font-size:.75rem;font-weight:600;color:#6b7280;padding:.55rem 1rem;border-bottom:1px solid #e5e7eb;background:#f9fafb;white-space:nowrap}
+.ptbl td{font-size:.85rem;color:#111827;padding:.6rem 1rem;border-bottom:1px solid #f3f4f6}
+.ptbl tbody tr:hover td{background:#eff6ff;cursor:pointer}
+.ptbl tbody tr:last-child td{border-bottom:none}
+</style>
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-            @TempData["SuccessMessage"]
-        </div>
-    }
-
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-            @TempData["ErrorMessage"]
-        </div>
-    }
-
-    @if (!Model.Categories.Any())
-    {
-        <div class="text-center py-10">
-            <p class="text-gray-500 text-lg">Aucune catégorie trouvée.</p>
-            <a asp-page="./Create" class="mt-4 inline-block text-indigo-600 hover:text-indigo-800">Créer la première catégorie</a>
-        </div>
-    }
-    else
-    {
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @foreach (var category in Model.Categories)
-                    {
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@category.Id</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@category.Name</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">@(string.IsNullOrEmpty(category.Description) ? "-" : category.Description)</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if (category.IsActive)
-                                {
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Actif</span>
-                                }
-                                else
-                                {
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactif</span>
-                                }
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div class="flex space-x-4">
-                                    <span class="p-2 bg-indigo-100 rounded-md" title="Modifier">
-                                        <a asp-page="./Edit" asp-route-id="@category.Id" class="text-indigo-600 hover:text-indigo-900">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-pen-icon lucide-square-pen">
-                                            <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></svg>
-                                        </a>
-                                    </span>
-                                    
-                                    <button type="button" 
-                                            class="action-button p-2 rounded-md bg-yellow-100 text-yellow-600 hover:text-yellow-900" 
-                                            title="@(category.IsActive ? "Désactiver" : "Activer")"
-                                            data-action-type="status"
-                                            data-id="@category.Id"
-                                            data-name="@category.Name"
-                                            data-handler="ToggleStatus"
-                                            data-message="@(category.IsActive ? $"Êtes-vous sûr de vouloir désactiver la catégorie '{category.Name}'?" : $"Êtes-vous sûr de vouloir activer la catégorie '{category.Name}'?")"
-                                            data-status="@(category.IsActive ? "false" : "true")"
-                                            data-confirm-text="@(category.IsActive ? "Désactiver" : "Activer")">
-                                        <i class="bi bi-toggle-@(category.IsActive ? "on" : "off")"></i>
-                                        @if (category.IsActive) {
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-minus-icon lucide-shield-minus"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M9 12h6"/></svg>
-                                        } else {
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check-icon lucide-shield-check"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1-1z"/><path d="m9 12 2 2 4-4"/></svg>
-                                        }
-                                    </button>
-
-                                    <button type="button" 
-                                            class="action-button p-2 rounded-md bg-red-100 text-red-600 hover:text-red-900" 
-                                            title="Supprimer"
-                                            data-action-type="delete"
-                                            data-id="@category.Id"
-                                            data-name="@category.Name"
-                                            data-handler="Delete"
-                                            data-message="Êtes-vous sûr de vouloir supprimer définitivement la catégorie '@category.Name'? Cette action est irréversible."
-                                            data-confirm-text="Supprimer">
-                                        <i class="bi bi-trash"></i>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
+<div class="flex items-center justify-between mb-4">
+    <h1 class="text-xl font-bold text-gray-800">Catégories</h1>
+    <a asp-page="Create" class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+        Nouveau
+    </a>
 </div>
 
-<div id="confirmation-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-gray-900 bg-opacity-50 transition-opacity duration-300">
-    <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md m-4 transform transition-all duration-300 scale-95 opacity-0">
-        <h3 id="modal-title" class="text-lg font-bold text-gray-900 mb-4">Confirmation de l'Action</h3>
-        <p id="modal-message" class="text-gray-600 mb-6">
-            Êtes-vous sûr de vouloir procéder à cette action ?
-        </p>
-        
-        <form id="action-form" method="post" class="hidden">
-            <input type="hidden" name="id" id="modal-id" />
-            <input type="hidden" name="isActive" id="modal-is-active" value="false" />
+<!-- Search -->
+<div class="bg-white border border-gray-200 rounded-lg mb-3 overflow-hidden">
+    <div class="px-4 py-2.5 text-sm font-semibold text-gray-700 flex justify-between items-center cursor-pointer" onclick="toggleSearch()">
+        <span>Recherche</span>
+        <svg id="sc" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="transition:transform .2s">
+            <path d="m18 15-6-6-6 6"/>
+        </svg>
+    </div>
+    <div id="sb" class="px-4 py-3 border-t border-gray-100">
+        <form method="get" class="flex flex-wrap gap-2 items-center">
+            <input type="text" name="searchTerm" placeholder="Mots clés"
+                   class="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 min-w-[200px]" />
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700">Rechercher</button>
+            <a asp-page="Index" class="px-4 py-2 border border-gray-300 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-50">Réinitialiser</a>
         </form>
-
-        <div class="flex justify-end space-x-3">
-            <button id="cancel-button" type="button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
-                Annuler
-            </button>
-            <button id="confirm-button" type="button" class="btn-primary px-4 py-2 text-sm font-medium rounded-lg ">
-                Confirmer
-            </button>
-        </div>
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const modal = document.getElementById('confirmation-modal');
-            const modalDialog = modal.querySelector('div:first-child');
-            const confirmButton = document.getElementById('confirm-button');
-            const cancelButton = document.getElementById('cancel-button');
-            const actionForm = document.getElementById('action-form');
-            const modalTitle = document.getElementById('modal-title');
-            const modalMessage = document.getElementById('modal-message');
-            const modalIdInput = document.getElementById('modal-id');
-            const modalIsActive = document.getElementById('modal-is-active');
-
-            function showModal() {
-                modal.classList.remove('hidden', 'opacity-0');
-                modal.classList.add('flex', 'opacity-100');
-                modalDialog.classList.remove('scale-95', 'opacity-0');
-                modalDialog.classList.add('scale-100', 'opacity-100');
-            }
-
-            function hideModal() {
-                modalDialog.classList.remove('scale-100', 'opacity-100');
-                modalDialog.classList.add('scale-95', 'opacity-0');
-                setTimeout(() => {
-                    modal.classList.remove('flex', 'opacity-100');
-                    modal.classList.add('hidden', 'opacity-0');
-                }, 300);
-            }
-
-            document.querySelectorAll('.action-button').forEach(button => {
-                button.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    
-                    const id = this.dataset.id;
-                    const name = this.dataset.name;
-                    const handler = this.dataset.handler;
-                    const message = this.dataset.message;
-                    const status = this.dataset.status;
-                    const confirmText = this.dataset.confirmText;
-                    const actionType = this.dataset.actionType;
-
-                    modalMessage.textContent = message;
-                    confirmButton.textContent = confirmText;
-                    
-                    if (actionType === 'delete') {
-                        modalTitle.textContent = "Suppression Définitive";
-                        confirmButton.classList.remove('btn-primary', 'bg-green-600', 'hover:bg-green-700');
-                        confirmButton.classList.add('bg-red-600', 'hover:bg-red-700', 'text-white', 'hover:text-white');
-                    } else {
-                        modalTitle.textContent = `${confirmText} la catégorie`;
-                        confirmButton.classList.remove('bg-red-600', 'hover:bg-red-700');
-                        confirmButton.classList.add('btn-primary');
-                    }
-
-                    modalIdInput.value = id;
-                    modalIsActive.value = status || 'false';
-
-                    actionForm.action = `?handler=${handler}`;
-
-                    showModal();
-                });
-            });
-
-            confirmButton.addEventListener('click', function () {
-                actionForm.submit();
-                hideModal();
-            });
-
-            cancelButton.addEventListener('click', hideModal);
-
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    hideModal();
+<!-- Table -->
+<div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <div class="px-4 py-2 border-b border-gray-100">
+        <span class="text-xs text-gray-400">@Model.Categories.Count résultat(s)</span>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="ptbl">
+            <thead>
+                <tr>
+                    <th style="width:44px">#</th>
+                    <th>Nom</th>
+                    <th class="hidden md:table-cell">Description</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int idx = 1; }
+                @foreach (var c in Model.Categories)
+                {
+                    <tr onclick="location.href='@Url.Page("Edit", new { id = c.Id })'">
+                        <td class="text-gray-400 text-xs">@idx</td>
+                        <td class="font-medium">@c.Name</td>
+                        <td class="hidden md:table-cell text-gray-500 text-xs">@(c.Description?.Length > 60 ? c.Description[..60] + "…" : c.Description ?? "—")</td>
+                        <td>
+                            @if (c.IsActive)
+                            {
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>Actif
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>Inactif
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                    idx++;
                 }
-            });
-        });
-    </script>
-}
+                @if (!Model.Categories.Any())
+                {
+                    <tr><td colspan="4" class="text-center text-gray-400 py-10 text-sm">Aucune catégorie trouvée</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
 
+<script>
+function toggleSearch(){
+    const b=document.getElementById('sb'),c=document.getElementById('sc');
+    const h=b.style.display==='none';
+    b.style.display=h?'':'none';
+    c.style.transform=h?'':'rotate(180deg)';
+}
+</script>

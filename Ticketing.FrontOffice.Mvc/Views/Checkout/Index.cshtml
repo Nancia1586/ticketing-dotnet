@@ -4,105 +4,245 @@
     ViewData["Title"] = "Paiement";
 }
 
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <!-- Page Header -->
-            <div class="text-center mb-5">
-                <h1 class="display-5 fw-bold mb-2">Finaliser Votre Achat</h1>
-                <p class="text-secondary">Passerelle Papi Officielle - Payer en toute sécurité via Mobile Money ou Carte</p>
-            </div>
+<style>
+    .checkout-page {
+        background: linear-gradient(145deg, #dbeafe 0%, #bfdbfe 60%, #93c5fd 100%);
+        min-height: calc(100vh - 72px);
+        padding: 2rem 1.5rem;
+    }
 
-            <!-- Total Amount Display -->
-            <div class="card-custom p-4 mb-4 text-center">
-                <div class="mb-2">
-                    <span class="text-secondary">Montant Total</span>
-                </div>
-                <h2 class="display-4 fw-bold text-accent-primary mb-0">@Model.TotalAmount.ToString("N0") Ar</h2>
-            </div>
+    .co-card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(37,99,235,0.08);
+        overflow: hidden;
+    }
 
-            <!-- Checkout Form -->
-            <div class="card-custom p-4">
-                <form asp-action="Process" method="post">
-                    <input type="hidden" asp-for="TotalAmount" />
+    .co-card-header {
+        padding: 0.875rem 1.25rem;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
 
-                    <h5 class="fw-bold mb-4 border-bottom pb-3" style="border-color: var(--border-color) !important;">
-                        <i class="bi bi-person me-2 text-accent-primary"></i>Informations de Contact
-                    </h5>
+    .co-summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.55rem 1.25rem;
+        font-size: 0.83rem;
+        color: #64748b;
+    }
 
-                    <div class="mb-4">
-                        <label asp-for="FullName" class="form-label fw-bold text-secondary">
-                            Nom Complet <span class="text-danger">*</span>
-                        </label>
-                        <input asp-for="FullName" class="form-control form-control-lg bg-card border-secondary text-white" placeholder="John Doe" />
-                        <span asp-validation-for="FullName" class="text-danger"></span>
+    .co-summary-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.875rem 1.25rem;
+        border-top: 2px solid #e2e8f0;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .co-summary-total span:last-child {
+        font-size: 1.15rem;
+        color: #2563eb;
+    }
+
+    /* Form fields — same style as organizer register */
+    .co-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        color: #1e293b;
+        background: #ffffff;
+        outline: none;
+        transition: border-color .2s, box-shadow .2s;
+        font-family: inherit;
+    }
+
+    .co-input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+
+    .co-input::placeholder { color: #94a3b8; }
+
+    .co-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        display: block;
+        margin-bottom: 0.35rem;
+    }
+
+    .co-field { margin-bottom: 0.875rem; }
+
+    .co-btn {
+        width: 100%;
+        padding: 0.875rem;
+        background: #2563eb;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background .2s;
+        font-family: inherit;
+    }
+
+    .co-btn:hover { background: #1d4ed8; }
+
+    .payment-method-option {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.6rem 0.875rem;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: border-color .15s, background .15s;
+        font-size: 0.875rem;
+        color: #334155;
+        font-weight: 500;
+        background: #fff;
+    }
+
+    .payment-method-option:has(input:checked) {
+        border-color: #2563eb;
+        background: #eff6ff;
+        color: #1e40af;
+    }
+
+    .payment-method-option input { accent-color: #2563eb; }
+</style>
+
+<div class="checkout-page">
+    <div class="container-fluid" style="max-width: 860px; margin: 0 auto;">
+
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <a asp-controller="Cart" asp-action="Index"
+               style="color:#2563eb; font-size:0.85rem; text-decoration:none; display:flex; align-items:center; gap:0.3rem;">
+                <i class="bi bi-arrow-left"></i> Retour au panier
+            </a>
+        </div>
+
+        <div class="row g-3 align-items-start">
+
+            <!-- Left: order recap -->
+            <div class="col-lg-5">
+                <div class="co-card">
+                    <div class="co-card-header">
+                        Détails de la commande
+                        <span style="float:right; font-weight:400; color:#94a3b8;">@Model.Items.Count article@(Model.Items.Count > 1 ? "s" : "")</span>
                     </div>
-
-                    <div class="mb-4">
-                        <label asp-for="Email" class="form-label fw-bold text-secondary">
-                            Adresse Email <span class="text-danger">*</span>
-                        </label>
-                        <input asp-for="Email" type="email" class="form-control form-control-lg bg-card border-secondary text-white" placeholder="john@example.com" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
-                        <small class="text-muted">Vos billets seront envoyés à cet email</small>
-                    </div>
-
-                    <div class="mb-5">
-                        <label asp-for="PhoneNumber" class="form-label fw-bold text-secondary">
-                            Numéro de Téléphone <small class="text-muted">(Optionnel)</small>
-                        </label>
-                        <input asp-for="PhoneNumber" type="tel" class="form-control form-control-lg bg-card border-secondary text-white" placeholder="+261340000000" />
-                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-                        <small class="text-muted">Pour les paiements mobile money (Mvola, Orange Money, Airtel Money)</small>
-                    </div>
-                    
-                    <hr class="my-5" style="border-color: var(--border-color);">
-                    
-                    <h5 class="fw-bold mb-4 border-bottom pb-3" style="border-color: var(--border-color) !important;">
-                        <i class="bi bi-wallet2 me-2 text-accent-primary"></i>Méthode de Paiement
-                    </h5>
-
-                    <div class="mb-5">
-                        <label asp-for="PaymentMethod" class="form-label fw-bold text-secondary">
-                            Fournisseur Préféré <small class="text-muted">(Aperçu optionnel)</small>
-                        </label>
-                        <select asp-for="PaymentMethod" class="form-select form-select-lg bg-card border-secondary text-white">
-                            <option value="Credit Card">Carte de Crédit / VISA</option>
-                            <option value="MVOLA">Mvola</option>
-                            <option value="ORANGE_MONEY">Orange Money</option>
-                            <option value="AIRTEL_MONEY">Airtel Money</option>
-                        </select>
-                        <span asp-validation-for="PaymentMethod" class="text-danger"></span>
-                    </div>
-
-                    <div class="alert alert-info bg-card border-secondary mb-5">
-                        <div class="d-flex">
-                            <i class="bi bi-info-circle-fill me-3 fs-4 text-accent-primary"></i>
-                            <div>
-                                <p class="mb-0">Vous serez redirigé vers la <strong>Passerelle de Paiement Papi</strong> sécurisée pour finaliser votre transaction.</p>
+                    @foreach (var item in Model.Items)
+                    {
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:0.6rem 1.25rem; border-bottom:1px solid #f1f5f9; gap:0.75rem;">
+                            <div style="min-width:0; flex:1;">
+                                <div style="font-size:0.82rem; font-weight:600; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">@item.EventName</div>
+                                <div style="font-size:0.72rem; color:#94a3b8; margin-top:1px;">
+                                    @item.TicketTypeName
+                                    @if (item.Seats.Any())
+                                    {
+                                        <span>· @string.Join(", ", item.Seats.Select(s => $"{(char)('A'+s.Row-1)}{s.Col}"))</span>
+                                    }
+                                    else
+                                    {
+                                        <span>· ×@item.Quantity</span>
+                                    }
+                                </div>
                             </div>
+                            <span style="font-size:0.85rem; font-weight:700; color:#2563eb; white-space:nowrap;">@item.Total.ToString("N0") Ar</span>
                         </div>
+                    }
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.55rem 1.25rem; font-size:0.83rem; color:#64748b;">
+                        <span>Frais de service</span>
+                        <span style="color:#1e293b; font-weight:600;">0 Ar</span>
                     </div>
-
-                    <div class="d-grid">
-                        <button type="submit" class="btn-primary-custom w-100 py-3 fs-5">
-                            <i class="bi bi-shield-lock-fill me-2"></i>Procéder au Paiement Sécurisé
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Security Badge -->
-            <div class="text-center mt-5">
-                <div class="d-flex justify-content-center gap-4 flex-wrap opacity-75">
-                    <img src="https://app.papi.mg/images/logo-papi.png" alt="Papi Madagascar" style="height: 30px; filter: grayscale(1) brightness(2);">
-                    <div class="vr"></div>
-                    <div class="d-flex align-items-center text-secondary">
-                        <i class="bi bi-shield-lock me-2"></i>
-                        <small>Chiffré SSL</small>
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1.25rem; border-top:2px solid #e2e8f0; font-weight:700; color:#1e293b;">
+                        <span>Total à payer</span>
+                        <span style="font-size:1.1rem; color:#2563eb;">@Model.TotalAmount.ToString("N0") Ar</span>
                     </div>
                 </div>
             </div>
+
+            <!-- Right: payment form -->
+            <div class="col-lg-7">
+                <div class="co-card">
+                    <div class="co-card-header">Commande</div>
+                    <div style="padding:1.25rem;">
+                        <form asp-action="Process" method="post">
+                            <input type="hidden" asp-for="TotalAmount" />
+
+                            @if (!ViewData.ModelState.IsValid)
+                            {
+                                <div class="text-danger mb-3" style="font-size:0.82rem;">
+                                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                    {
+                                        <div>@error.ErrorMessage</div>
+                                    }
+                                </div>
+                            }
+
+                            <div class="co-field">
+                                <label class="co-label">Nom complet *</label>
+                                <input asp-for="FullName" class="co-input" placeholder="Jean Dupont" />
+                                <span asp-validation-for="FullName" class="text-danger" style="font-size:.78rem;"></span>
+                            </div>
+
+                            <div class="co-field">
+                                <label class="co-label">Email *</label>
+                                <input asp-for="Email" type="email" class="co-input" placeholder="jean@example.com" />
+                                <span asp-validation-for="Email" class="text-danger" style="font-size:.78rem;"></span>
+                                <span style="font-size:.72rem; color:#94a3b8; display:block; margin-top:.25rem;">Vos billets seront envoyés à cette adresse</span>
+                            </div>
+
+                            <div class="co-field">
+                                <label class="co-label">Téléphone <span style="font-weight:400; text-transform:none;">(optionnel)</span></label>
+                                <input asp-for="PhoneNumber" type="tel" class="co-input" placeholder="+261 34 00 000 00" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger" style="font-size:.78rem;"></span>
+                            </div>
+
+                            <div class="co-field">
+                                <label class="co-label">Méthode de paiement</label>
+                                <div style="display:flex; flex-direction:column; gap:.4rem;">
+                                    <label class="payment-method-option">
+                                        <input type="radio" name="PaymentMethod" value="Credit Card" checked />
+                                        <i class="bi bi-credit-card"></i> Carte VISA
+                                    </label>
+                                    <label class="payment-method-option">
+                                        <input type="radio" name="PaymentMethod" value="MVOLA" />
+                                        <i class="bi bi-phone"></i> Mvola
+                                    </label>
+                                    <label class="payment-method-option">
+                                        <input type="radio" name="PaymentMethod" value="ORANGE_MONEY" />
+                                        <i class="bi bi-phone"></i> Orange Money
+                                    </label>
+                                    <label class="payment-method-option">
+                                        <input type="radio" name="PaymentMethod" value="AIRTEL_MONEY" />
+                                        <i class="bi bi-phone"></i> Airtel Money
+                                    </label>
+                                </div>
+                                <span asp-validation-for="PaymentMethod" class="text-danger" style="font-size:.78rem;"></span>
+                            </div>
+
+                            <button type="submit" class="co-btn mt-2">
+                                    Payer @Model.TotalAmount.ToString("N0") Ar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

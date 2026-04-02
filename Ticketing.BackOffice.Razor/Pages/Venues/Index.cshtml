@@ -1,45 +1,92 @@
 @page
 @model Ticketing.BackOffice.Razor.Pages.Venues.IndexModel
-
 @{
-    ViewData["Title"] = "Gestion des Lieux";
+    ViewData["Title"] = "Lieux";
 }
 
-<div class="overflow-x-auto bg-white rounded-lg shadow-xl max-w-7xl p-10">
-    <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Liste des Lieux</h1>
-        <a asp-page="Create" class="btn-primary rounded-md text-white box-border border border-transparent focus:ring-4 shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none">
-            Ajouter un nouveau lieu
-        </a>
-    </div>
+<style>
+.ptbl{width:100%;border-collapse:collapse}
+.ptbl th{text-align:left;font-size:.75rem;font-weight:600;color:#6b7280;padding:.55rem 1rem;border-bottom:1px solid #e5e7eb;background:#f9fafb;white-space:nowrap}
+.ptbl td{font-size:.85rem;color:#111827;padding:.6rem 1rem;border-bottom:1px solid #f3f4f6}
+.ptbl tbody tr:hover td{background:#eff6ff;cursor:pointer}
+.ptbl tbody tr:last-child td{border-bottom:none}
+</style>
 
+<div class="flex items-center justify-between mb-4">
+    <h1 class="text-xl font-bold text-gray-800">Lieux</h1>
+    <a asp-page="Create" class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+        Nouveau
+    </a>
+</div>
+
+<!-- Search -->
+<div class="bg-white border border-gray-200 rounded-lg mb-3 overflow-hidden">
+    <div class="px-4 py-2.5 text-sm font-semibold text-gray-700 flex justify-between items-center cursor-pointer" onclick="toggleSearch()">
+        <span>Recherche</span>
+        <svg id="sc" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="transition:transform .2s">
+            <path d="m18 15-6-6-6 6"/>
+        </svg>
+    </div>
+    <div id="sb" class="px-4 py-3 border-t border-gray-100">
+        <form method="get" class="flex flex-wrap gap-2 items-center">
+            <input type="text" name="searchTerm" placeholder="Mots clés"
+                   class="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 min-w-[200px]" />
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700">Rechercher</button>
+            <a asp-page="Index" class="px-4 py-2 border border-gray-300 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-50">Réinitialiser</a>
+        </form>
+    </div>
+</div>
+
+<!-- Table -->
+<div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <div class="px-4 py-2 border-b border-gray-100">
+        <span class="text-xs text-gray-400">@Model.Venues.Count résultat(s)</span>
+    </div>
     <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+        <table class="ptbl">
+            <thead>
                 <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dimensions</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th style="width:44px">#</th>
+                    <th>Nom</th>
+                    <th class="hidden md:table-cell">Adresse</th>
+                    <th class="hidden sm:table-cell">Dimensions</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @foreach (var item in Model.Venues) {
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium text-gray-900">@Html.DisplayFor(modelItem => item.Name)</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-500">@item.TotalRows x @item.TotalColumns</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <a asp-page="./Edit" asp-route-id="@item.Id" class="flex items-center gap-2 text-blue-600 hover:text-blue-900 mr-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-pen-icon lucide-square-pen"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></svg>
-                                Modifier
-                            </a>
+            <tbody>
+                @{ int idx = 1; }
+                @foreach (var v in Model.Venues)
+                {
+                    <tr onclick="location.href='@Url.Page("Edit", new { id = v.Id })'">
+                        <td class="text-gray-400 text-xs">@idx</td>
+                        <td class="font-medium">@v.Name</td>
+                        <td class="hidden md:table-cell text-gray-500 text-xs">@(string.IsNullOrEmpty(v.Address) ? "—" : v.Address)</td>
+                        <td class="hidden sm:table-cell text-gray-500 text-xs">
+                            @if (v.TotalRows > 0 && v.TotalColumns > 0)
+                            {
+                                <span>@v.TotalRows × @v.TotalColumns</span>
+                            }
+                            else
+                            {
+                                <span>Non configuré</span>
+                            }
                         </td>
                     </tr>
+                    idx++;
+                }
+                @if (!Model.Venues.Any())
+                {
+                    <tr><td colspan="4" class="text-center text-gray-400 py-10 text-sm">Aucun lieu trouvé</td></tr>
                 }
             </tbody>
         </table>
     </div>
 </div>
+
+<script>
+function toggleSearch(){
+    const b=document.getElementById('sb'),c=document.getElementById('sc');
+    const h=b.style.display==='none';
+    b.style.display=h?'':'none';
+    c.style.transform=h?'':'rotate(180deg)';
+}
+</script>

@@ -1,0 +1,90 @@
+@model Ticketing.FrontOffice.Mvc.Models.Cart
+
+@{
+    var itemCount = Model.Items.Count;
+    var totalAmount = Model.TotalAmount;
+}
+
+<li class="nav-item dropdown">
+    <a class="nav-link cart-link dropdown-toggle" href="#" id="cartDropdown" role="button"
+       data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+        <i class="bi bi-cart3 fs-5"></i>
+        @if (itemCount > 0)
+        {
+            <span class="cart-badge">@itemCount</span>
+        }
+    </a>
+    <div class="dropdown-menu dropdown-menu-end cart-dropdown-panel shadow border-0 rounded-3 mt-2"
+         aria-labelledby="cartDropdown" style="min-width: 340px;">
+        <div class="px-3 pt-3 pb-2 border-bottom" style="border-color: var(--border-color) !important;">
+            <h6 class="fw-bold mb-0">
+                <i class="bi bi-cart3 me-2 text-accent-primary"></i>Mon Panier
+                @if (itemCount > 0)
+                {
+                    <span class="badge rounded-pill ms-1" style="background-color: var(--accent-primary); font-size: 0.7rem;">@itemCount</span>
+                }
+            </h6>
+        </div>
+
+        @if (!Model.Items.Any())
+        {
+            <div class="text-center py-4 px-3">
+                <i class="bi bi-cart-x fs-1 text-secondary d-block mb-2"></i>
+                <span class="text-secondary small">Votre panier est vide</span>
+            </div>
+        }
+        else
+        {
+            <div class="cart-dropdown-items" style="max-height: 300px; overflow-y: auto;">
+                @foreach (var item in Model.Items)
+                {
+                    <div class="px-3 py-2 border-bottom" style="border-color: var(--border-color) !important;">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <div class="flex-grow-1" style="min-width: 0;">
+                                <div class="fw-semibold text-white small text-truncate">@item.EventName</div>
+                                <div class="text-secondary" style="font-size: 0.75rem;">
+                                    @item.TicketTypeName
+                                    @if (item.Seats.Any())
+                                    {
+                                        <span class="ms-1">
+                                            — @string.Join(", ", item.Seats.Select(s => $"{(char)('A' + s.Row - 1)}{s.Col}"))
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="ms-1">× @item.Quantity</span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="text-end flex-shrink-0">
+                                <div class="fw-bold small" style="color: var(--accent-primary);">@item.Total.ToString("N0") Ar</div>
+                                <a asp-controller="Cart" asp-action="Remove" asp-route-id="@item.Id"
+                                   class="text-danger" style="font-size: 0.7rem;"
+                                   onclick="return confirm('Retirer cet article?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center"
+                 style="border-color: var(--border-color) !important;">
+                <span class="text-secondary small">Total</span>
+                <span class="fw-bold" style="color: var(--accent-primary);">@totalAmount.ToString("N0") Ar</span>
+            </div>
+
+            <div class="p-3 d-grid gap-2">
+                <a asp-controller="Checkout" asp-action="Index"
+                   class="btn-primary-custom text-center text-decoration-none py-2 d-flex align-items-center justify-content-center fw-bold">
+                    <i class="bi bi-credit-card me-2"></i>Procéder au Paiement
+                </a>
+                <a asp-controller="Cart" asp-action="Index"
+                   class="btn-secondary-custom text-center text-decoration-none py-2 d-flex align-items-center justify-content-center">
+                    <i class="bi bi-bag me-2"></i>Voir le panier
+                </a>
+            </div>
+        }
+    </div>
+</li>

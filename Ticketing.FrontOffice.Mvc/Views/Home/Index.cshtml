@@ -155,30 +155,22 @@ else
 {
     <div class="container my-5">
         <div class="categories-section">
-            <div class="categories-row">
-                @{
-                    var isAllSelected = !selectedCategoryId.HasValue;
-                }
-                <a href="@Url.Action("Index", "Home")" 
-                   class="category-icon @(isAllSelected ? "active" : "")" 
-                   title="Tous les événements">
-                    <div class="category-icon-circle @(isAllSelected ? "active" : "")">
+            <div class="categories-row" id="categoryRow">
+                <button class="category-icon active" data-cat="0" title="Tous les événements" onclick="filterByCategory(this, 0)">
+                    <div class="category-icon-circle active">
                         <i class="bi bi-grid"></i>
                     </div>
                     <span class="category-label">Tous</span>
-                </a>
+                </button>
                 @foreach (var category in categories)
                 {
-                    var isSelected = selectedCategoryId.HasValue && selectedCategoryId.Value == category.Id;
                     var categoryIcon = GetCategoryIcon(category.Name);
-                    <a href="@Url.Action("Index", "Home", new { categoryId = category.Id })" 
-                       class="category-icon @(isSelected ? "active" : "")" 
-                       title="@category.Name">
-                        <div class="category-icon-circle @(isSelected ? "active" : "")">
+                    <button class="category-icon" data-cat="@category.Id" title="@category.Name" onclick="filterByCategory(this, @category.Id)">
+                        <div class="category-icon-circle">
                             <i class="@categoryIcon"></i>
                         </div>
                         <span class="category-label">@category.Name</span>
-                    </a>
+                    </button>
                 }
             </div>
         </div>
@@ -277,6 +269,49 @@ else
 
 @section Scripts {
     <script>
+        // ── Category filter ───────────────────────────────────────────
+        function filterByCategory(btn, catId) {
+            // Update active button
+            document.querySelectorAll('#categoryRow .category-icon').forEach(b => {
+                b.classList.remove('active');
+                b.querySelector('.category-icon-circle').classList.remove('active');
+            });
+            btn.classList.add('active');
+            btn.querySelector('.category-icon-circle').classList.add('active');
+
+            const items = document.querySelectorAll('#eventsContainer .event-item');
+            let visible = 0;
+
+            items.forEach(item => {
+                const match = catId === 0 || parseInt(item.dataset.category) === catId;
+                if (match) {
+                    item.style.display = '';
+                    item.style.animation = 'fadeInUp 0.25s ease both';
+                    visible++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            // Show empty state if nothing matches
+            let emptyEl = document.getElementById('cat-empty');
+            if (visible === 0) {
+                if (!emptyEl) {
+                    emptyEl = document.createElement('div');
+                    emptyEl.id = 'cat-empty';
+                    emptyEl.className = 'col-12 text-center py-5';
+                    emptyEl.innerHTML = `
+                        <i class="bi bi-calendar-x" style="font-size:3rem;color:var(--accent-primary);display:block;margin-bottom:1rem;"></i>
+                        <h3 style="color:var(--text-primary);">Aucun événement dans cette catégorie</h3>`;
+                    document.getElementById('eventsContainer').appendChild(emptyEl);
+                }
+                emptyEl.style.display = '';
+            } else if (emptyEl) {
+                emptyEl.style.display = 'none';
+            }
+        }
+
+        // ── Carousel ──────────────────────────────────────────────────
         let currentSlide = 0;
         const slides = document.querySelectorAll('.hero-carousel-item');
         const totalSlides = slides.length;
@@ -434,12 +469,19 @@ else
     }
     
     /* Filter functionality */
-    .event-item {
-        display: block;
+    .event-item { display: block; }
+
+    @@keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: translateY(0); }
     }
-    
-    .event-item.hidden {
-        display: none;
+
+    /* Category buttons reset */
+    #categoryRow button.category-icon {
+        background: none;
+        border: none;
+        padding: 0;
+        font-family: inherit;
     }
 
     /* Categories Section Styles */

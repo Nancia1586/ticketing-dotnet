@@ -1,48 +1,84 @@
-@page
+@page "{id:int?}"
 @model Ticketing.BackOffice.Razor.Pages.Categories.EditModel
-
 @{
-    ViewData["Title"] = "Modifier une Catégorie";
+    ViewData["Title"] = Model.Category?.Id > 0 ? $"Catégorie — {Model.Category.Name}" : "Nouvelle catégorie";
+    bool isNew = !(Model.Category?.Id > 0);
 }
 
-<div class="overflow-x-auto bg-white rounded-lg shadow-xl max-w-7xl p-10">
-    <h1 class="text-2xl font-extrabold mb-8 text-gray-900">Modifier la Catégorie: @Model.Category.Name</h1>
-        
-    <form method="post">
+<style>
+.pf{position:relative;margin-bottom:0}
+.pf>label{position:absolute;left:.75rem;top:.38rem;font-size:.67rem;font-weight:500;color:#9ca3af;pointer-events:none;z-index:1;font-family:inherit}
+.pf input,.pf textarea{width:100%;border:1px solid #d1d5db;border-radius:6px;padding:1.25rem .75rem .38rem;font-size:.875rem;color:#111827;background:#fff;outline:none;transition:border-color .15s;font-family:inherit;box-sizing:border-box}
+.pf input:focus,.pf textarea:focus{border-color:#3b82f6}
+.pf input[readonly],.pf textarea[readonly]{background:#fafafa;cursor:default}
+.ftabs{display:flex;border-bottom:2px solid #e5e7eb;margin-bottom:0;padding:0 1rem;padding-top:.25rem}
+.ftab{padding:.55rem 1.1rem;font-size:.85rem;font-weight:500;color:#6b7280;border-bottom:2.5px solid transparent;margin-bottom:-2px;text-decoration:none;white-space:nowrap;display:inline-block}
+.ftab:hover{color:#374151}
+.ftab.on{color:#2563eb;border-bottom-color:#2563eb;font-weight:600}
+.fbar{position:sticky;bottom:0;background:#fff;border-top:1px solid #e5e7eb;padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;z-index:10;margin-top:1.5rem}
+</style>
+
+<div class="flex items-center gap-2 text-sm text-gray-500 mb-3">
+    <a asp-page="Index" class="hover:text-blue-600 transition-colors">Catégories</a>
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+    <span class="text-gray-800 font-medium">@(isNew ? "Nouveau" : Model.Category?.Name)</span>
+</div>
+
+<div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <div class="ftabs">
+        <span class="ftab on">Général</span>
+    </div>
+
+    <form method="post" id="mainForm">
         <input type="hidden" asp-for="Category.Id" />
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div class="md:col-span-2">
-                <label asp-for="Category.Name" class="block text-sm font-medium text-gray-700 mb-2">Nom de la catégorie *</label>
-                <input asp-for="Category.Name" class="w-full h-10 px-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
-                <span asp-validation-for="Category.Name" class="text-xs text-red-600 mt-1 block"></span>
-            </div>
 
-            <div class="md:col-span-2">
-                <label asp-for="Category.Description" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                <textarea asp-for="Category.Description" class="w-full h-32 p-2 border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"></textarea>
-                <span asp-validation-for="Category.Description" class="text-xs text-red-600 mt-1 block"></span>
+        <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="pf sm:col-span-2">
+                <label>Nom *</label>
+                <input asp-for="Category.Name" placeholder=" " readonly id="f_name" />
+                <span asp-validation-for="Category.Name" class="text-xs text-red-500 mt-0.5 block"></span>
             </div>
-
-            <div class="mb-4 flex items-center">
-                <input asp-for="Category.IsActive" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
-                <label asp-for="Category.IsActive" class="ml-2 block text-sm font-medium text-gray-700">Active (Visible dans l'application)</label>
+            <div class="pf sm:col-span-2">
+                <label>Description</label>
+                <textarea asp-for="Category.Description" placeholder=" " rows="3" readonly id="f_desc" style="resize:none"></textarea>
+            </div>
+            <div class="flex items-center gap-2 pt-1">
+                <input asp-for="Category.IsActive" type="checkbox" id="f_active"
+                       style="width:16px;height:16px;accent-color:#2563eb" disabled />
+                <label asp-for="Category.IsActive" class="text-sm text-gray-700 font-medium cursor-pointer">Actif</label>
             </div>
         </div>
 
-        <div class="flex justify-end space-x-4 pt-8 mt-8 border-t">
-            <a asp-page="./Index" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Annuler
-            </a>
-            <button type="submit" class="inline-flex justify-center items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Sauvegarder les modifications
-            </button>
+        <div class="fbar">
+            <span class="text-xs text-gray-400">@(isNew ? "Nouvelle catégorie" : $"ID : {Model.Category?.Id}")</span>
+            <div id="barRead" class="flex gap-2">
+                <button type="button" onclick="enableEdit()"
+                        class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700">Modifier</button>
+            </div>
+            <div id="barEdit" class="flex gap-2" hidden>
+                <button type="button" onclick="cancelEdit()"
+                        class="px-4 py-2 border border-gray-300 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-50">Annuler</button>
+                @if (!isNew)
+                {
+                    <button type="submit" asp-page-handler="Delete" onclick="return confirm('Supprimer cette catégorie ?')"
+                            class="px-4 py-2 border border-red-200 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-50">Supprimer</button>
+                }
+                <button type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700">Enregistrer</button>
+            </div>
         </div>
     </form>
 </div>
 
-@section Scripts {
-    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+<script>
+function enableEdit(){
+    ['f_name','f_desc'].forEach(id=>document.getElementById(id)?.removeAttribute('readonly'));
+    document.getElementById('f_active').removeAttribute('disabled');
+    document.getElementById('barRead').hidden=true;
+    document.getElementById('barEdit').hidden=false;
 }
+function cancelEdit(){ location.reload(); }
+@if(isNew){ <text>window.addEventListener('DOMContentLoaded',enableEdit);</text> }
+</script>
 
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -4,10 +4,33 @@
 @using System.Linq;
 
 @{
-    ViewData["Title"] = $"Détails de l'événement: {Model.Event.Name}";
+    ViewData["Title"] = $"Statistiques — {Model.Event.Name}";
 }
 
+<style>
+.ftabs{display:flex;border-bottom:2px solid #e5e7eb;margin-bottom:0;padding:0 1rem;padding-top:.25rem}
+.ftab{padding:.55rem 1.1rem;font-size:.85rem;font-weight:500;color:#6b7280;border-bottom:2.5px solid transparent;margin-bottom:-2px;text-decoration:none;white-space:nowrap;display:inline-block}
+.ftab:hover{color:#374151}
+.ftab.on{color:#2563eb;border-bottom-color:#2563eb;font-weight:600}
+</style>
+
 <link rel="stylesheet" href="~/css/events/plan.css" asp-append-version="true" />
+
+<div class="flex items-center gap-2 text-sm text-gray-500 mb-3">
+    <a asp-page="Index" class="hover:text-blue-600 transition-colors">Événements</a>
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+    <a asp-page="Edit" asp-route-id="@Model.Event.Id" class="hover:text-blue-600 transition-colors">@Model.Event.Name</a>
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+    <span class="text-gray-800 font-medium">Statistiques</span>
+</div>
+
+<div class="bg-white border border-gray-200 rounded-lg overflow-hidden mb-4">
+    <div class="ftabs">
+        <a asp-page="Edit" asp-route-id="@Model.Event.Id" class="ftab">Général</a>
+        <a asp-page="Plan" asp-route-id="@Model.Event.Id" class="ftab">Configuration du plan</a>
+        <span class="ftab on">Statistiques</span>
+    </div>
+</div>
 
 <div class="max-w-7xl mx-auto space-y-8 pb-10">
     <!-- Header Section -->

@@ -21,5 +21,7 @@ namespace Ticketing.FrontOffice.Mvc.Models
         public string? PhoneNumber { get; set; }
         
         public decimal TotalAmount { get; set; }
+
+        public List<CartItem> Items { get; set; } = new();
     }
 }

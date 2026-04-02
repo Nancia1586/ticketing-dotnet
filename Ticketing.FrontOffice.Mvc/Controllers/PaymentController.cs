@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 using Ticketing.Core.Data;
 using Ticketing.Core.Models;
 using Ticketing.FrontOffice.Mvc.Models;
@@ -36,6 +39,89 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
             }
 
             return View(reservations);
+        }
+
+        public async Task<IActionResult> DownloadTickets(string reference)
+        {
+            var reservations = await _context.Reservations
+                .Include(r => r.Event).ThenInclude(e => e.Venue)
+                .Include(r => r.Seats).ThenInclude(s => s.TicketType)
+                .Where(r => r.PaymentReference == reference)
+                .ToListAsync();
+
+            if (!reservations.Any())
+                return RedirectToAction("Index", "Home");
+
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            var pdf = Document.Create(container =>
+            {
+                foreach (var reservation in reservations)
+                {
+                    foreach (var seat in reservation.Seats)
+                    {
+                        container.Page(page =>
+                        {
+                            page.Size(PageSizes.A6.Landscape());
+                            page.Margin(20);
+                            page.DefaultTextStyle(s => s.FontSize(10).FontFamily("Arial"));
+
+                            page.Content().Column(col =>
+                            {
+                                // Header
+                                col.Item().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingBottom(8).Row(row =>
+                                {
+                                    row.RelativeItem().Column(inner =>
+                                    {
+                                        inner.Item().Text(reservation.Event.Name)
+                                            .FontSize(16).Bold().FontColor(Colors.Black);
+                                        inner.Item().Text(reservation.Event.Date.ToString("dd/MM/yyyy HH:mm"))
+                                            .FontSize(9).FontColor(Colors.Grey.Darken1);
+                                        if (reservation.Event.Venue != null)
+                                            inner.Item().Text(reservation.Event.Venue.Name)
+                                                .FontSize(9).FontColor(Colors.Grey.Darken1);
+                                    });
+                                    row.AutoItem().AlignRight().Column(inner =>
+                                    {
+                                        inner.Item().Text("BILLET").FontSize(10).Bold().FontColor(Colors.Grey.Darken2);
+                                        inner.Item().Text($"#{reservation.Id}").FontSize(9).FontColor(Colors.Grey.Medium);
+                                    });
+                                });
+
+                                // Seat & type
+                                col.Item().PaddingVertical(10).Row(row =>
+                                {
+                                    row.RelativeItem().Column(inner =>
+                                    {
+                                        inner.Item().Text("PLACE").FontSize(7).FontColor(Colors.Grey.Medium);
+                                        inner.Item().Text(seat.Code).FontSize(22).Bold();
+                                    });
+                                    row.RelativeItem().Column(inner =>
+                                    {
+                                        inner.Item().Text("TYPE").FontSize(7).FontColor(Colors.Grey.Medium);
+                                        inner.Item().Text(seat.TicketType?.Name ?? "-").FontSize(13).Bold();
+                                        inner.Item().Text($"{seat.TicketType?.Price.ToString("N0") ?? "0"} Ar")
+                                            .FontSize(10).FontColor(Colors.Grey.Darken1);
+                                    });
+                                    row.RelativeItem().Column(inner =>
+                                    {
+                                        inner.Item().Text("CLIENT").FontSize(7).FontColor(Colors.Grey.Medium);
+                                        inner.Item().Text(reservation.CustomerName).FontSize(10).Bold();
+                                    });
+                                });
+
+                                // Footer
+                                col.Item().BorderTop(1).BorderColor(Colors.Grey.Lighten2).PaddingTop(6)
+                                    .Text($"Réf : {reservation.PaymentReference}")
+                                    .FontSize(7).FontColor(Colors.Grey.Medium);
+                            });
+                        });
+                    }
+                }
+            }).GeneratePdf();
+
+            var filename = $"billets-{reference}.pdf";
+            return File(pdf, "application/pdf", filename);
         }
 
         public IActionResult Failure()

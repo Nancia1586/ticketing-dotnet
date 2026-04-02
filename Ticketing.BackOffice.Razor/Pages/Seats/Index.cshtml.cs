@@ -58,22 +58,26 @@ namespace Ticketing.BackOffice.Razor.Pages.Seats
             }
             ViewData["CurrentUser"] = currentUser;
 
-            // OPTIMIZED: Load only active and recent events (max 50) for dropdown instead of 1000
+            // Load only events without a seating plan (no grid venue)
             var eventsTask = _context.Events
                 .Where(e => organizerId == null || e.OrganizerId == organizerId)
-                .Where(e => e.IsActive || e.Date >= DateTime.Now.AddMonths(-3)) // Active or recent (last 3 months)
+                .Where(e => e.IsActive || e.Date >= DateTime.Now.AddMonths(-3))
+                .Where(e => e.Venue == null || (e.Venue.TotalRows == 0 && e.Venue.TotalColumns == 0))
                 .OrderByDescending(e => e.Date)
                 .Take(50)
                 .Select(e => new Event { Id = e.Id, Name = e.Name })
                 .AsNoTracking()
                 .ToListAsync();
 
-            // OPTIMIZED: Build query with joins using Select projection (more efficient than Include)
+            // Build query — only seats from events without a seating plan (no venue grid)
             var query = from seat in _context.Seats
                        join ticketType in _context.TicketTypes on seat.TicketTypeId equals ticketType.Id
                        join evt in _context.Events on ticketType.EventId equals evt.Id
+                       join venue in _context.Venues on evt.VenueId equals venue.Id into venueGroup
+                       from venue in venueGroup.DefaultIfEmpty()
                        join reservation in _context.Reservations on seat.ReservationId equals reservation.Id into reservationGroup
                        from reservation in reservationGroup.DefaultIfEmpty()
+                       where venue == null || (venue.TotalRows == 0 && venue.TotalColumns == 0)
                        select new
                        {
                            Seat = seat,
@@ -119,13 +123,8 @@ namespace Ticketing.BackOffice.Razor.Pages.Seats
                     Held = g.Count(x => x.Seat.Status == SeatStatus.Held)
                 });
 
-            var statsTask = statsQuery.FirstOrDefaultAsync();
-
-            // Execute parallel queries
-            await Task.WhenAll(eventsTask, statsTask);
-
             Events = await eventsTask;
-            var stats = await statsTask;
+            var stats = await statsQuery.FirstOrDefaultAsync();
 
             // Set statistics
             if (stats != null)

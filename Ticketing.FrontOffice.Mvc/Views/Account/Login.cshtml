@@ -1,242 +1,225 @@
 @{
-    ViewData["Title"] = "Connexion & Inscription";
+    ViewData["Title"] = "Connexion";
 }
 
 <style>
-    .login-container {
-        min-height: 100vh;
-        background: var(--bg-primary);
-        padding: 2rem 0;
-    }
-    
-    .login-tabs {
+    .login-page {
+        background: linear-gradient(145deg, #dbeafe 0%, #bfdbfe 60%, #93c5fd 100%);
+        min-height: calc(100vh - 72px);
         display: flex;
-        border-bottom: 2px solid var(--border-color);
-        margin-bottom: 2rem;
+        align-items: center;
+        padding: 2.5rem 1.5rem;
     }
-    
-    .login-tab {
-        flex: 1;
-        padding: 1rem;
-        text-align: center;
-        background: transparent;
-        border: none;
-        color: var(--text-secondary);
-        font-weight: 600;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border-bottom: 3px solid transparent;
-        margin-bottom: -2px;
-    }
-    
-    .login-tab.active {
-        color: var(--accent-primary);
-        border-bottom-color: var(--accent-primary);
-    }
-    
-    .login-tab-content {
-        display: none;
-    }
-    
-    .login-tab-content.active {
-        display: block;
-    }
-    
-    .login-card {
-        background-color: var(--bg-card) !important;
-        border: 1px solid var(--border-color) !important;
-        box-shadow: var(--shadow-lg) !important;
-    }
-    
+
     .login-input {
-        background-color: var(--bg-light) !important;
-        border: 1px solid var(--border-color) !important;
-        color: var(--text-primary) !important;
-    }
-    
-    .login-input::placeholder {
-        color: var(--text-muted) !important;
-    }
-    
-    .login-input:focus {
-        background-color: var(--bg-light) !important;
-        border-color: var(--accent-primary) !important;
-        color: var(--text-primary) !important;
-        box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25) !important;
-    }
-    
-    .login-input-group-text {
-        background-color: var(--bg-light) !important;
-        border: 1px solid var(--border-color) !important;
-        color: var(--accent-primary) !important;
-    }
-    
-    .social-login-btn {
         width: 100%;
-        padding: 0.75rem;
+        padding: 0.85rem 1rem;
+        border: 1.5px solid #cbd5e1;
         border-radius: 8px;
-        border: 1px solid var(--border-color);
+        font-size: 0.95rem;
+        color: #1e293b;
+        background: #ffffff;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        font-family: inherit;
+    }
+
+    .login-input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .login-input::placeholder { color: #94a3b8; }
+
+    .input-wrapper {
+        position: relative;
+    }
+
+    .input-wrapper .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+        font-size: 1.1rem;
+    }
+
+    .input-wrapper .password-toggle:hover { color: #475569; }
+
+    .login-submit {
+        width: 100%;
+        padding: 0.875rem;
+        background-color: #2563eb;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
         font-weight: 600;
-        transition: all 0.3s ease;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        font-family: inherit;
+    }
+
+    .login-submit:hover { background-color: #1d4ed8; }
+
+    .preamble-feature {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .preamble-feature-icon {
+        width: 32px;
+        height: 32px;
+        background: rgba(37, 99, 235, 0.12);
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 0.5rem;
-    }
-    
-    .social-login-btn.facebook {
-        background: #1877F2;
-        color: white;
-        border-color: #1877F2;
-    }
-    
-    .social-login-btn.google {
-        background: white;
-        color: var(--text-primary);
-        border-color: var(--border-color);
-    }
-    
-    .social-login-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
+        flex-shrink: 0;
+        color: #2563eb;
+        font-size: 0.9rem;
     }
 </style>
 
-<div class="login-container">
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <!-- Page Title -->
-                <div class="text-center mb-5">
-                    <h1 class="display-5 fw-bold mb-3" style="color: var(--text-primary);">Connexion & Inscription</h1>
-                    <p class="fs-5" style="color: var(--text-secondary);">Connectez-vous ou inscrivez-vous si vous n'avez pas de compte</p>
+<div class="login-page">
+    <div class="container-fluid" style="max-width: 960px; margin: 0 auto;">
+        <div class="row align-items-center g-5">
+
+            <!-- Left: Preamble -->
+            <div class="col-lg-5">
+                <div class="d-flex align-items-center mb-4 gap-2">
+                    <i class="bi bi-ticket-perforated-fill" style="font-size: 2rem; color: #2563eb;"></i>
+                    <span style="font-size: 1.75rem; font-weight: 800; color: #1e3a8a; letter-spacing: -0.5px;">tiktek</span>
                 </div>
-                
-                <!-- Login Card -->
-                <div class="card border-0 shadow-lg rounded-4 overflow-hidden login-card">
-                    <!-- Tabs -->
-                    <div class="login-tabs">
-                        <button class="login-tab active" data-tab="login">CONNEXION</button>
-                        <button class="login-tab" data-tab="register">INSCRIPTION</button>
+
+                <h2 style="font-weight: 800; color: #1e293b; font-size: 1.5rem; margin-bottom: 0.5rem;">
+                    Bon retour !
+                </h2>
+                <p style="color: #475569; font-size: 0.92rem; line-height: 1.6; margin-bottom: 1.75rem;">
+                    Connectez-vous pour accéder à vos billets, suivre vos réservations et découvrir les événements à venir.
+                </p>
+
+                <div class="preamble-feature">
+                    <div class="preamble-feature-icon"><i class="bi bi-ticket-perforated"></i></div>
+                    <div>
+                        <div style="font-size: 0.875rem; font-weight: 700; color: #1e293b;">Vos billets en un clic</div>
+                        <div style="font-size: 0.8rem; color: #64748b;">Retrouvez toutes vos réservations depuis votre espace personnel.</div>
                     </div>
-                    
-                    <!-- Login Tab Content -->
-                    <div class="login-tab-content active" id="loginTab">
-                        <div class="card-body p-5">
-                            <form method="post" asp-controller="Account" asp-action="Login">
-                                <div asp-validation-summary="All" class="text-danger mb-3 small"></div>
-                                <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
-                                
-                                <div class="mb-4">
-                                    <label class="form-label fw-semibold mb-2" style="color: var(--text-primary);">
-                                        <i class="bi bi-envelope me-2" style="color: var(--accent-primary);"></i>Votre adresse email
-                                    </label>
-                                    <input type="email" name="email" class="form-control p-3 login-input" placeholder="name@example.com" required>
-                                </div>
+                </div>
 
-                                <div class="mb-4">
-                                    <label class="form-label fw-semibold mb-2" style="color: var(--text-primary);">
-                                        <i class="bi bi-lock me-2" style="color: var(--accent-primary);"></i>Votre mot de passe
-                                    </label>
-                                    <div class="input-group">
-                                        <input type="password" name="password" class="form-control p-3 login-input" placeholder="••••••••" required>
-                                        <button type="button" class="btn login-input-group-text" id="togglePassword">
-                                            <i class="bi bi-eye"></i>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class="mb-4 d-flex justify-content-between align-items-center">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="rememberMe" id="rememberMe" style="border-color: var(--border-color);">
-                                        <label class="form-check-label small" for="rememberMe" style="color: var(--text-secondary);">Se souvenir de moi</label>
-                                    </div>
-                                    <a href="#" class="small text-decoration-none" style="color: var(--accent-primary);">Mot de passe oublié ?</a>
-                                </div>
-
-                                <button type="submit" class="btn w-100 py-3 rounded-3 fw-bold shadow-sm mb-4" style="background: var(--text-primary); border: none; color: white;">Se connecter</button>
-                                
-                                <!-- Social Login Separator -->
-                                <div class="d-flex align-items-center my-4">
-                                    <hr class="flex-grow-1" style="border-color: var(--border-color);">
-                                    <span class="px-3" style="color: var(--text-secondary);">ou connectez-vous avec</span>
-                                    <hr class="flex-grow-1" style="border-color: var(--border-color);">
-                                </div>
-                                
-                                <!-- Social Login Buttons -->
-                                <div class="row g-3">
-                                    <div class="col-6">
-                                        <button type="button" class="social-login-btn facebook">
-                                            <i class="bi bi-facebook"></i>
-                                            <span>Facebook</span>
-                                        </button>
-                                    </div>
-                                    <div class="col-6">
-                                        <button type="button" class="social-login-btn google">
-                                            <i class="bi bi-google"></i>
-                                            <span>Google</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
+                <div class="preamble-feature">
+                    <div class="preamble-feature-icon"><i class="bi bi-bell"></i></div>
+                    <div>
+                        <div style="font-size: 0.875rem; font-weight: 700; color: #1e293b;">Alertes et confirmations</div>
+                        <div style="font-size: 0.8rem; color: #64748b;">Recevez vos billets par email dès la confirmation de paiement.</div>
                     </div>
-                    
-                    <!-- Register Tab Content -->
-                    <div class="login-tab-content" id="registerTab">
-                        <div class="card-body p-5">
-                            <p class="text-center mb-4" style="color: var(--text-secondary);">Pour créer un compte organisateur, veuillez vous inscrire en tant qu'organisateur.</p>
-                            <div class="text-center">
-                                <a asp-controller="Organizer" asp-action="Register" class="btn-primary-custom">
-                                    <i class="bi bi-person-plus me-2"></i>Devenir organisateur
-                                </a>
-                            </div>
-                        </div>
+                </div>
+
+                <div class="preamble-feature">
+                    <div class="preamble-feature-icon"><i class="bi bi-shield-check"></i></div>
+                    <div>
+                        <div style="font-size: 0.875rem; font-weight: 700; color: #1e293b;">Paiement sécurisé</div>
+                        <div style="font-size: 0.8rem; color: #64748b;">Transactions chiffrées via Papi — Mvola, Orange Money, Airtel, VISA.</div>
                     </div>
                 </div>
             </div>
+
+            <!-- Right: Form Card -->
+            <div class="col-lg-7">
+                <div style="background: #ffffff; border-radius: 16px; padding: 2.25rem 2rem; box-shadow: 0 4px 24px rgba(37, 99, 235, 0.1);">
+                    <h2 style="font-weight: 700; color: #1e293b; font-size: 1.4rem; margin-bottom: 1.5rem;">
+                        Se connecter
+                    </h2>
+
+                    <form method="post" asp-controller="Account" asp-action="Login" autocomplete="off">
+                        <div asp-validation-summary="All" class="text-danger mb-3" style="font-size: 0.85rem; display: none;"></div>
+                        <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+
+                        <div style="display: flex; flex-direction: column; gap: 0.875rem; margin-bottom: 1rem;">
+                            <div class="input-wrapper">
+                                <input type="email" name="email" class="login-input" placeholder="Adresse email *" required />
+                            </div>
+
+                            <div class="input-wrapper">
+                                <input type="password" name="password" class="login-input" placeholder="Mot de passe *"
+                                       id="passwordInput" style="padding-right: 2.75rem;" required />
+                                <button type="button" class="password-toggle" onclick="togglePassword()" tabindex="-1">
+                                    <i class="bi bi-eye" id="passwordIcon"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+                            <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: #64748b; cursor: pointer;">
+                                <input type="checkbox" name="rememberMe" style="accent-color: #2563eb;" />
+                                Se souvenir de moi
+                            </label>
+                            <a href="#" style="font-size: 0.85rem; color: #2563eb; text-decoration: none; font-weight: 500;">
+                                Mot de passe oublié ?
+                            </a>
+                        </div>
+
+                        <button type="submit" class="login-submit">Se connecter</button>
+
+                        <!-- Demo accounts -->
+                        <div style="margin-top: 1.25rem; padding: 0.875rem; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px;">
+                            <p style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.6rem;">
+                                <i class="bi bi-info-circle me-1"></i>Comptes de démonstration
+                            </p>
+                            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                                <button type="button" onclick="fillCredentials('contact@passion-events.mg','Organizer123!')"
+                                        style="display:flex; align-items:center; justify-content:space-between; padding:0.45rem 0.75rem; background:#ffffff; border:1px solid #e2e8f0; border-radius:6px; cursor:pointer; transition:border-color .15s; font-family:inherit;">
+                                    <span style="font-size:0.8rem; color:#1e293b; font-weight:600;">
+                                        <i class="bi bi-person-badge me-1" style="color:#2563eb;"></i>Organisateur
+                                    </span>
+                                    <span style="font-size:0.75rem; color:#64748b; font-family:monospace;">contact@passion-events.mg</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <p class="text-center mt-3 mb-0" style="color: #64748b; font-size: 0.875rem;">
+                            Pas encore de compte ?
+                            <a asp-controller="Organizer" asp-action="Register"
+                               style="color: #2563eb; text-decoration: none; font-weight: 600;">
+                                Devenir organisateur
+                            </a>
+                        </p>
+                    </form>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
 
 <script>
-    // Tab switching
-    document.addEventListener('DOMContentLoaded', function() {
-        const tabs = document.querySelectorAll('.login-tab');
-        const tabContents = document.querySelectorAll('.login-tab-content');
-        
-        tabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                const targetTab = this.getAttribute('data-tab');
-                
-                // Remove active class from all tabs and contents
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
-                
-                // Add active class to clicked tab and corresponding content
-                this.classList.add('active');
-                document.getElementById(targetTab + 'Tab').classList.add('active');
-            });
-        });
-        
-        // Toggle password visibility
-        const togglePassword = document.getElementById('togglePassword');
-        if (togglePassword) {
-            togglePassword.addEventListener('click', function() {
-                const passwordInput = document.querySelector('input[name="password"]');
-                const icon = this.querySelector('i');
-                
-                if (passwordInput.type === 'password') {
-                    passwordInput.type = 'text';
-                    icon.classList.remove('bi-eye');
-                    icon.classList.add('bi-eye-slash');
-                } else {
-                    passwordInput.type = 'password';
-                    icon.classList.remove('bi-eye-slash');
-                    icon.classList.add('bi-eye');
-                }
-            });
+    function fillCredentials(email, password) {
+        document.querySelector('input[name="email"]').value = email;
+        document.getElementById('passwordInput').value = password;
+    }
+
+    function togglePassword() {
+        const input = document.getElementById('passwordInput');
+        const icon  = document.getElementById('passwordIcon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('bi-eye', 'bi-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.replace('bi-eye-slash', 'bi-eye');
         }
-    });
+    }
+
+    // Show validation summary only when it has errors
+    const summary = document.querySelector('[data-valmsg-summary]');
+    if (summary && summary.querySelector('li')) {
+        summary.style.display = '';
+    }
 </script>

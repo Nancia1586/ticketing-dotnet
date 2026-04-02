@@ -61,11 +61,7 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
                 var cart = _cartService.GetCart();
                 var cartItemsForEvent = cart.Items.Where(i => i.EventId == id).ToList();
 
-                var similarEvents = await _dataAccess.GetActiveEventsAsync();
-                similarEvents = similarEvents
-                    .Where(e => e.Id != id && (e.CategoryId == evt.CategoryId || e.CategoryId == 0))
-                    .Take(4)
-                    .ToList();
+                var similarEvents = await _dataAccess.GetSimilarEventsAsync(id, evt.CategoryId);
 
                 var viewModel = new EventDetailsViewModel
                 {

@@ -55,27 +55,12 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Organizer" asp-action="Register">Créer des Événements</a>
                         </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="helpDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Centre d'Aide
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 mt-2" aria-labelledby="helpDropdown">
-                                <li><a class="dropdown-item py-2" href="#about"><i class="bi bi-info-circle me-2"></i> À Propos</a></li>
-                                <li><a class="dropdown-item py-2" href="#contact"><i class="bi bi-envelope me-2"></i> Contact</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item py-2" asp-controller="Home" asp-action="Privacy"><i class="bi bi-shield-check me-2"></i> Politique de Confidentialité</a></li>
-                            </ul>
-                        </li>
+
+                        @await Component.InvokeAsync("CartDropdown")
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Customer" asp-action="MyReservations">Trouver mes billets</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link cart-link" asp-controller="Cart" asp-action="Index">
-                                    <i class="bi bi-cart3"></i>
-                                    <span class="cart-badge">0</span>
-                                </a>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle btn-login" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -94,9 +79,6 @@
                         }
                         else
                         {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Customer" asp-action="MyReservations">Trouver mes billets</a>
-                            </li>
                             <li class="nav-item">
                                 <a class="nav-link btn-login" asp-controller="Account" asp-action="Login">
                                     Log In

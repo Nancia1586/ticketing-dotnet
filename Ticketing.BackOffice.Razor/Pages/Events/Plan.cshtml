@@ -2,13 +2,37 @@
 @model Ticketing.BackOffice.Razor.Pages.Events.PlanModel
 
 @{
-    ViewData["Title"] = $"Plan de Salle Structuré pour {Model.Event.Name}";
+    ViewData["Title"] = $"Plan — {Model.Event.Name}";
 }
+
+<style>
+.ftabs{display:flex;border-bottom:2px solid #e5e7eb;margin-bottom:0;padding:0 1rem;padding-top:.25rem}
+.ftab{padding:.55rem 1.1rem;font-size:.85rem;font-weight:500;color:#6b7280;border-bottom:2.5px solid transparent;margin-bottom:-2px;text-decoration:none;white-space:nowrap;display:inline-block}
+.ftab:hover{color:#374151}
+.ftab.on{color:#2563eb;border-bottom-color:#2563eb;font-weight:600}
+</style>
 
 <link rel="stylesheet" href="~/css/events/plan.css" asp-append-version="true" />
 
-<div class="max-w-7xl mx-auto bg-white rounded-lg shadow-xl p-10">
-    <h1 class="text-2xl font-extrabold text-gray-900 mb-2">Configuration du plan par type de ticket</h1>
+<!-- Breadcrumb -->
+<div class="flex items-center gap-2 text-sm text-gray-500 mb-3">
+    <a asp-page="Index" class="hover:text-blue-600 transition-colors">Événements</a>
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+    <a asp-page="Edit" asp-route-id="@Model.Event.Id" class="hover:text-blue-600 transition-colors">@Model.Event.Name</a>
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+    <span class="text-gray-800 font-medium">Configuration du plan</span>
+</div>
+
+<div class="bg-white border border-gray-200 rounded-lg overflow-hidden mb-4">
+    <div class="ftabs">
+        <a asp-page="Edit" asp-route-id="@Model.Event.Id" class="ftab">Général</a>
+        <span class="ftab on">Configuration du plan</span>
+        <a asp-page="Details" asp-route-id="@Model.Event.Id" class="ftab">Statistiques</a>
+    </div>
+</div>
+
+<div class="bg-white border border-gray-200 rounded-lg overflow-hidden p-6">
+    <h1 class="text-lg font-bold text-gray-900 mb-2">Configuration du plan par type de ticket</h1>
     <div class="flex flex-col gap-2 md:flex-row md:gap-0 md:items-center md:justify-between py-4 text-blue-600 mb-4">
         <span class="flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tag-icon lucide-tag"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg>

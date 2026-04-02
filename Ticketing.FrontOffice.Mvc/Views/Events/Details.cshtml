@@ -310,37 +310,27 @@
         <!-- Ticket Selection Sidebar -->
         <div class="col-lg-3 order-1 order-lg-2">
             <div class="sticky-top" style="top: 100px; z-index: 100;">
-                <h3 class="fw-bold mb-4 text-uppercase border-start border-4 border-accent-primary ps-3" style="border-color: var(--accent-primary) !important;">
-                    Sélectionner les Billets
-                </h3>
-                
-                <div class="card-custom p-4">
+                <div class="seat-legend-container">
+                    <h4 class="legend-title">Sélectionner les Billets</h4>
+
                     <form asp-controller="Cart" asp-action="AddToCart" method="post" id="bookingForm">
                         <input type="hidden" name="eventId" value="@Model.Event.Id" />
                         <input type="hidden" name="ticketTypeId" id="ticketTypeIdInput" />
-                        
-                        <!-- Visual Seat List -->
-                        <div id="visualSeatList" class="mb-3"></div>
-                        
+
+                        <div id="visualSeatList"></div>
                         <div id="selectedSeatsContainer"></div>
-                        
-                        <!-- Ticket Types -->
+
                         @if (!hasSeating || !allSeats.Any())
                         {
-                            <div class="ticket-list d-flex flex-column gap-3 mb-4">
+                            <div class="seat-legend" style="margin-bottom: 0.75rem;">
                                 @foreach (var type in Model.Event.TicketTypes)
                                 {
-                                    <label class="ticket-option-custom position-relative p-3 border rounded-2 transition-all cursor-pointer" style="border-color: var(--border-color);">
-                                        <input type="radio" name="ticketTypeId" value="@type.Id" class="position-absolute opacity-0 ticket-radio" required>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                <div class="radio-indicator-custom me-3 rounded-circle" style="background-color: @typeColors[type.Id]; width: 24px; height: 24px;"></div>
-                                                <div>
-                                                    <h6 class="fw-bold mb-0 text-uppercase">@type.Name</h6>
-
-                                                </div>
-                                            </div>
-                                            <div class="fw-bold text-accent-primary fs-5">@type.Price.ToString("N0") <small class="fs-6 text-secondary">Ar</small></div>
+                                    <label class="legend-item ticket-legend-item" style="cursor: pointer;">
+                                        <input type="radio" name="ticketTypeId" value="@type.Id" class="ticket-radio" style="position: absolute; opacity: 0; pointer-events: none;" required>
+                                        <div class="legend-color-box" style="background-color: @typeColors[type.Id]; border-radius: 50%;"></div>
+                                        <div class="legend-text">
+                                            <span class="legend-name">@type.Name</span>
+                                            <span class="legend-price">@type.Price.ToString("N0") Ar</span>
                                         </div>
                                     </label>
                                 }
@@ -349,25 +339,25 @@
 
                         @if (hasSeating && allSeats.Any())
                         {
-                            <div class="alert alert-light border mb-4 text-center bg-card" id="emptyStateInfo" style="border-color: var(--border-color) !important;">
-                                <i class="bi bi-info-circle me-2 text-accent-primary"></i>
-                                Sélectionnez vos places sur la carte ci-dessus.<br>
-                                <strong id="seatSelectionStatus" class="text-accent-primary">0 place(s) sélectionnée(s)</strong>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem; text-align: center; padding: 0.4rem 0;">
+                                <i class="bi bi-info-circle me-1" style="color: var(--accent-primary);"></i>
+                                Sélectionnez vos places sur la carte.<br>
+                                <strong id="seatSelectionStatus" style="color: var(--accent-primary);">0 place(s) sélectionnée(s)</strong>
                             </div>
                         }
                         else
                         {
-                            <div class="mb-4">
-                                <label class="form-label fw-bold small text-uppercase text-secondary">Quantité</label>
-                                <input type="number" name="quantity" class="form-control bg-card border-secondary text-white" value="1" min="1" max="10" />
+                            <div style="margin-bottom: 0.75rem;">
+                                <label class="legend-name d-block mb-1">Quantité</label>
+                                <input type="number" name="quantity" class="form-control bg-card border-secondary text-white" value="1" min="1" max="10" style="font-size: 0.85rem; padding: 0.4rem 0.6rem;" />
                             </div>
                         }
 
-                        <div class="d-grid">
-                            <button type="submit" class="btn-primary-custom w-100 py-3" id="addToCartBtn" @(hasSeating && allSeats.Any() ? "disabled" : "")>
-                                <i class="bi bi-cart-plus me-2"></i>Ajouter au Panier
-                            </button>
-                        </div>
+                        <button type="submit" class="btn-primary-custom w-100" id="addToCartBtn"
+                                style="padding: 0.6rem 1rem; font-size: 0.875rem;"
+                                @(hasSeating && allSeats.Any() ? "disabled" : "")>
+                            <i class="bi bi-cart-plus me-2"></i>Ajouter au Panier
+                        </button>
                     </form>
                 </div>
             </div>
@@ -919,11 +909,38 @@
         color: var(--text-secondary);
         line-height: 1.15;
     }
+
+    .ticket-legend-item {
+        border-radius: 4px;
+        padding: 0.25rem 0.35rem;
+        transition: background 0.15s;
+    }
+
+    .ticket-legend-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .ticket-legend-item.selected {
+        background: rgba(37, 99, 235, 0.12);
+        outline: 1px solid rgba(37, 99, 235, 0.3);
+    }
+
+    .ticket-legend-item.selected .legend-name {
+        color: var(--accent-primary);
+    }
 </style>
 
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Ticket type radio → highlight selected legend item
+            document.querySelectorAll('.ticket-radio').forEach(radio => {
+                radio.addEventListener('change', function () {
+                    document.querySelectorAll('.ticket-legend-item').forEach(el => el.classList.remove('selected'));
+                    this.closest('.ticket-legend-item')?.classList.add('selected');
+                });
+            });
+
             const seats = document.querySelectorAll('.seat-cell.seat-available');
             const container = document.getElementById('selectedSeatsContainer');
             const statusDiv = document.getElementById('seatSelectionStatus');

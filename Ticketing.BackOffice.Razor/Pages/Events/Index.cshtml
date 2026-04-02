@@ -1,307 +1,130 @@
 @page
 @model Ticketing.BackOffice.Razor.Pages.Events.IndexModel
-
 @{
-    ViewData["Title"] = "Gestion des Événements";
+    ViewData["Title"] = "Événements";
 }
 
-<div class="overflow-x-auto bg-white rounded-lg shadow-xl max-w-7xl p-10">
+<style>
+.ptbl{width:100%;border-collapse:collapse}
+.ptbl th{text-align:left;font-size:.75rem;font-weight:600;color:#6b7280;padding:.55rem 1rem;border-bottom:1px solid #e5e7eb;background:#f9fafb;white-space:nowrap}
+.ptbl td{font-size:.85rem;color:#111827;padding:.6rem 1rem;border-bottom:1px solid #f3f4f6}
+.ptbl tbody tr:hover td{background:#eff6ff;cursor:pointer}
+.ptbl tbody tr:last-child td{border-bottom:none}
+</style>
 
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-800">Liste des événements</h1>
-            <p class="text-gray-500 text-sm">@Model.TotalCount événements trouvés</p>
-        </div>
+<div class="flex items-center justify-between mb-4">
+    <h1 class="text-xl font-bold text-gray-800">Événements</h1>
+    <a asp-page="Create" class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+        Nouveau
+    </a>
+</div>
 
-        <div class="flex flex-col md:flex-row gap-3">
-            <form method="get" class="flex gap-2">
-                <input type="text" name="searchTerm" value="@Model.SearchTerm" placeholder="Rechercher..." class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500" />
-                <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm font-medium transition">Filtrer</button>
-            </form>
-            <a asp-page="Create" type="button" class="btn-primary rounded-md text-white box-border border border-transparent focus:ring-4 shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                Ajouter un événement
-            </a>
-        </div>
+<!-- Search -->
+<div class="bg-white border border-gray-200 rounded-lg mb-3 overflow-hidden">
+    <div class="px-4 py-2.5 text-sm font-semibold text-gray-700 flex justify-between items-center cursor-pointer" onclick="toggleSearch()">
+        <span>Recherche</span>
+        <svg id="sc" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="transition:transform .2s">
+            <path d="m18 15-6-6-6 6"/>
+        </svg>
     </div>
+    <div id="sb" class="px-4 py-3 border-t border-gray-100">
+        <form method="get" class="flex flex-wrap gap-2 items-center">
+            <input type="text" name="searchTerm" value="@Model.SearchTerm" placeholder="Mots clés"
+                   class="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 min-w-[200px]" />
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700">Rechercher</button>
+            <a asp-page="Index" class="px-4 py-2 border border-gray-300 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-50">Réinitialiser</a>
+        </form>
+    </div>
+</div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        @foreach (var item in Model.Events) {
-            <div class="flex flex-col bg-neutral-primary-soft border border-default rounded-md shadow-xs md:flex-row md:max-w-xl md:flex-row md:max-w-xl">
-                <div class="h-64 md:h-64 md:w-3/5 mb-4 md:mb-0 bg-gray-200 flex items-center justify-center overflow-hidden rounded-l-md">
-                    @if (!string.IsNullOrEmpty(item.PosterUrl))
-                    {
-                        <img class="object-cover w-full h-full" src="@item.PosterUrl" alt="Poster de @item.Name">
-                    }
-                    else
-                    {
-                        <div class="w-full h-full bg-indigo-50 flex items-center justify-center">
-                            <span class="text-sm text-indigo-400">Affiche non disponible</span>
-                        </div>
-                    }
-                </div>
-                <div class="flex flex-col gap-3 leading-normal p-4 w-full">
-                    <div class="flex items-start justify-between">
-                        <div class="flex flex-col gap-2">
-                            <a asp-page="./Plan" asp-route-id="@item.Id" class="text-xl font-bold tracking-tight text-heading">@Html.DisplayFor(modelItem => item.Name)</a>
-                            <div class="flex items-center gap-2">
-                                @if (item.IsActive)
-                                {
-                                    <span class="bg-green-500 text-white text-xs font-medium px-2.5 py-0.5 rounded-full">
-                                        Actif
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="bg-red-500 text-white text-xs font-medium px-2.5 py-0.5 rounded-full">
-                                        Inactif
-                                    </span>
-                                }
-                                @if (item.Category != null)
-                                {
-                                    <span class="bg-neutral-primary-soft border border-default text-heading text-xs font-medium px-1.5 py-0.5 rounded-full">@Html.DisplayFor(modelItem => item.Category.Name)</span>
-                                }
-                            </div>
-                        </div>
-                        <div>
-                            <button data-popover-target="popover-click-@item.Id" data-popover-trigger="click" type="button" data-popover-placement="bottom" class="text-gray-600 border border-gray-200 p-0.5 rounded-md hover:bg-gray-50 transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ellipsis-icon lucide-ellipsis"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-                            </button>
-
-                            <div data-popover id="popover-click-@item.Id" role="tooltip" class="absolute z-10 invisible inline-block w-48 text-sm text-gray-700 transition-opacity duration-300 bg-white border border-gray-200 rounded-md shadow-lg opacity-0">
-                                
-                                <a asp-page="./Details" asp-route-id="@item.Id" class="block px-3 py-2 bg-white border-b border-gray-100 rounded-t-md hover:bg-gray-50 transition">
-                                    <h3 class="flex items-center gap-2 font-medium text-gray-800 hover:text-blue-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye">
-                                            <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
-                                            <circle cx="12" cy="12" r="3" />
-                                        </svg>
-                                        Voir Détails
-                                    </h3>
-                                </a>
-
-                                <a asp-page="./Edit" asp-route-id="@item.Id" class="block px-3 py-2 bg-white border-b border-gray-100 hover:bg-gray-50 transition">
-                                    <h3 class="flex items-center gap-2 font-medium text-gray-800 hover:text-blue-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-pen-icon lucide-square-pen"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></svg>
-                                        Modifier
-                                    </h3>
-                                </a>
-
-                                @{
-                                    var actionLabel = item.IsActive ? "Désactiver" : "Activer";
-                                    var actionHandler = "ToggleStatus";
-                                    var actionMessage = item.IsActive 
-                                        ? $"Êtes-vous sûr de vouloir désactiver l'événement '{item.Name}'? Il ne sera plus visible."
-                                        : $"Êtes-vous sûr de vouloir activer l'événement '{item.Name}'?";
-                                    var actionStatus = (!item.IsActive).ToString().ToLower();
-
-                                    var actionIcon = item.IsActive ? "square-minus" : "square-check";
-                                }
-                                <button type="button" 
-                                        class="action-button w-full text-left px-3 py-2 bg-white border-b border-gray-100 hover:bg-gray-50 transition"
-                                        data-action-type="status"
-                                        data-event-id="@item.Id"
-                                        data-event-name="@item.Name"
-                                        data-handler="@actionHandler"
-                                        data-message="@actionMessage"
-                                        data-status="@actionStatus"
-                                        data-confirm-text="@actionLabel">
-
-                                    <h3 class="flex items-center gap-2 font-medium text-gray-800 hover:text-blue-600">
-                                        @if (item.IsActive)
-                                        {
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-minus">
-                                                <rect width="18" height="18" x="3" y="3" rx="2" />
-                                                <path d="M8 12h8" />
-                                            </svg>
-                                            @:Désactiver
-                                        }
-                                        else
-                                        {
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-check">
-                                                <rect width="18" height="18" x="3" y="3" rx="2" />
-                                                <path d="m9 12 2 2 4-4" />
-                                            </svg>
-                                            @:Activer
-                                        }
-                                    </h3>
-                                </button>
-                                
-                                <button type="button" 
-                                        class="action-button w-full text-left px-3 py-2 bg-white rounded-b-md hover:bg-red-50 transition"
-                                        data-action-type="delete"
-                                        data-event-id="@item.Id"
-                                        data-event-name="@item.Name"
-                                        data-handler="Delete"
-                                        data-message="Êtes-vous sûr de vouloir supprimer définitivement l'événement '@item.Name'? Cette action est irréversible."
-                                        data-confirm-text="Supprimer">
-
-                                    <h3 class="flex items-center gap-2 font-medium text-red-600 hover:text-red-700">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                                        Supprimer
-                                    </h3>
-                                </button>
-
-                                <div data-popper-arrow></div>
-                            </div>
-                        </div>
-                    </div>
-    
-                    <p class="text-gray-600">@Html.DisplayFor(modelItem => item.Description)</p>
-                    <div class="flex flex-col items-start gap-2 text-gray-600">
-                        <p class="flex items-center gap-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin-icon lucide-map-pin"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
-
-                            @if (item.Venue != null)
+<!-- Table -->
+<div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <div class="px-4 py-2 border-b border-gray-100">
+        <span class="text-xs text-gray-400">@Model.TotalCount résultat(s)</span>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="ptbl">
+            <thead>
+                <tr>
+                    <th style="width:44px">#</th>
+                    <th>Nom</th>
+                    <th class="hidden sm:table-cell">Catégorie</th>
+                    <th class="hidden md:table-cell">Lieu</th>
+                    <th class="hidden lg:table-cell">Date</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int idx = (Model.CurrentPage - 1) * 10 + 1; }
+                @foreach (var e in Model.Events)
+                {
+                    <tr onclick="location.href='@Url.Page("Edit", new { id = e.Id })'">
+                        <td class="text-gray-400 text-xs">@idx</td>
+                        <td class="font-medium">@e.Name</td>
+                        <td class="hidden sm:table-cell text-gray-500 text-xs">@(e.Category?.Name ?? "—")</td>
+                        <td class="hidden md:table-cell text-gray-500 text-xs">@(e.Venue?.Name ?? "—")</td>
+                        <td class="hidden lg:table-cell text-gray-500 text-xs">@e.Date.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            @if (!e.IsSubmitted)
                             {
-                                @Html.DisplayFor(modelItem => item.Venue.Name)
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block"></span>Brouillon
+                                </span>
                             }
-                        </p>
-                        <p class="flex items-center gap-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-clock-icon lucide-calendar-clock"><path d="M16 14v2.2l1.6 1"/><path d="M16 2v4"/><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M3 10h5"/><path d="M8 2v4"/><circle cx="16" cy="16" r="6"/></svg>
-                            @item.Date.ToFrenchDateString("dd/MM/yyyy 'à' HH:mm")
-                        </p>
-                    </div>
-                </div>
-            </div>
-        }
+                            else if (e.IsActive)
+                            {
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>Actif
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>Inactif
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                    idx++;
+                }
+                @if (!Model.Events.Any())
+                {
+                    <tr><td colspan="6" class="text-center text-gray-400 py-10 text-sm">Aucun événement trouvé</td></tr>
+                }
+            </tbody>
+        </table>
     </div>
 
     @if (Model.TotalPages > 1)
     {
-        <div class="mt-8 flex items-center justify-between border-t border-gray-100 pt-6">
-            <div class="text-sm text-gray-500">
-                Affichage de <span class="font-medium text-gray-900">@((Model.CurrentPage - 1) * Model.PageSize + 1)</span> à <span class="font-medium text-gray-900">@(Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalCount))</span> sur <span class="font-medium text-gray-900">@Model.TotalCount</span>
-            </div>
-            <div class="flex gap-2">
+        <div class="px-4 py-2.5 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+            <span>Page @Model.CurrentPage / @Model.TotalPages</span>
+            <div class="flex gap-1">
                 @if (Model.HasPreviousPage)
                 {
-                    <a asp-page="./Index" asp-route-page="@(Model.CurrentPage - 1)" asp-route-searchTerm="@Model.SearchTerm" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition shadow-sm">
-                        Précédent
-                    </a>
+                    <a asp-page="Index" asp-route-page="@(Model.CurrentPage-1)" asp-route-searchTerm="@Model.SearchTerm"
+                       class="px-2.5 py-1 border border-gray-200 rounded hover:bg-gray-50">‹</a>
                 }
-                else
+                @for (int p = Math.Max(1, Model.CurrentPage-2); p <= Math.Min(Model.TotalPages, Model.CurrentPage+2); p++)
                 {
-                    <span class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed">
-                        Précédent
-                    </span>
+                    <a asp-page="Index" asp-route-page="@p" asp-route-searchTerm="@Model.SearchTerm"
+                       class="px-2.5 py-1 border rounded @(p==Model.CurrentPage?"bg-blue-600 text-white border-blue-600":"border-gray-200 hover:bg-gray-50")">@p</a>
                 }
-
                 @if (Model.HasNextPage)
                 {
-                    <a asp-page="./Index" asp-route-page="@(Model.CurrentPage + 1)" asp-route-searchTerm="@Model.SearchTerm" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition shadow-sm">
-                        Suivant
-                    </a>
-                }
-                else
-                {
-                    <span class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed">
-                        Suivant
-                    </span>
+                    <a asp-page="Index" asp-route-page="@(Model.CurrentPage+1)" asp-route-searchTerm="@Model.SearchTerm"
+                       class="px-2.5 py-1 border border-gray-200 rounded hover:bg-gray-50">›</a>
                 }
             </div>
         </div>
     }
 </div>
 
-<div id="confirmation-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-gray-900 bg-opacity-50 transition-opacity duration-300">
-    <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md m-4 transform transition-all duration-300 scale-95 opacity-0">
-        <h3 id="modal-title" class="text-lg font-bold text-gray-900 mb-4">Confirmation de l'Action</h3>
-        <p id="modal-message" class="text-gray-600 mb-6">
-            Êtes-vous sûr de vouloir procéder à cette action ?
-        </p>
-        
-        <form id="action-form" method="post" class="hidden">
-            <input type="hidden" name="id" id="modal-event-id" />
-            <input type="hidden" name="isActive" id="modal-is-active" value="false" />
-        </form>
-
-        <div class="flex justify-end space-x-3">
-            <button id="cancel-button" type="button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
-                Annuler
-            </button>
-            <button id="confirm-button" type="button" class="btn-primary px-4 py-2 text-sm font-medium rounded-lg ">
-                Confirmer
-            </button>
-        </div>
-    </div>
-</div>
-
-@section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const modal = document.getElementById('confirmation-modal');
-            const modalDialog = modal.querySelector('div:first-child');
-            const confirmButton = document.getElementById('confirm-button');
-            const cancelButton = document.getElementById('cancel-button');
-            const actionForm = document.getElementById('action-form');
-            const modalTitle = document.getElementById('modal-title');
-            const modalMessage = document.getElementById('modal-message');
-            const modalEventId = document.getElementById('modal-event-id');
-            const modalIsActive = document.getElementById('modal-is-active');
-
-            function showModal() {
-                modal.classList.remove('hidden', 'opacity-0');
-                modal.classList.add('flex', 'opacity-100');
-                modalDialog.classList.remove('scale-95', 'opacity-0');
-                modalDialog.classList.add('scale-100', 'opacity-100');
-            }
-
-            function hideModal() {
-                modalDialog.classList.remove('scale-100', 'opacity-100');
-                modalDialog.classList.add('scale-95', 'opacity-0');
-                setTimeout(() => {
-                    modal.classList.remove('flex', 'opacity-100');
-                    modal.classList.add('hidden', 'opacity-0');
-                }, 300);
-            }
-
-            document.querySelectorAll('.action-button').forEach(button => {
-                button.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    
-                    const eventId = this.dataset.eventId;
-                    const eventName = this.dataset.eventName;
-                    const handler = this.dataset.handler;
-                    const message = this.dataset.message;
-                    const status = this.dataset.status;
-                    const confirmText = this.dataset.confirmText;
-                    const actionType = this.dataset.actionType;
-
-                    modalMessage.textContent = message;
-                    confirmButton.textContent = confirmText;
-                    
-                    if (actionType === 'delete') {
-                        modalTitle.textContent = "Suppression Définitive";
-                        confirmButton.classList.remove('btn-primary', 'bg-green-600', 'hover:bg-green-700');
-                        confirmButton.classList.add('bg-red-600', 'hover:bg-red-700', 'text-white', 'hover:text-white');
-                    } else {
-                        modalTitle.textContent = `${confirmText} l'événement`;
-                        confirmButton.classList.remove('bg-red-600', 'hover:bg-red-700');
-                        confirmButton.classList.add('btn-primary');
-                    }
-
-                    modalEventId.value = eventId;
-                    modalIsActive.value = status || 'false';
-
-                    actionForm.action = `?handler=${handler}`;
-
-                    showModal();
-                });
-            });
-
-            confirmButton.addEventListener('click', function () {
-                actionForm.submit();
-                hideModal();
-            });
-
-            cancelButton.addEventListener('click', hideModal);
-
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    hideModal();
-                }
-            });
-        });
-    </script>
+<script>
+function toggleSearch(){
+    const b=document.getElementById('sb'),c=document.getElementById('sc');
+    const h=b.style.display==='none';
+    b.style.display=h?'':'none';
+    c.style.transform=h?'':'rotate(180deg)';
 }
+</script>

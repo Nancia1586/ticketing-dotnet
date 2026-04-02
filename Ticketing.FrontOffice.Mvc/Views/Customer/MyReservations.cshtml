@@ -2,50 +2,339 @@
 
 @{
     ViewData["Title"] = "Mes Réservations";
+    const int PageSize = 6;
+    var reservations = Model ?? new List<Ticketing.Core.Models.Reservation>();
+    var totalCount = reservations.Count;
 }
 
-<div class="container my-5">
-    <h1 class="mb-4">Mes Réservations</h1>
+<style>
+    .reservations-page {
+        background: linear-gradient(145deg, #dbeafe 0%, #bfdbfe 60%, #93c5fd 100%);
+        min-height: calc(100vh - 72px);
+        padding: 2.5rem 1.5rem;
+    }
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="post" class="row g-3 align-items-end">
-                <div class="col-md-6">
-                    <label for="email" class="form-label">Entrez votre adresse email pour trouver vos réservations :</label>
-                    <input type="email" name="email" id="email" class="form-control" placeholder="name@example.com" value="@ViewBag.Email" required />
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100">Rechercher</button>
-                </div>
-            </form>
+    /* Search bar — same as Events */
+    .search-bar {
+        display: flex;
+        align-items: center;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(37, 99, 235, 0.1);
+        overflow: hidden;
+        border: 1.5px solid #e2e8f0;
+    }
+    .search-bar:focus-within {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+    .search-bar-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        padding: 0.875rem 1rem 0.875rem 2.75rem;
+        font-size: 0.95rem;
+        color: #1e293b;
+        background: transparent;
+        min-width: 0;
+        font-family: inherit;
+    }
+    .search-bar-input::placeholder { color: #94a3b8; }
+    .search-bar-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 1rem;
+        pointer-events: none;
+    }
+    .search-bar-submit {
+        background: #2563eb;
+        color: #ffffff;
+        border: none;
+        padding: 0.875rem 1.25rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.15s;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        flex-shrink: 0;
+        font-family: inherit;
+    }
+    .search-bar-submit:hover { background: #1d4ed8; }
+    .search-bar-clear {
+        background: #f1f5f9;
+        color: #64748b;
+        border: none;
+        border-left: 1px solid #e2e8f0;
+        padding: 0.875rem 0.875rem;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.15s;
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        text-decoration: none;
+        line-height: 1;
+    }
+    .search-bar-clear:hover { background: #e2e8f0; color: #334155; }
+
+    /* Reservation cards */
+    .res-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 1rem 1.1rem;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+        border-left: 3px solid #2563eb;
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .res-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.14);
+    }
+    .res-card-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #1e293b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .res-meta {
+        font-size: 0.78rem;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    .res-meta i { color: #93c5fd; width: 14px; flex-shrink: 0; }
+    .res-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 0.5rem;
+        border-top: 1px solid #e2e8f0;
+        margin-top: 0.25rem;
+    }
+    .res-total {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #2563eb;
+    }
+    .res-id {
+        font-size: 0.7rem;
+        color: #94a3b8;
+        font-family: monospace;
+    }
+    .status-badge {
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+    .status-confirmed  { background: #dcfce7; color: #16a34a; }
+    .status-pending    { background: #fef9c3; color: #b45309; }
+    .status-cancelled  { background: #fee2e2; color: #dc2626; }
+    .status-default    { background: #e0f2fe; color: #0369a1; }
+
+    /* Pagination */
+    .pagination-btn {
+        background: #ffffff;
+        border: 1.5px solid #e2e8f0;
+        color: #475569;
+        border-radius: 8px;
+        padding: 0.4rem 0.75rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        font-family: inherit;
+    }
+    .pagination-btn:hover:not(:disabled) { background: #dbeafe; border-color: #2563eb; color: #2563eb; }
+    .pagination-btn.active               { background: #2563eb; border-color: #2563eb; color: #ffffff; }
+    .pagination-btn:disabled             { opacity: 0.4; cursor: default; }
+</style>
+
+<div class="reservations-page">
+    <div class="container-fluid" style="max-width: 1100px; margin: 0 auto;">
+
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <h1 style="font-size: 2rem; font-weight: 800; color: #1e3a8a; margin-bottom: 0.35rem;">Mes Réservations</h1>
+            <p style="color: #475569; font-size: 0.95rem;">Retrouvez toutes vos commandes de billets.</p>
         </div>
-    </div>
 
-    @if (Model != null)
-    {
-        @if (Model.Any())
-        {
-            <div class="list-group">
-                @foreach (var res in Model)
-                {
-                    <div class="list-group-item list-group-item-action flex-column align-items-start p-4 mb-3 shadow-sm border rounded">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h4 class="mb-1 text-primary">@res.Event?.Name</h4>
-                            <small class="text-muted">@res.ReservationDate.ToFrenchDateString("dd/MM/yyyy")</small>
-                        </div>
-                        <p class="mb-1">
-                            <strong>Date :</strong> @res.Event?.Date.ToFrenchDateString("dd MMMM yyyy 'à' HH:mm")<br>
-                            <strong>Places :</strong> @res.SeatCount (@(res.Seats.Any() ? string.Join(", ", res.Seats.Select(s => s.Code)) : "Entrée Générale"))<br>
-                            <strong>Total :</strong> @res.TotalAmount.ToString("N0") Ar
-                        </p>
-                        <small class="text-muted">ID de Commande : @res.Id</small>
+        <!-- Search bar -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-lg-7 col-xl-6">
+                <form method="get" action="">
+                    <div class="search-bar" style="position: relative;">
+                        <i class="bi bi-envelope search-bar-icon"></i>
+                        <input type="email" name="email" class="search-bar-input"
+                               placeholder="Votre adresse email *"
+                               value="@ViewBag.Email" required />
+                        <button type="submit" class="search-bar-submit">
+                            <i class="bi bi-search"></i>Rechercher
+                        </button>
+                        <a asp-action="MyReservations" class="search-bar-clear" title="Effacer">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
                     </div>
-                }
+                </form>
+            </div>
+        </div>
+
+        <!-- Results -->
+        @if (Model == null)
+        {
+            <!-- No search yet -->
+            <div class="text-center py-5">
+                <i class="bi bi-ticket-perforated" style="font-size: 3.5rem; color: #93c5fd; display: block; margin-bottom: 1rem;"></i>
+                <p style="color: #475569;">Entrez votre email pour retrouver vos billets.</p>
+            </div>
+        }
+        else if (!reservations.Any())
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-inbox" style="font-size: 3.5rem; color: #93c5fd; display: block; margin-bottom: 1rem;"></i>
+                <h3 style="color: #1e40af; font-weight: 700; font-size: 1.1rem;">Aucune réservation trouvée</h3>
+                <p style="color: #475569; font-size: 0.9rem;">Aucune commande associée à cet email.</p>
             </div>
         }
         else
         {
-             <div class="alert alert-warning">Aucune réservation trouvée pour cet email.</div>
+            <!-- Count + pagination info -->
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <span style="font-size: 0.85rem; color: #475569;">
+                    <strong style="color: #1e3a8a;">@totalCount</strong> réservation@(totalCount > 1 ? "s" : "") trouvée@(totalCount > 1 ? "s" : "")
+                </span>
+                <span id="page-info" style="font-size: 0.8rem; color: #64748b;"></span>
+            </div>
+
+            <!-- Cards grid -->
+            <div id="res-grid" class="row g-3">
+                @for (int i = 0; i < reservations.Count; i++)
+                {
+                    var res = reservations[i];
+                    var seats = res.Seats.Any()
+                        ? string.Join(", ", res.Seats.Select(s => s.Code))
+                        : "Entrée Générale";
+                    var statusClass = res.Status.ToString() switch {
+                        "Confirmed" => "status-confirmed",
+                        "Pending"   => "status-pending",
+                        "Cancelled" => "status-cancelled",
+                        _           => "status-default"
+                    };
+                    var statusLabel = res.Status switch {
+                        Ticketing.Core.Models.ReservationStatus.Confirmed => "Confirmé",
+                        Ticketing.Core.Models.ReservationStatus.Pending   => "En attente",
+                        Ticketing.Core.Models.ReservationStatus.Cancelled => "Annulé",
+                        _ => res.Status.ToString()
+                    };
+
+                    <div class="col-md-6 col-lg-4 res-item" data-index="@i">
+                        <div class="res-card">
+                            <div class="d-flex align-items-start justify-content-between gap-2">
+                                <div class="res-card-title" title="@res.Event?.Name">@res.Event?.Name</div>
+                                <span class="status-badge @statusClass flex-shrink-0">@statusLabel</span>
+                            </div>
+                            <div class="res-meta">
+                                <i class="bi bi-calendar-event"></i>
+                                <span>@res.Event?.Date.ToFrenchDateString("dd MMM yyyy 'à' HH:mm")</span>
+                            </div>
+                            <div class="res-meta">
+                                <i class="bi bi-geo-alt"></i>
+                                <span>@(res.Event?.Venue?.Name ?? "Lieu à confirmer")</span>
+                            </div>
+                            <div class="res-meta">
+                                <i class="bi bi-ticket-perforated"></i>
+                                <span>@res.SeatCount billet@(res.SeatCount > 1 ? "s" : "") — @seats</span>
+                            </div>
+                            <div class="res-footer">
+                                <span class="res-total">@res.TotalAmount.ToString("N0") Ar</span>
+                                <span class="res-id">#@res.Id</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Pagination controls -->
+            @if (totalCount > PageSize)
+            {
+                <div id="pagination" class="d-flex align-items-center justify-content-center gap-2 mt-4 flex-wrap"></div>
+            }
         }
-    }
+
+    </div>
 </div>
+
+@if (Model != null && reservations.Any() && totalCount > PageSize)
+{
+    @section Scripts {
+    <script>
+        (function () {
+            const PAGE_SIZE = @PageSize;
+            const items = Array.from(document.querySelectorAll('.res-item'));
+            const total = items.length;
+            const totalPages = Math.ceil(total / PAGE_SIZE);
+            let current = 1;
+
+            function render(page) {
+                current = page;
+                items.forEach((el, i) => {
+                    el.style.display = (i >= (page - 1) * PAGE_SIZE && i < page * PAGE_SIZE) ? '' : 'none';
+                });
+                const from = (page - 1) * PAGE_SIZE + 1;
+                const to = Math.min(page * PAGE_SIZE, total);
+                document.getElementById('page-info').textContent = `${from}–${to} sur ${total}`;
+                buildPager();
+            }
+
+            function buildPager() {
+                const container = document.getElementById('pagination');
+                container.innerHTML = '';
+
+                const prev = btn('‹', current - 1, current === 1);
+                container.appendChild(prev);
+
+                for (let p = 1; p <= totalPages; p++) {
+                    if (totalPages > 7 && p > 2 && p < totalPages - 1 && Math.abs(p - current) > 1) {
+                        if (p === 3 || p === totalPages - 2) {
+                            const dots = document.createElement('span');
+                            dots.textContent = '…';
+                            dots.style.cssText = 'color:#94a3b8;padding:0 4px;font-size:.85rem;';
+                            container.appendChild(dots);
+                        }
+                        continue;
+                    }
+                    container.appendChild(btn(p, p, false, p === current));
+                }
+
+                const next = btn('›', current + 1, current === totalPages);
+                container.appendChild(next);
+            }
+
+            function btn(label, page, disabled, active) {
+                const b = document.createElement('button');
+                b.textContent = label;
+                b.className = 'pagination-btn' + (active ? ' active' : '');
+                b.disabled = disabled;
+                b.onclick = () => { render(page); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+                return b;
+            }
+
+            render(1);
+        })();
+    </script>
+    }
+}

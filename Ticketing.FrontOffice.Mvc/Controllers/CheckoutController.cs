@@ -44,7 +44,7 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
             {
                 return RedirectToAction("Index", "Cart");
             }
-            return View(new CheckoutViewModel { TotalAmount = cart.TotalAmount });
+            return View(new CheckoutViewModel { TotalAmount = cart.TotalAmount, Items = cart.Items });
         }
 
         [HttpPost]
@@ -52,6 +52,8 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
         {
             if (!ModelState.IsValid)
             {
+                var cartForModel = _cartService.GetCart();
+                model.Items = cartForModel.Items;
                 return View("Index", model);
             }
 
@@ -268,6 +270,7 @@ namespace Ticketing.FrontOffice.Mvc.Controllers
             {
                 _logger.LogError(ex, "Error processing checkout for email: {Email}", model.Email);
                 ModelState.AddModelError("", $"An error occurred while processing your payment: {ex.Message}. Please try again or contact support.");
+                model.Items = _cartService.GetCart().Items;
                 return View("Index", model);
             }
         }
