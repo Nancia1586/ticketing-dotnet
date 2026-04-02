@@ -59,7 +59,8 @@ namespace Ticketing.BackOffice.Razor.Pages.Venues
                 }
             }
 
-            return RedirectToPage("./Index");
+            TempData["SuccessMessage"] = "Lieu mis à jour avec succès.";
+            return RedirectToPage("./Edit", new { id = Venue.Id });
         }
 
         private bool VenueExists(int id)

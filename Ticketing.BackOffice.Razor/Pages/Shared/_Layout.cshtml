@@ -145,6 +145,24 @@
         </div>
     </aside>
 
+    <!-- Success Toast -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div id="successToast" style="position:fixed;top:1.25rem;right:1.25rem;z-index:9999;background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:.875rem 1.1rem;display:flex;align-items:center;gap:.75rem;box-shadow:0 4px 16px rgba(0,0,0,.1);max-width:360px;animation:slideIn .25s ease;">
+            <svg width="20" height="20" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24" flex-shrink="0">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span style="font-size:.875rem;font-weight:500;color:#15803d;flex:1;">@TempData["SuccessMessage"]</span>
+            <button onclick="document.getElementById('successToast').remove()" style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:1.2rem;line-height:1;padding:0;margin-left:.25rem;">×</button>
+        </div>
+        <style>
+            @@keyframes slideIn { from { opacity:0; transform:translateX(1rem); } to { opacity:1; transform:translateX(0); } }
+        </style>
+        <script>
+            setTimeout(() => document.getElementById('successToast')?.remove(), 4000);
+        </script>
+    }
+
     <div class="lg:ml-64 min-h-screen flex flex-col">
         <!-- Top Header -->
         <header class="bg-white border-b border-gray-200 shadow-sm">

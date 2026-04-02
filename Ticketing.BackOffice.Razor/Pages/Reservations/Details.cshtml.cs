@@ -38,6 +38,7 @@ namespace Ticketing.BackOffice.Razor.Pages.Reservations
         public async Task<IActionResult> OnPostUpdateStatusAsync(int id, ReservationStatus status)
         {
             await _reservationRepository.UpdateReservationStatusAsync(id, status);
+            TempData["SuccessMessage"] = "Statut de la commande mis à jour.";
             return RedirectToPage(new { id });
         }
     }

@@ -42,8 +42,8 @@ namespace Ticketing.BackOffice.Razor.Pages.Categories
             }
 
             await _categoryService.UpdateCategoryAsync(Category);
-            TempData["SuccessMessage"] = "Catégorie modifiée avec succès.";
-            return RedirectToPage("./Index");
+            TempData["SuccessMessage"] = "Catégorie mise à jour avec succès.";
+            return RedirectToPage("./Edit", new { id = Category.Id });
         }
     }
 }

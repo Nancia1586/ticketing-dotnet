@@ -86,9 +86,10 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
                 }
             }
 
-            await _eventService.UpdateEventAsync(Event); 
+            await _eventService.UpdateEventAsync(Event);
 
-            return RedirectToPage("./Index");
+            TempData["SuccessMessage"] = "Événement mis à jour avec succès.";
+            return RedirectToPage("./Edit", new { id = Event.Id });
         }
     }
 }

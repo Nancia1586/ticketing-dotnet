@@ -38,8 +38,12 @@
         }
     </div>
 
-    <form method="post" id="mainForm" enctype="multipart/form-data">
+    <form method="post" id="mainForm">
         <input type="hidden" asp-for="Event.Id" />
+        <input type="hidden" asp-for="Event.OrganizerId" />
+        <input type="hidden" asp-for="Event.IsSubmitted" />
+        <input type="hidden" asp-for="Event.PosterUrl" id="currentPosterUrl" />
+        <input type="hidden" name="Event.PosterBase64" value="" id="posterBase64" />
 
         <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
@@ -86,24 +90,39 @@
                 <label asp-for="Event.IsActive" class="text-sm text-gray-700 font-medium">Actif</label>
             </div>
 
-            @if (!isNew && !string.IsNullOrEmpty(Model.Event?.PosterUrl))
-            {
-                <div class="sm:col-span-2 lg:col-span-3">
-                    <p class="text-xs text-gray-400 mb-1">Affiche actuelle</p>
-                    <img src="@Model.Event.PosterUrl" alt="Affiche" class="h-32 rounded-lg object-cover border border-gray-200" />
-                </div>
-            }
-
-            <div class="sm:col-span-2 lg:col-span-3" id="uploadSection" style="display:none">
-                <label class="text-xs text-gray-500 font-medium block mb-1">Nouvelle affiche</label>
-                <div class="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-blue-300 transition-colors"
-                     onclick="document.getElementById('posterFile').click()">
-                    <input type="file" id="posterFile" accept="image/*" class="hidden" onchange="handlePoster(this)" />
-                    <input type="hidden" asp-for="Event.PosterBase64" id="posterBase64" />
-                    <div id="posterPreview" class="hidden">
-                        <img id="posterImg" class="h-28 mx-auto rounded-lg object-cover" />
+            <!-- Poster section: always visible, updates in real-time -->
+            <div class="sm:col-span-2 lg:col-span-3">
+                <p class="text-xs text-gray-400 mb-2">Affiche</p>
+                <div class="flex items-start gap-4">
+                    <!-- Current / new poster preview -->
+                    <div style="flex-shrink:0;">
+                        @if (!isNew && !string.IsNullOrEmpty(Model.Event?.PosterUrl))
+                        {
+                            <img id="currentPoster" src="@Model.Event.PosterUrl" alt="Affiche"
+                                 style="width:100px;height:100px;border-radius:8px;object-fit:cover;border:1px solid #e5e7eb;" />
+                        }
+                        else
+                        {
+                            <div id="currentPoster"
+                                 style="width:100px;height:100px;border-radius:8px;background:#f1f5f9;border:1px dashed #d1d5db;display:flex;align-items:center;justify-content:center;">
+                                <svg width="28" height="28" fill="none" stroke="#94a3b8" stroke-width="1.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4-4a3 3 0 014.24 0L16 16m-2-2l1.6-1.6a3 3 0 014.24 0L22 16M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                        }
                     </div>
-                    <p id="posterPlaceholder" class="text-sm text-gray-400">Déposer une image ou <span class="text-blue-600 underline">sélectionner</span></p>
+                    <!-- Upload trigger (shown only in edit mode) -->
+                    <div id="uploadSection" style="display:none;flex:1;">
+                        <div class="border-2 border-dashed border-gray-200 rounded-lg p-3 text-center cursor-pointer hover:border-blue-300 transition-colors"
+                             onclick="document.getElementById('posterFile').click()">
+                            <input type="file" id="posterFile" accept="image/*" style="display:none" onchange="handlePoster(this)" />
+                            <p class="text-sm text-gray-400">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline;vertical-align:middle;margin-right:4px"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                                Changer l'affiche
+                            </p>
+                            <p id="posterFileName" class="text-xs text-blue-600 mt-1" style="display:none"></p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -144,14 +163,43 @@ function cancelEdit(){ location.reload(); }
 
 function handlePoster(input){
     if(!input.files||!input.files[0]) return;
+    const file=input.files[0];
     const reader=new FileReader();
     reader.onload=e=>{
-        document.getElementById('posterBase64').value=e.target.result;
-        document.getElementById('posterImg').src=e.target.result;
-        document.getElementById('posterPreview').classList.remove('hidden');
-        document.getElementById('posterPlaceholder').classList.add('hidden');
+        const img=new Image();
+        img.onload=()=>{
+            // Compress: max 900px, JPEG quality 0.82
+            const MAX=900;
+            let w=img.width, h=img.height;
+            if(w>MAX||h>MAX){
+                if(w>h){h=Math.round(h*MAX/w);w=MAX;}
+                else{w=Math.round(w*MAX/h);h=MAX;}
+            }
+            const canvas=document.createElement('canvas');
+            canvas.width=w; canvas.height=h;
+            canvas.getContext('2d').drawImage(img,0,0,w,h);
+            const b64=canvas.toDataURL('image/jpeg',0.82);
+            // Store in both hidden inputs
+            document.getElementById('posterBase64').value=b64;
+            document.getElementById('currentPosterUrl').value=b64;
+            // Real-time: update current poster display
+            const cp=document.getElementById('currentPoster');
+            if(cp.tagName==='IMG'){cp.src=b64;}
+            else{
+                // Replace placeholder div with img
+                const newImg=document.createElement('img');
+                newImg.id='currentPoster';
+                newImg.src=b64;
+                newImg.style.cssText='width:100px;height:100px;border-radius:8px;object-fit:cover;border:1px solid #e5e7eb;';
+                cp.replaceWith(newImg);
+            }
+            // Show filename
+            const fn=document.getElementById('posterFileName');
+            if(fn){fn.textContent=file.name;fn.style.display='';}
+        };
+        img.src=e.target.result;
     };
-    reader.readAsDataURL(input.files[0]);
+    reader.readAsDataURL(file);
 }
 
 @if(isNew){ <text>window.addEventListener('DOMContentLoaded',enableEdit);</text> }

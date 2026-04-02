@@ -47,6 +47,7 @@
             <thead>
                 <tr>
                     <th style="width:44px">#</th>
+                    <th style="width:48px" class="hidden sm:table-cell"></th>
                     <th>Nom</th>
                     <th class="hidden sm:table-cell">Catégorie</th>
                     <th class="hidden md:table-cell">Lieu</th>
@@ -60,6 +61,18 @@
                 {
                     <tr onclick="location.href='@Url.Page("Edit", new { id = e.Id })'">
                         <td class="text-gray-400 text-xs">@idx</td>
+                        <td class="hidden sm:table-cell" style="padding:0.4rem 0.5rem">
+                            @if (!string.IsNullOrEmpty(e.PosterUrl))
+                            {
+                                <img src="@e.PosterUrl" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid #e5e7eb" />
+                            }
+                            else
+                            {
+                                <div style="width:36px;height:36px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#2563eb;border:1px solid #bfdbfe">
+                                    @(e.Name.Length > 0 ? e.Name[0].ToString().ToUpper() : "?")
+                                </div>
+                            }
+                        </td>
                         <td class="font-medium">@e.Name</td>
                         <td class="hidden sm:table-cell text-gray-500 text-xs">@(e.Category?.Name ?? "—")</td>
                         <td class="hidden md:table-cell text-gray-500 text-xs">@(e.Venue?.Name ?? "—")</td>
