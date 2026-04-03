@@ -61,7 +61,12 @@ namespace Ticketing.BackOffice.Razor.Pages.Events
                 var user = await _userManager.GetUserAsync(User);
                 Event.OrganizerId = user?.OrganizationId;
             }
-            
+
+            if (Event.IsActive)
+            {
+                Event.IsSubmitted = true;
+            }
+
             await _eventService.CreateEventAsync(Event);
 
             return RedirectToPage("./Index");
