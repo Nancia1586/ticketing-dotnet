@@ -150,7 +150,7 @@
                         cell.title = `R${r} C${c}`;
                         
                         // Apply existing config
-                        const existing = layoutData.find(d => d.r === r && d.c === c);
+                        const existing = layoutData.find(d => d.row === r && d.col === c);
                         if (existing) {
                             newLayoutData.push(existing);
                             if (existing.type === 'void') {
@@ -260,13 +260,13 @@
                 selectedCells.forEach(key => {
                     const [r, c] = key.split('-').map(Number);
                     
-                    const existingIndex = layoutData.findIndex(d => d.r === r && d.c === c);
+                    const existingIndex = layoutData.findIndex(d => d.row === r && d.col === c);
                     if (existingIndex > -1) {
                         layoutData.splice(existingIndex, 1);
                     }
 
                     if (type === 'void') {
-                        layoutData.push({ r, c, type: 'void', label: label });
+                        layoutData.push({ row: r, col: c, type: 'void', label: label });
                     }
                 });
 
@@ -294,7 +294,7 @@
 
                 // Apply layoutData
                 layoutData.forEach(d => {
-                    const cell = getCell(d.r, d.c);
+                    const cell = getCell(d.row, d.col);
                     if (cell) {
                         if (d.type === 'void') {
                             cell.classList.add('void');

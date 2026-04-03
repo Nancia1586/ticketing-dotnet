@@ -108,7 +108,12 @@
 <script>
 let editMode = false;
 let selectedCells = [];
-let currentLayout = @Html.Raw(Model.Venue?.LayoutJson ?? "[]");
+let currentLayout = (@Html.Raw(Model.Venue?.LayoutJson ?? "[]")).map(z => ({
+    row: z.row ?? z.r,
+    col: z.col ?? z.c,
+    type: z.type,
+    label: z.label
+}));
 
 function showTab(tab, el) {
     document.getElementById('tab_general').style.display = tab==='general' ? '' : 'none';
@@ -146,9 +151,9 @@ function renderGrid() {
         for(let c=1;c<=cols;c++){
             const zone = currentLayout.find(z=>z.row===r&&z.col===c);
             const type = zone?.type||'assignable';
-            const bg = type==='void'?'#e5e7eb':'#bfdbfe';
+            const bg = type==='void'?'#ef5350':'#bfdbfe';
             html+=`<div data-r="${r}" data-c="${c}" onclick="cellClick(this)"
-                style="width:28px;height:28px;background:${bg};border-radius:4px;cursor:${editMode?'pointer':'default'};font-size:9px;display:flex;align-items:center;justify-content:center;color:#6b7280"
+                style="width:28px;height:28px;background:${bg};border-radius:4px;cursor:${editMode?'pointer':'default'};font-size:9px;display:flex;align-items:center;justify-content:center;color:#ffffff"
                 title="R${r}C${c}">${zone?.label||''}</div>`;
         }
     }
