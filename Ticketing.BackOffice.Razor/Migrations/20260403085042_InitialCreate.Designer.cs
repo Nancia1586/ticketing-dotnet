@@ -12,8 +12,8 @@ using Ticketing.Core.Data;
 namespace Ticketing.BackOffice.Razor.Migrations
 {
     [DbContext(typeof(TicketingDbContext))]
-    [Migration("20251229204403_AddEventIsSubmitted")]
-    partial class AddEventIsSubmitted
+    [Migration("20260403085042_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -266,6 +266,10 @@ namespace Ticketing.BackOffice.Razor.Migrations
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
@@ -342,22 +346,36 @@ namespace Ticketing.BackOffice.Razor.Migrations
 
                     b.Property<string>("CustomerName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<int>("EventId")
                         .HasColumnType("int");
+
+                    b.Property<string>("NotificationToken")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("PaymentReference")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("ReservationDate")
                         .HasColumnType("datetime2");
@@ -374,7 +392,23 @@ namespace Ticketing.BackOffice.Razor.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EventId");
+                    b.HasIndex("CustomerName")
+                        .HasDatabaseName("IX_Reservations_CustomerName");
+
+                    b.HasIndex("Email")
+                        .HasDatabaseName("IX_Reservations_Email");
+
+                    b.HasIndex("PaymentReference")
+                        .HasDatabaseName("IX_Reservations_PaymentReference");
+
+                    b.HasIndex("Reference")
+                        .HasDatabaseName("IX_Reservations_Reference");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_Reservations_Status");
+
+                    b.HasIndex("EventId", "Status")
+                        .HasDatabaseName("IX_Reservations_EventId_Status");
 
                     b.ToTable("Reservations");
                 });
@@ -419,7 +453,8 @@ namespace Ticketing.BackOffice.Razor.Migrations
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("PosX")
                         .HasColumnType("int");
@@ -438,9 +473,20 @@ namespace Ticketing.BackOffice.Razor.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ReservationId");
+                    b.HasIndex("Code")
+                        .HasDatabaseName("IX_Seats_Code");
 
-                    b.HasIndex("TicketTypeId");
+                    b.HasIndex("ReservationId")
+                        .HasDatabaseName("IX_Seats_ReservationId");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_Seats_Status");
+
+                    b.HasIndex("TicketTypeId")
+                        .HasDatabaseName("IX_Seats_TicketTypeId");
+
+                    b.HasIndex("TicketTypeId", "Status")
+                        .HasDatabaseName("IX_Seats_TicketTypeId_Status");
 
                     b.ToTable("Seats");
                 });
