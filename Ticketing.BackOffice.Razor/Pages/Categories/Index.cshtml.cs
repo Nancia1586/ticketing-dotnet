@@ -17,6 +17,9 @@ namespace Ticketing.BackOffice.Razor.Pages.Categories
             _userManager = userManager;
         }
 
+        [BindProperty(SupportsGet = true)]
+        public string? SearchTerm { get; set; }
+
         public IList<Category> Categories { get;set; } = default!;
 
         public async Task OnGetAsync()
@@ -25,7 +28,17 @@ namespace Ticketing.BackOffice.Razor.Pages.Categories
             {
                 ViewData["CurrentUser"] = await _userManager.GetUserAsync(User);
             }
-            Categories = (await _categoryService.GetAllCategoriesAsync()).ToList();
+
+            var all = await _categoryService.GetAllCategoriesAsync();
+
+            if (!string.IsNullOrWhiteSpace(SearchTerm))
+            {
+                var term = SearchTerm.Trim().ToLower();
+                all = all.Where(c => c.Name.ToLower().Contains(term) ||
+                                     (c.Description != null && c.Description.ToLower().Contains(term)));
+            }
+
+            Categories = all.ToList();
         }
 
         public async Task<IActionResult> OnPostToggleStatusAsync(int id, bool isActive)
