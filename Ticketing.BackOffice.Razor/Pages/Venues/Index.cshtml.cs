@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
@@ -17,6 +18,9 @@ namespace Ticketing.BackOffice.Razor.Pages.Venues
             _userManager = userManager;
         }
 
+        [BindProperty(SupportsGet = true)]
+        public string? SearchTerm { get; set; }
+
         public IList<Venue> Venues { get;set; } = default!;
 
         public async Task OnGetAsync()
@@ -25,7 +29,17 @@ namespace Ticketing.BackOffice.Razor.Pages.Venues
             {
                 ViewData["CurrentUser"] = await _userManager.GetUserAsync(User);
             }
-            Venues = await _context.Venues.AsNoTracking().ToListAsync();
+
+            var query = _context.Venues.AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(SearchTerm))
+            {
+                var term = SearchTerm.Trim().ToLower();
+                query = query.Where(v => v.Name.ToLower().Contains(term) ||
+                                        (v.Address != null && v.Address.ToLower().Contains(term)));
+            }
+
+            Venues = await query.ToListAsync();
         }
     }
 }
