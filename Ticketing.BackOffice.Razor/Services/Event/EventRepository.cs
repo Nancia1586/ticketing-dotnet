@@ -80,7 +80,21 @@ namespace Ticketing.BackOffice.Razor.Services
 
         public async Task UpdateEventAsync(Event eventToUpdate)
         {
-            _context.Events.Update(eventToUpdate);
+            var existing = await _context.Events.FindAsync(eventToUpdate.Id);
+            if (existing == null) return;
+
+            existing.Name        = eventToUpdate.Name;
+            existing.Description = eventToUpdate.Description;
+            existing.VenueId     = eventToUpdate.VenueId;
+            existing.CategoryId  = eventToUpdate.CategoryId;
+            existing.Date        = eventToUpdate.Date;
+            existing.IsActive    = eventToUpdate.IsActive;
+            existing.IsSubmitted = eventToUpdate.IsSubmitted;
+            existing.OrganizerId = eventToUpdate.OrganizerId;
+
+            if (!string.IsNullOrEmpty(eventToUpdate.PosterUrl))
+                existing.PosterUrl = eventToUpdate.PosterUrl;
+
             await _context.SaveChangesAsync();
         }
 

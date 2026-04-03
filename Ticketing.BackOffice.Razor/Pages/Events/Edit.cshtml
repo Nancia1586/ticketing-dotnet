@@ -53,10 +53,6 @@
                 <span asp-validation-for="Event.Name" class="text-xs text-red-500 mt-0.5 block"></span>
             </div>
 
-            <div class="pf">
-                <label>Code</label>
-                <input asp-for="Event.Code" placeholder=" " readonly id="f_code" />
-            </div>
 
             <div class="pf">
                 <label>Lieu *</label>
@@ -152,7 +148,7 @@
 
 <script>
 function enableEdit(){
-    ['f_name','f_code','f_date','f_desc'].forEach(id=>document.getElementById(id)?.removeAttribute('readonly'));
+    ['f_name','f_date','f_desc'].forEach(id=>document.getElementById(id)?.removeAttribute('readonly'));
     ['f_venue','f_category'].forEach(id=>document.getElementById(id)?.classList.remove('sel-ro'));
     document.getElementById('f_active').removeAttribute('disabled');
     document.getElementById('uploadSection').style.display='';
