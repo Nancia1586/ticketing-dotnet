@@ -89,7 +89,7 @@ namespace Ticketing.BackOffice.Razor.Services
             existing.CategoryId  = eventToUpdate.CategoryId;
             existing.Date        = eventToUpdate.Date;
             existing.IsActive    = eventToUpdate.IsActive;
-            existing.IsSubmitted = eventToUpdate.IsSubmitted;
+            existing.IsSubmitted = eventToUpdate.IsSubmitted || eventToUpdate.IsActive;
             existing.OrganizerId = eventToUpdate.OrganizerId;
 
             if (!string.IsNullOrEmpty(eventToUpdate.PosterUrl))
